@@ -36,168 +36,78 @@ namespace kakoi
         #region プロパティ
         public static Point Location
         {
-            get
-            {
-                return _data.Location;
-            }
-            set
-            {
-                _data.Location = value;
-            }
+            get => _data.Location;
+            set => _data.Location = value;
         }
         public static Size Size
         {
-            get
-            {
-                return _data.Size;
-            }
-            set
-            {
-                _data.Size = value;
-            }
+            get => _data.Size;
+            set => _data.Size = value;
         }
         public static bool TopMost
         {
-            get
-            {
-                return _data.TopMost;
-            }
-            set
-            {
-                _data.TopMost = value;
-            }
+            get => _data.TopMost;
+            set => _data.TopMost = value;
         }
         public static int CutLength
         {
-            get
-            {
-                return _data.CutLength;
-            }
-            set
-            {
-                _data.CutLength = value;
-            }
+            get => _data.CutLength;
+            set => _data.CutLength = value;
         }
         public static int CutNameLength
         {
-            get
-            {
-                return _data.CutNameLength;
-            }
-            set
-            {
-                _data.CutNameLength = value;
-            }
+            get => _data.CutNameLength;
+            set => _data.CutNameLength = value;
         }
         public static double Opacity
         {
-            get
-            {
-                return _data.Opacity;
-            }
-            set
-            {
-                _data.Opacity = value;
-            }
+            get => _data.Opacity;
+            set => _data.Opacity = value;
         }
         public static bool AddClient
         {
-            get
-            {
-                return _data.AddClient;
-            }
-            set
-            {
-                _data.AddClient = value;
-            }
+            get => _data.AddClient;
+            set => _data.AddClient = value;
         }
         public static bool ShowOnlyJapanese
         {
-            get
-            {
-                return _data.ShowOnlyJapanese;
-            }
-            set
-            {
-                _data.ShowOnlyJapanese = value;
-            }
+            get => _data.ShowOnlyJapanese;
+            set => _data.ShowOnlyJapanese = value;
         }
         public static bool ShowOnlyFollowees
         {
-            get
-            {
-                return _data.ShowOnlyFollowees;
-            }
-            set
-            {
-                _data.ShowOnlyFollowees = value;
-            }
+            get => _data.ShowOnlyFollowees;
+            set => _data.ShowOnlyFollowees = value;
         }
         public static string NokakoiKey
         {
-            get
-            {
-                return _data.NokakoiKey;
-            }
-            set
-            {
-                _data.NokakoiKey = value;
-            }
+            get => _data.NokakoiKey;
+            set => _data.NokakoiKey = value;
         }
         public static bool SendDSSTP
         {
-            get
-            {
-                return _data.SendDSSTP;
-            }
-            set
-            {
-                _data.SendDSSTP = value;
-            }
+            get => _data.SendDSSTP;
+            set => _data.SendDSSTP = value;
         }
         public static Point PostBarLocation
         {
-            get
-            {
-                return _data.PostBarLocation;
-            }
-            set
-            {
-                _data.PostBarLocation = value;
-            }
+            get => _data.PostBarLocation;
+            set => _data.PostBarLocation = value;
         }
         public static Size PostBarSize
         {
-            get
-            {
-                return _data.PostBarSize;
-            }
-            set
-            {
-                _data.PostBarSize = value;
-            }
+            get => _data.PostBarSize;
+            set => _data.PostBarSize = value;
         }
         public static Point WebLocation
         {
-            get
-            {
-                return _data.WebLocation;
-            }
-            set
-            {
-                _data.WebLocation = value;
-            }
+            get => _data.WebLocation;
+            set => _data.WebLocation = value;
         }
         public static Size WebSize
         {
-            get
-            {
-                return _data.WebSize;
-            }
-            set
-            {
-                _data.WebSize = value;
-            }
+            get => _data.WebSize;
+            set => _data.WebSize = value;
         }
         #endregion
 
