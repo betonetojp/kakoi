@@ -189,11 +189,11 @@
             dataGridViewCellStyle5.BackColor = SystemColors.Window;
             dataGridViewCellStyle5.Font = new Font("Yu Gothic UI", 9F);
             dataGridViewCellStyle5.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = Color.HotPink;
+            dataGridViewCellStyle5.SelectionBackColor = Color.DeepPink;
             dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle5.WrapMode = DataGridViewTriState.False;
             dataGridViewNotes.DefaultCellStyle = dataGridViewCellStyle5;
-            dataGridViewNotes.GridColor = Color.HotPink;
+            dataGridViewNotes.GridColor = Color.DeepPink;
             dataGridViewNotes.Location = new Point(12, 41);
             dataGridViewNotes.MultiSelect = false;
             dataGridViewNotes.Name = "dataGridViewNotes";
