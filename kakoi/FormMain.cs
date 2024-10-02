@@ -379,6 +379,18 @@ namespace kakoi
                             //    nostrEvent.PublicKey
                             //    );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
+
+                            // クライアントタグによる背景色変更のテスト
+                            var userClient = nostrEvent.GetTaggedData("client");
+                            if (-1 < Array.IndexOf(userClient, "kakoi"))
+                            {
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Pink;
+                            }
+                            else if (-1 < Array.IndexOf(userClient, "lumilumi"))
+                            {
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Orange;
+                            }
+
                             foreach (var tag in nostrEvent.Tags)
                             {
                                 // eタグがある時は背景色を変える
