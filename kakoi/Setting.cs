@@ -30,6 +30,7 @@ namespace kakoi
             public Size PostBarSize { get; set; } = new Size(300, 132);
             public Point WebLocation { get; set; }
             public Size WebSize { get; set; } = new Size(320, 320);
+            public int NameColumnWidth { get; set; } = 60;
         }
         #endregion
 
@@ -108,6 +109,11 @@ namespace kakoi
         {
             get => _data.WebSize;
             set => _data.WebSize = value;
+        }
+        public static int NameColumnWidth
+        {
+            get => _data.NameColumnWidth;
+            set => _data.NameColumnWidth = value;
         }
         #endregion
 

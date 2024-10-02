@@ -135,6 +135,7 @@ namespace kakoi
             }
             _formPostBar.Size = Setting.PostBarSize;
             _formWeb.Size = Setting.WebSize;
+            dataGridViewNotes.Columns["name"].Width = Setting.NameColumnWidth;
 
             _formSetting.PostBarForm = _formPostBar;
             _formSetting.WebForm = _formWeb;
@@ -998,6 +999,7 @@ namespace kakoi
                 Setting.WebLocation = _formWeb.Location;
                 Setting.WebSize = _formWeb.Size;
             }
+            Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
             Setting.Save(_configPath);
             Tools.SaveUsers(Users);
             //Tools.SaveEmojis(_emojis);
