@@ -394,8 +394,8 @@ namespace kakoi
 
                             foreach (var tag in nostrEvent.Tags)
                             {
-                                // eタグがある時は背景色を変える
-                                if (tag.TagIdentifier == "e")
+                                // eタグ、pタグがある時は背景色を変える
+                                if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
                                 {
                                     dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
                                     continue;
