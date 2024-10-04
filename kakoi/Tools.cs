@@ -311,5 +311,29 @@ namespace kakoi
                 return [];
             }
         }
+
+        public static Color HexToColor(string hex)
+        {
+            try
+            {
+                hex = hex.TrimStart('#');
+
+                int r = int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+                int g = int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+                int b = int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+
+                return Color.FromArgb(r, g, b);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return Color.Black;
+            }
+        }
+
+        public static string ColorToHex(Color color)
+        {
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        }
     }
 }

@@ -31,6 +31,7 @@ namespace kakoi
             public Point WebLocation { get; set; }
             public Size WebSize { get; set; } = new Size(320, 320);
             public int NameColumnWidth { get; set; } = 60;
+            public string GridColor { get; set; } = "#FF1493";
         }
         #endregion
 
@@ -114,6 +115,11 @@ namespace kakoi
         {
             get => _data.NameColumnWidth;
             set => _data.NameColumnWidth = value;
+        }
+        public static string GridColor
+        {
+            get => _data.GridColor;
+            set => _data.GridColor = value;
         }
         #endregion
 

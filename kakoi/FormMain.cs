@@ -6,6 +6,7 @@ using NTextCat;
 using NTextCat.Commons;
 using SSTPLib;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace kakoi
 {
@@ -136,6 +137,8 @@ namespace kakoi
             _formPostBar.Size = Setting.PostBarSize;
             _formWeb.Size = Setting.WebSize;
             dataGridViewNotes.Columns["name"].Width = Setting.NameColumnWidth;
+            dataGridViewNotes.GridColor = Tools.HexToColor(Setting.GridColor);
+            dataGridViewNotes.DefaultCellStyle.SelectionBackColor = Tools.HexToColor(Setting.GridColor);
 
             _formSetting.PostBarForm = _formPostBar;
             _formSetting.WebForm = _formWeb;
@@ -1000,6 +1003,7 @@ namespace kakoi
                 Setting.WebSize = _formWeb.Size;
             }
             Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
+            Setting.GridColor = Tools.ColorToHex(dataGridViewNotes.GridColor);
             Setting.Save(_configPath);
             Tools.SaveUsers(Users);
             //Tools.SaveEmojis(_emojis);
