@@ -32,6 +32,7 @@ namespace kakoi
             public Size WebSize { get; set; } = new Size(320, 320);
             public int NameColumnWidth { get; set; } = 60;
             public string GridColor { get; set; } = "#FF1493";
+            public string PictureUploadUrl { get; set; } = "https://nikolat.github.io/nostr-learn-nip96/";
         }
         #endregion
 
@@ -120,6 +121,11 @@ namespace kakoi
         {
             get => _data.GridColor;
             set => _data.GridColor = value;
+        }
+        public static string PictureUploadUrl
+        {
+            get => _data.PictureUploadUrl;
+            set => _data.PictureUploadUrl = value;
         }
         #endregion
 

@@ -1069,6 +1069,7 @@ namespace kakoi
         // ポストバー表示切り替え
         private void CheckBoxPostBar_CheckedChanged(object sender, EventArgs e)
         {
+            _formPostBar.textBoxPost.Focus();
             _formPostBar.Visible = checkBoxPostBar.Checked;
         }
         #endregion
@@ -1143,9 +1144,9 @@ namespace kakoi
             }
             _formRelayList.Dispose();
         }
-
         #endregion
 
+        #region セルダブルクリック
         private void DataGridViewNotes_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             // ヘッダー行がダブルクリックされた場合は無視
@@ -1166,7 +1167,9 @@ namespace kakoi
                 _ = ReactionAsync(id, pubkey, content, url);
             }
         }
+        #endregion
 
+        #region カーソルキー
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Right)
@@ -1179,11 +1182,11 @@ namespace kakoi
                 var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
                 var ev = new DataGridViewCellMouseEventArgs(0, dataGridViewNotes.SelectedRows[0].Index, 0, 0, mev);
                 DataGridViewNotes_CellMouseClick(sender, ev);
-
             }
-
         }
+        #endregion
 
+        #region フォームマウスダブルクリック
         private void FormMain_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (dataGridViewNotes.Columns["note"].DefaultCellStyle.WrapMode != DataGridViewTriState.True)
@@ -1195,7 +1198,9 @@ namespace kakoi
                 dataGridViewNotes.Columns["note"].DefaultCellStyle.WrapMode = DataGridViewTriState.NotSet;
             }
         }
+        #endregion
 
+        #region セル右クリック
         private void DataGridViewNotes_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -1240,5 +1245,6 @@ namespace kakoi
                 }
             }
         }
+        #endregion
     }
 }

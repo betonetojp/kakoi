@@ -1,4 +1,6 @@
-﻿namespace kakoi
+﻿using System.Diagnostics;
+
+namespace kakoi
 {
     public partial class FormPostBar : Form
     {
@@ -15,10 +17,12 @@
             if (scale < 2.0f)
             {
                 buttonPost.Image = new Bitmap(Properties.Resources.icons8_create_16, size, size);
+                buttonPicture.Image = new Bitmap(Properties.Resources.icons8_picture_16, size, size);
             }
             else
             {
                 buttonPost.Image = new Bitmap(Properties.Resources.icons8_create_32, size, size);
+                buttonPicture.Image = new Bitmap(Properties.Resources.icons8_picture_32, size, size);
             }
         }
 
@@ -111,6 +115,16 @@
             {
                 Close();
             }
+        }
+
+        private void buttonPicture_Click(object sender, EventArgs e)
+        {
+            var app = new ProcessStartInfo
+            {
+                FileName = Setting.PictureUploadUrl,
+                UseShellExecute = true
+            };
+            Process.Start(app);
         }
     }
 }
