@@ -385,13 +385,22 @@ namespace kakoi
 
                             // クライアントタグによる背景色変更のテスト
                             var userClient = nostrEvent.GetTaggedData("client");
-                            if (-1 < Array.IndexOf(userClient, "kakoi"))
+                            if (userClient != null && 0 < userClient.Length)
                             {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.HotPink;
-                            }
-                            else if (-1 < Array.IndexOf(userClient, "lumilumi"))
-                            {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Orange;
+                                Color clientColor = Color.Silver;
+                                if (-1 < Array.IndexOf(userClient, "kakoi"))
+                                {
+                                    clientColor = Color.HotPink;
+                                }
+                                else if (-1 < Array.IndexOf(userClient, "lumilumi"))
+                                {
+                                    clientColor = Color.Orange;
+                                }
+                                else if (-1 < Array.IndexOf(userClient, "noStrudel"))
+                                {
+                                    clientColor = Color.YellowGreen;
+                                }
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
                             foreach (var tag in nostrEvent.Tags)
