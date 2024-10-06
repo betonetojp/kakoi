@@ -113,7 +113,7 @@ namespace kakoi
                     [
                         new NostrSubscriptionFilter()
                         {
-                            Kinds = [1,7], // 1: テキストノート, 7: リアクション
+                            Kinds = [1,6,7], // 1: テキストノート, 7: リアクション
                             Since = DateTimeOffset.Now - _timeSpan,
                         }
                     ]

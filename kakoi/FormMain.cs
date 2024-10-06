@@ -6,7 +6,6 @@ using NTextCat;
 using NTextCat.Commons;
 using SSTPLib;
 using System.Diagnostics;
-using System.Windows.Forms;
 
 namespace kakoi
 {
@@ -485,6 +484,40 @@ namespace kakoi
                                 content = $"{content[.._cutLength]}...";
                             }
                             Debug.WriteLine($"{timeString} {userName} {content}");
+                        }
+                        // リポスト
+                        if (6 == nostrEvent.Kind)
+                        {
+                            Users.TryGetValue(nostrEvent.PublicKey, out User? user);
+
+                            // フォロイー限定表示オンでフォロイーじゃない時は表示しない
+                            if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
+                            {
+                                continue;
+                            }
+
+                            // ミュートしている時は表示しない
+                            if (IsMuted(nostrEvent.PublicKey))
+                            {
+                                continue;
+                            }
+
+                            // ユーザー表示名取得
+                            string userName = GetUserName(nostrEvent.PublicKey);
+
+                            headMark = ">";
+
+                            // グリッドに表示
+                            DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
+                            dataGridViewNotes.Rows.Insert(
+                            0,
+                            dto.ToLocalTime(),
+                            $"{headMark} {userName}",
+                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.",
+                            nostrEvent.Id,
+                            nostrEvent.PublicKey
+                            );
+                            dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
                         }
                     }
                 }
