@@ -363,6 +363,14 @@ namespace kakoi
                                 continue;
                             }
 
+                            bool isReply = false;
+                            var p = nostrEvent.GetTaggedData("p");
+                            if (p != null && 0 < p.Length)
+                            {
+                                isReply = true;
+                                headMark = "<";
+                            }
+
                             // グリッドに表示
                             //_noteEvents.AddFirst(nostrEvent);
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
@@ -374,14 +382,13 @@ namespace kakoi
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
-                            //dataGridViewNotes.Rows.Add(
-                            //    dto.ToLocalTime(),
-                            //    $"{headMark} {userName}",
-                            //    nostrEvent.Content,
-                            //    nostrEvent.Id,
-                            //    nostrEvent.PublicKey
-                            //    );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
+
+                            // pタグがある時は背景色を変える
+                            if (isReply)
+                            {
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
+                            }
 
                             // クライアントタグによる背景色変更のテスト
                             var userClient = nostrEvent.GetTaggedData("client");
@@ -403,15 +410,15 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
-                            foreach (var tag in nostrEvent.Tags)
-                            {
-                                // eタグ、pタグがある時は背景色を変える
-                                if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
-                                {
-                                    dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                                    continue;
-                                }
-                            }
+                            //foreach (var tag in nostrEvent.Tags)
+                            //{
+                            //    // eタグ、pタグがある時は背景色を変える
+                            //    if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
+                            //    {
+                            //        dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
+                            //        continue;
+                            //    }
+                            //}
 
                             // ユーザー表示名カット
                             if (userName.Length > _cutNameLength)
