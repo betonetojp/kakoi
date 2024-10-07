@@ -558,11 +558,20 @@ namespace kakoi
                         var tags = nostrEvent.Tags;
                         foreach (var tag in tags)
                         {
-                            // 公開鍵を保存
                             if ("p" == tag.TagIdentifier)
                             {
-                                // 先頭を公開鍵と決めつけているが…
+                                // 公開鍵をハッシュに保存
                                 _followeesHexs.Add(tag.Data[0]);
+
+                                // petnameをユーザー辞書に保存
+                                if (2 < tag.Data.Count)
+                                {
+                                    Users.TryGetValue(tag.Data[0], out User? user);
+                                    if (null != user)
+                                    {
+                                        user.PetName = tag.Data[2];
+                                    }
+                                }
                             }
                         }
                     }
@@ -1230,8 +1239,10 @@ namespace kakoi
                 dataGridViewNotes.Rows[e.RowIndex].Cells["note"].Selected = true;
                 if (null == _formWeb || _formWeb.IsDisposed)
                 {
-                    _formWeb = new FormWeb();
-                    _formWeb.Location = Setting.WebLocation;
+                    _formWeb = new FormWeb
+                    {
+                        Location = Setting.WebLocation
+                    };
                     if (new Point(0, 0) == _formWeb.Location)
                     {
                         _formWeb.StartPosition = FormStartPosition.CenterScreen;
@@ -1257,7 +1268,7 @@ namespace kakoi
                 var nevent = nostrEventNote.ToNIP19();
                 try
                 {
-                    _formWeb.webView21.Source = new Uri(settings.FileName + nostrEventNote.ToNIP19());
+                    _formWeb.webView21.Source = new Uri(settings.FileName + nevent);
                 }
                 catch (Exception ex)
                 {

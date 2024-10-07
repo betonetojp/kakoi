@@ -71,7 +71,7 @@
             buttonPicture.Size = new Size(23, 23);
             buttonPicture.TabIndex = 3;
             buttonPicture.UseVisualStyleBackColor = true;
-            buttonPicture.Click += buttonPicture_Click;
+            buttonPicture.Click += ButtonPicture_Click;
             // 
             // FormPostBar
             // 

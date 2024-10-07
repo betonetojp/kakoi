@@ -117,7 +117,7 @@ namespace kakoi
             }
         }
 
-        private void buttonPicture_Click(object sender, EventArgs e)
+        private void ButtonPicture_Click(object sender, EventArgs e)
         {
             var app = new ProcessStartInfo
             {
