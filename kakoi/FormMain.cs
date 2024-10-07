@@ -514,6 +514,12 @@ namespace kakoi
                             // ユーザー表示名取得
                             string userName = GetUserName(nostrEvent.PublicKey);
 
+                            // ユーザーが見つからない時は表示しない
+                            if (null == user)
+                            {
+                                continue;
+                            }
+
                             headMark = ">";
 
                             // グリッドに表示
