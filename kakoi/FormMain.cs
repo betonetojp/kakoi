@@ -364,8 +364,12 @@ namespace kakoi
                             }
 
                             bool isReply = false;
+                            var e = nostrEvent.GetTaggedData("e");
                             var p = nostrEvent.GetTaggedData("p");
-                            if (p != null && 0 < p.Length)
+                            var q = nostrEvent.GetTaggedData("q");
+                            if (e != null && 0 < e.Length ||
+                                p != null && 0 < p.Length ||
+                                q != null && 0 < q.Length)
                             {
                                 isReply = true;
                                 headMark = "<";
@@ -383,12 +387,6 @@ namespace kakoi
                                 nostrEvent.PublicKey
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
-
-                            // pタグがある時は背景色を変える
-                            if (isReply)
-                            {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                            }
 
                             // クライアントタグによる背景色変更のテスト
                             var userClient = nostrEvent.GetTaggedData("client");
@@ -419,6 +417,11 @@ namespace kakoi
                             //        continue;
                             //    }
                             //}
+                            // e,p,qタグがある時は背景色を変える
+                            if (isReply)
+                            {
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
+                            }
 
                             // ユーザー表示名カット
                             if (userName.Length > _cutNameLength)
