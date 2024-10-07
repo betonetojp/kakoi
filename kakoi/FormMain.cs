@@ -606,6 +606,7 @@ namespace kakoi
                             if (null == cratedAt || (cratedAt < newUserData.CreatedAt))
                             {
                                 newUserData.LastActivity = DateTime.Now;
+                                newUserData.PetName = existingUserData?.PetName;
                                 Tools.SaveUsers(Users);
                                 // 辞書に追加（上書き）
                                 Users[nostrEvent.PublicKey] = newUserData;
