@@ -1,4 +1,4 @@
-using kakoi.Properties;
+ï»¿using kakoi.Properties;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
@@ -11,7 +11,7 @@ namespace kakoi
 {
     public partial class FormMain : Form
     {
-        #region ƒtƒB[ƒ‹ƒh
+        #region ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰
         private readonly NostrAccess _nostrAccess = new();
 
         private readonly string _configPath = Path.Combine(Application.StartupPath, "kakoi.config");
@@ -27,15 +27,15 @@ namespace kakoi
         private string _npubHex = string.Empty;
 
         /// <summary>
-        /// ƒtƒHƒƒC[ŒöŠJŒ®‚ÌƒnƒbƒVƒ…ƒZƒbƒg
+        /// ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼å…¬é–‹éµã®ãƒãƒƒã‚·ãƒ¥ã‚»ãƒƒãƒˆ
         /// </summary>
         private readonly HashSet<string> _followeesHexs = [];
         /// <summary>
-        /// ƒ†[ƒU[«‘
+        /// ãƒ¦ãƒ¼ã‚¶ãƒ¼è¾æ›¸
         /// </summary>
         internal Dictionary<string, User?> Users = [];
         /// <summary>
-        /// ƒL[ƒ[ƒh’Ê’m
+        /// ã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰é€šçŸ¥
         /// </summary>
         internal KeywordNotifier Notifier = new();
 
@@ -62,7 +62,7 @@ namespace kakoi
         };
 
         private string _ghostName = string.Empty;
-        // d•¡ƒCƒxƒ“ƒgID‚ğ•Û‘¶‚·‚éƒŠƒXƒg
+        // é‡è¤‡ã‚¤ãƒ™ãƒ³ãƒˆIDã‚’ä¿å­˜ã™ã‚‹ãƒªã‚¹ãƒˆ
         private readonly LinkedList<string> _displayedEventIds = new();
 
         //private readonly LinkedList<NostrEvent> _noteEvents = new();
@@ -70,13 +70,13 @@ namespace kakoi
         private List<Emoji> _emojis = [];
         #endregion
 
-        #region ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-        // ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+        #region ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+        // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         public FormMain()
         {
             InitializeComponent();
 
-            // ƒ{ƒ^ƒ“‚Ì‰æ‘œ‚ğDPI‚É‡‚í‚¹‚Ä•\¦
+            // ãƒœã‚¿ãƒ³ã®ç”»åƒã‚’DPIã«åˆã‚ã›ã¦è¡¨ç¤º
             float scale = CreateGraphics().DpiX / 96f;
             int size = (int)(16 * scale);
             if (scale < 2.0f)
@@ -146,8 +146,8 @@ namespace kakoi
         }
         #endregion
 
-        #region Startƒ{ƒ^ƒ“
-        // Startƒ{ƒ^ƒ“
+        #region Startãƒœã‚¿ãƒ³
+        // Startãƒœã‚¿ãƒ³
         private async void ButtonStart_Click(object sender, EventArgs e)
         {
             try
@@ -200,13 +200,13 @@ namespace kakoi
                 _formPostBar.buttonPost.Enabled = true;
                 textBoxPost.PlaceholderText = "> Create subscription.";
 
-                // ƒƒOƒCƒ“Ï‚İ‚Ì
+                // ãƒ­ã‚°ã‚¤ãƒ³æ¸ˆã¿ã®æ™‚
                 if (!string.IsNullOrEmpty(_npubHex))
                 {
-                    // ƒtƒHƒƒC[‚ğw“Ç‚ğ‚·‚é
+                    // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼ã‚’è³¼èª­ã‚’ã™ã‚‹
                     _nostrAccess.SubscribeFollows(_npubHex);
 
-                    // ƒƒOƒCƒ“ƒ†[ƒU[•\¦–¼æ“¾
+                    // ãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåå–å¾—
                     var name = GetUserName(_npubHex);
                     textBoxPost.PlaceholderText = $"> Login as {name}.";
                 }
@@ -219,15 +219,15 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒCƒxƒ“ƒgóMˆ—
+        #region ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡æ™‚å‡¦ç†
         /// <summary>
-        /// ƒCƒxƒ“ƒgóMˆ—
+        /// ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡æ™‚å‡¦ç†
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ“w“Ç
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³è³¼èª­
             if (args.subscriptionId == _nostrAccess.SubscriptionId)
             {
                 foreach (var nostrEvent in args.events)
@@ -240,7 +240,7 @@ namespace kakoi
                     var content = nostrEvent.Content;
                     if (content != null)
                     {
-                        // ŠÔ•\¦
+                        // æ™‚é–“è¡¨ç¤º
                         DateTimeOffset time;
                         int hour;
                         int minute;
@@ -254,30 +254,30 @@ namespace kakoi
                             timeString = string.Format("{0:D2}", hour) + ":" + string.Format("{0:D2}", minute);
                         }
 
-                        // ƒtƒHƒƒC[ƒ`ƒFƒbƒN
+                        // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼ãƒã‚§ãƒƒã‚¯
                         string headMark = "-";
                         string speaker = "\\1"; //"\\u\\p[1]\\s[10]";
                         if (_followeesHexs.Contains(nostrEvent.PublicKey))
                         {
                             headMark = "*";
-                            // –{‘Ì‘¤‚ª‚µ‚á‚×‚é
+                            // æœ¬ä½“å´ãŒã—ã‚ƒã¹ã‚‹
                             speaker = "\\0"; //"\\h\\p[0]\\s[0]";
                         }
 
-                        // ƒŠƒAƒNƒVƒ‡ƒ“
+                        // ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³
                         if (7 == nostrEvent.Kind)
                         {
-                            // ƒƒOƒCƒ“Ï‚İ‚Å©•ª‚Ö‚ÌƒŠƒAƒNƒVƒ‡ƒ“
+                            // ãƒ­ã‚°ã‚¤ãƒ³æ¸ˆã¿ã§è‡ªåˆ†ã¸ã®ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
                                 Users.TryGetValue(nostrEvent.PublicKey, out User? user);
 
-                                // ƒ†[ƒU[•\¦–¼æ“¾
+                                // ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåå–å¾—
                                 string userName = GetUserName(nostrEvent.PublicKey);
 
                                 headMark = "+";
 
-                                // ƒOƒŠƒbƒh‚É•\¦
+                                // ã‚°ãƒªãƒƒãƒ‰ã«è¡¨ç¤º
                                 //_noteEvents.AddFirst(nostrEvent);
                                 DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                                 dataGridViewNotes.Rows.Insert(
@@ -289,13 +289,13 @@ namespace kakoi
                                 nostrEvent.PublicKey
                                 );
 
-                                // ƒ†[ƒU[•\¦–¼ƒJƒbƒg
+                                // ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåã‚«ãƒƒãƒˆ
                                 if (userName.Length > _cutNameLength)
                                 {
                                     userName = $"{userName[.._cutNameLength]}...";
                                 }
 
-                                // SSP‚É‘—‚é
+                                // SSPã«é€ã‚‹
                                 if (_sendDSSTP && null != _ds)
                                 {
                                     NIP19.NostrEventNote nostrEventNote = new()
@@ -314,17 +314,17 @@ namespace kakoi
                                         { "Reference5", user?.Picture ?? string.Empty }, // picture
                                         { "Reference6", nevent }, // nevent1...
                                         { "Reference7", nostrEvent.PublicKey.ConvertToNpub() }, // npub1...
-                                        { "Script", $"{speaker}ƒŠƒAƒNƒVƒ‡ƒ“ {userName}\\n{content}\\e" }
+                                        { "Script", $"{speaker}ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³ {userName}\\n{content}\\e" }
                                     };
                                     string sstpmsg = _SSTPMethod + "\r\n" + String.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + kvp.Value.Replace("\n", "\\n"))) + "\r\n\r\n";
                                     string r = _ds.GetSSTPResponse(_ghostName, sstpmsg);
                                     //Debug.WriteLine(r);
                                 }
-                                // ‰æ–Ê‚É•\¦
+                                // ç”»é¢ã«è¡¨ç¤º
                                 textBoxPost.PlaceholderText = $"{timeString} {headMark} {userName} {content}";
                             }
                         }
-                        // ƒeƒLƒXƒgƒm[ƒg
+                        // ãƒ†ã‚­ã‚¹ãƒˆãƒãƒ¼ãƒˆ
                         if (1 == nostrEvent.Kind)
                         {
                             //var userClient = nostrEvent.GetTaggedData("client");
@@ -332,38 +332,38 @@ namespace kakoi
                             var lang = DetermineLanguage(content);
                             if (Users.TryGetValue(nostrEvent.PublicKey, out User? user) && null != user)
                             {
-                                //// Œ¾Œê”»’èŒ‹‰Ê‚ğXViŠù‘¶ƒ†[ƒU[j
+                                //// è¨€èªåˆ¤å®šçµæœã‚’æ›´æ–°ï¼ˆæ—¢å­˜ãƒ¦ãƒ¼ã‚¶ãƒ¼ï¼‰
                                 //user.Language = lang;
                             }
 
-                            // “ú–{ŒêŒÀ’è•\¦ƒIƒ“‚Å“ú–{Œê‚¶‚á‚È‚¢‚Í•\¦‚µ‚È‚¢
+                            // æ—¥æœ¬èªé™å®šè¡¨ç¤ºã‚ªãƒ³ã§æ—¥æœ¬èªã˜ã‚ƒãªã„æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (_showOnlyJapanese && "jpn" != lang)
                             {
                                 continue;
                             }
 
-                            // ƒtƒHƒƒC[ŒÀ’è•\¦ƒIƒ“‚ÅƒtƒHƒƒC[‚¶‚á‚È‚¢‚Í•\¦‚µ‚È‚¢
+                            // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼é™å®šè¡¨ç¤ºã‚ªãƒ³ã§ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼ã˜ã‚ƒãªã„æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ƒ~ƒ…[ƒg‚µ‚Ä‚¢‚é‚Í•\¦‚µ‚È‚¢
+                            // ãƒŸãƒ¥ãƒ¼ãƒˆã—ã¦ã„ã‚‹æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (IsMuted(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ƒ†[ƒU[•\¦–¼æ“¾iƒ†[ƒU[«‘ƒƒ‚ƒŠß–ñ‚Ì‚½‚ßª‚Ìƒtƒ‰ƒOˆ—Œã‚Éj
+                            // ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåå–å¾—ï¼ˆãƒ¦ãƒ¼ã‚¶ãƒ¼è¾æ›¸ãƒ¡ãƒ¢ãƒªç¯€ç´„ã®ãŸã‚â†‘ã®ãƒ•ãƒ©ã‚°å‡¦ç†å¾Œã«ï¼‰
                             string userName = GetUserName(nostrEvent.PublicKey);
 
-                            // ƒ†[ƒU[‚ªŒ©‚Â‚©‚ç‚È‚¢‚Í•\¦‚µ‚È‚¢
+                            // ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒè¦‹ã¤ã‹ã‚‰ãªã„æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (null == user)
                             {
                                 continue;
                             }
 
-                            // ƒOƒŠƒbƒh‚É•\¦
+                            // ã‚°ãƒªãƒƒãƒ‰ã«è¡¨ç¤º
                             //_noteEvents.AddFirst(nostrEvent);
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                             dataGridViewNotes.Rows.Insert(
@@ -383,7 +383,7 @@ namespace kakoi
                             //    );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
-                            // ƒNƒ‰ƒCƒAƒ“ƒgƒ^ƒO‚É‚æ‚é”wŒiF•ÏX‚ÌƒeƒXƒg
+                            // ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‚¿ã‚°ã«ã‚ˆã‚‹èƒŒæ™¯è‰²å¤‰æ›´ã®ãƒ†ã‚¹ãƒˆ
                             var userClient = nostrEvent.GetTaggedData("client");
                             if (userClient != null && 0 < userClient.Length)
                             {
@@ -405,7 +405,7 @@ namespace kakoi
 
                             foreach (var tag in nostrEvent.Tags)
                             {
-                                // eƒ^ƒOApƒ^ƒO‚ª‚ ‚é‚Í”wŒiF‚ğ•Ï‚¦‚é
+                                // eã‚¿ã‚°ã€pã‚¿ã‚°ãŒã‚ã‚‹æ™‚ã¯èƒŒæ™¯è‰²ã‚’å¤‰ãˆã‚‹
                                 if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
                                 {
                                     dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
@@ -413,13 +413,13 @@ namespace kakoi
                                 }
                             }
 
-                            // ƒ†[ƒU[•\¦–¼ƒJƒbƒg
+                            // ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåã‚«ãƒƒãƒˆ
                             if (userName.Length > _cutNameLength)
                             {
                                 userName = $"{userName[.._cutNameLength]}...";
                             }
 
-                            // SSP‚É‘—‚é
+                            // SSPã«é€ã‚‹
                             if (_sendDSSTP && null != _ds)
                             {
                                 NIP19.NostrEventNote nostrEventNote = new()
@@ -431,10 +431,10 @@ namespace kakoi
                                 SearchGhost();
 
                                 string msg = content;
-                                // –{•¶ƒJƒbƒg
+                                // æœ¬æ–‡ã‚«ãƒƒãƒˆ
                                 if (msg.Length > _cutLength)
                                 {
-                                    msg = $"{msg[.._cutLength]}...";//\\u\\p[1]\\s[10]’·‚¢‚æ‚ÁI";
+                                    msg = $"{msg[.._cutLength]}...";//\\u\\p[1]\\s[10]é•·ã„ã‚ˆã£ï¼";
                                 }
                                 Dictionary<string, string> SSTPHeader = new(_baseSSTPHeader)
                                 {
@@ -452,7 +452,7 @@ namespace kakoi
                                 //Debug.WriteLine(r);
                             }
 
-                            // ƒL[ƒ[ƒh’Ê’m
+                            // ã‚­ãƒ¼ãƒ¯ãƒ¼ãƒ‰é€šçŸ¥
                             var settings = Notifier.Settings;
                             if (Notifier.CheckPost(content))
                             {
@@ -485,38 +485,38 @@ namespace kakoi
                                 }
                             }
 
-                            // ‰üs‚ğƒXƒy[ƒX‚É’u‚«Š·‚¦
+                            // æ”¹è¡Œã‚’ã‚¹ãƒšãƒ¼ã‚¹ã«ç½®ãæ›ãˆ
                             content = content.Replace('\n', ' ');
-                            // –{•¶ƒJƒbƒg
+                            // æœ¬æ–‡ã‚«ãƒƒãƒˆ
                             if (content.Length > _cutLength)
                             {
                                 content = $"{content[.._cutLength]}...";
                             }
                             Debug.WriteLine($"{timeString} {userName} {content}");
                         }
-                        // ƒŠƒ|ƒXƒg
+                        // ãƒªãƒã‚¹ãƒˆ
                         if (6 == nostrEvent.Kind)
                         {
                             Users.TryGetValue(nostrEvent.PublicKey, out User? user);
 
-                            // ƒtƒHƒƒC[ŒÀ’è•\¦ƒIƒ“‚ÅƒtƒHƒƒC[‚¶‚á‚È‚¢‚Í•\¦‚µ‚È‚¢
+                            // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼é™å®šè¡¨ç¤ºã‚ªãƒ³ã§ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼ã˜ã‚ƒãªã„æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ƒ~ƒ…[ƒg‚µ‚Ä‚¢‚é‚Í•\¦‚µ‚È‚¢
+                            // ãƒŸãƒ¥ãƒ¼ãƒˆã—ã¦ã„ã‚‹æ™‚ã¯è¡¨ç¤ºã—ãªã„
                             if (IsMuted(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ƒ†[ƒU[•\¦–¼æ“¾
+                            // ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåå–å¾—
                             string userName = GetUserName(nostrEvent.PublicKey);
 
                             headMark = ">";
 
-                            // ƒOƒŠƒbƒh‚É•\¦
+                            // ã‚°ãƒªãƒƒãƒ‰ã«è¡¨ç¤º
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                             dataGridViewNotes.Rows.Insert(
                             0,
@@ -531,28 +531,28 @@ namespace kakoi
                     }
                 }
             }
-            // ƒtƒHƒƒC[w“Ç
+            // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼è³¼èª­
             else if (args.subscriptionId == _nostrAccess.GetFolloweesSubscriptionId)
             {
                 foreach (var nostrEvent in args.events)
                 {
-                    // ƒtƒHƒ[ƒŠƒXƒg
+                    // ãƒ•ã‚©ãƒ­ãƒ¼ãƒªã‚¹ãƒˆ
                     if (3 == nostrEvent.Kind)
                     {
                         var tags = nostrEvent.Tags;
                         foreach (var tag in tags)
                         {
-                            // ŒöŠJŒ®‚ğ•Û‘¶
+                            // å…¬é–‹éµã‚’ä¿å­˜
                             if ("p" == tag.TagIdentifier)
                             {
-                                // æ“ª‚ğŒöŠJŒ®‚ÆŒˆ‚ß‚Â‚¯‚Ä‚¢‚é‚ªc
+                                // å…ˆé ­ã‚’å…¬é–‹éµã¨æ±ºã‚ã¤ã‘ã¦ã„ã‚‹ãŒâ€¦
                                 _followeesHexs.Add(tag.Data[0]);
                             }
                         }
                     }
                 }
             }
-            // ƒvƒƒtƒB[ƒ‹w“Ç
+            // ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«è³¼èª­
             else if (args.subscriptionId == _nostrAccess.GetProfilesSubscriptionId)
             {
                 foreach (var nostrEvent in args.events)
@@ -562,7 +562,7 @@ namespace kakoi
                         continue;
                     }
 
-                    // ƒvƒƒtƒB[ƒ‹
+                    // ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«
                     if (0 == nostrEvent.Kind && null != nostrEvent.Content && null != nostrEvent.PublicKey)
                     {
                         var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
@@ -575,17 +575,17 @@ namespace kakoi
                             }
                             if (false == existingUserData?.Mute)
                             {
-                                // Šù‚Éƒ~ƒ…[ƒgƒIƒt‚ÌMostrƒAƒJƒEƒ“ƒg‚Ìƒ~ƒ…[ƒg‚ğ‰ğœ
+                                // æ—¢ã«ãƒŸãƒ¥ãƒ¼ãƒˆã‚ªãƒ•ã®Mostrã‚¢ã‚«ã‚¦ãƒ³ãƒˆã®ãƒŸãƒ¥ãƒ¼ãƒˆã‚’è§£é™¤
                                 newUserData.Mute = false;
                             }
                             if (null == cratedAt || (cratedAt < newUserData.CreatedAt))
                             {
                                 newUserData.LastActivity = DateTime.Now;
                                 Tools.SaveUsers(Users);
-                                // «‘‚É’Ç‰Áiã‘‚«j
+                                // è¾æ›¸ã«è¿½åŠ ï¼ˆä¸Šæ›¸ãï¼‰
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
-                                Debug.WriteLine($"ƒvƒƒtƒB[ƒ‹XV {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
+                                Debug.WriteLine($"ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«æ›´æ–° {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
                             }
                         }
                     }
@@ -594,8 +594,8 @@ namespace kakoi
         }
         #endregion
 
-        #region Stopƒ{ƒ^ƒ“
-        // Stopƒ{ƒ^ƒ“
+        #region Stopãƒœã‚¿ãƒ³
+        // Stopãƒœã‚¿ãƒ³
         private void ButtonStop_Click(object sender, EventArgs e)
         {
             if (null == _nostrAccess.Clients)
@@ -629,8 +629,8 @@ namespace kakoi
         }
         #endregion
 
-        #region Postƒ{ƒ^ƒ“
-        // Postƒ{ƒ^ƒ“
+        #region Postãƒœã‚¿ãƒ³
+        // Postãƒœã‚¿ãƒ³
         internal void ButtonPost_Click(object sender, EventArgs e)
         {
             if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
@@ -668,9 +668,9 @@ namespace kakoi
         }
         #endregion
 
-        #region “Šeˆ—
+        #region æŠ•ç¨¿å‡¦ç†
         /// <summary>
-        /// “Šeˆ—
+        /// æŠ•ç¨¿å‡¦ç†
         /// </summary>
         /// <returns></returns>
         private async Task PostAsync()
@@ -694,7 +694,7 @@ namespace kakoi
             {
                 Kind = 1,
                 Content = textBoxPost.Text
-                            //.Replace("\\n", "\r\n") // –{‘Ì‚Ì‰üs‚ğƒ|ƒXƒgƒo[‚Ìƒ}ƒ‹ƒ`ƒ‰ƒCƒ“‚É‡‚í‚¹‚é¨”p~
+                            //.Replace("\\n", "\r\n") // æœ¬ä½“ã®æ”¹è¡Œã‚’ãƒã‚¹ãƒˆãƒãƒ¼ã®ãƒãƒ«ãƒãƒ©ã‚¤ãƒ³ã«åˆã‚ã›ã‚‹â†’å»ƒæ­¢
                             .Replace("\r\n", "\n"),
                 Tags = tags
             };
@@ -716,7 +716,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒŠƒAƒNƒVƒ‡ƒ“ˆ—
+        #region ãƒªã‚¢ã‚¯ã‚·ãƒ§ãƒ³å‡¦ç†
         private async Task ReactionAsync(string e, string p, string? content, string? url = null)
         {
             if (null == _nostrAccess.Clients)
@@ -762,11 +762,11 @@ namespace kakoi
         }
         #endregion
 
-        #region Settingƒ{ƒ^ƒ“
-        // Settingƒ{ƒ^ƒ“
+        #region Settingãƒœã‚¿ãƒ³
+        // Settingãƒœã‚¿ãƒ³
         private async void ButtonSetting_Click(object sender, EventArgs e)
         {
-            // ŠJ‚­‘O
+            // é–‹ãå‰
             Opacity = _tempOpacity;
             _formSetting.checkBoxTopMost.Checked = TopMost;
             _formSetting.textBoxCutLength.Text = _cutLength.ToString();
@@ -780,10 +780,10 @@ namespace kakoi
             _formSetting.textBoxPassword.Text = _password;
             _formSetting.WebForm = _formWeb;
 
-            // ŠJ‚­
+            // é–‹ã
             _formSetting.ShowDialog(this);
 
-            // •Â‚¶‚½Œã
+            // é–‰ã˜ãŸå¾Œ
             TopMost = _formSetting.checkBoxTopMost.Checked;
             if (!int.TryParse(_formSetting.textBoxCutLength.Text, out _cutLength))
             {
@@ -813,7 +813,7 @@ namespace kakoi
             _password = _formSetting.textBoxPassword.Text;
             try
             {
-                // •ÊƒAƒJƒEƒ“ƒgƒƒOƒCƒ“¸”s‚É”õ‚¦‚ÄƒNƒŠƒA‚µ‚Ä‚¨‚­
+                // åˆ¥ã‚¢ã‚«ã‚¦ãƒ³ãƒˆãƒ­ã‚°ã‚¤ãƒ³å¤±æ•—ã«å‚™ãˆã¦ã‚¯ãƒªã‚¢ã—ã¦ãŠã
                 _nsec = string.Empty;
                 _npubHex = string.Empty;
                 //_npub = string.Empty;
@@ -821,12 +821,12 @@ namespace kakoi
                 textBoxPost.PlaceholderText = "Hello Nostr!";
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
 
-                // ”é–§Œ®‚ÆŒöŠJŒ®æ“¾
+                // ç§˜å¯†éµã¨å…¬é–‹éµå–å¾—
                 _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
                 _npubHex = _nsec.GetNpubHex();
                 //_npub = _npubHex.ConvertToNpub();
 
-                // ƒƒOƒCƒ“Ï‚İ‚Ì
+                // ãƒ­ã‚°ã‚¤ãƒ³æ¸ˆã¿ã®æ™‚
                 if (!_npubHex.IsNullOrEmpty())
                 {
                     int connectCount = await _nostrAccess.ConnectAsync();
@@ -836,10 +836,10 @@ namespace kakoi
                         return;
                     }
 
-                    // ƒtƒHƒƒC[‚ğw“Ç‚ğ‚·‚é
+                    // ãƒ•ã‚©ãƒ­ã‚¤ãƒ¼ã‚’è³¼èª­ã‚’ã™ã‚‹
                     _nostrAccess.SubscribeFollows(_npubHex);
 
-                    // ƒƒOƒCƒ“ƒ†[ƒU[•\¦–¼æ“¾
+                    // ãƒ­ã‚°ã‚¤ãƒ³ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåå–å¾—
                     var name = GetUserName(_npubHex);
                     textBoxPost.PlaceholderText = $"> Login as {name}.";
                     textBoxPost.PlaceholderText = $"Post as {name}";
@@ -868,9 +868,9 @@ namespace kakoi
         }
         #endregion
 
-        #region •¡”ƒŠƒŒ[‚©‚ç‚Ìˆ—Ï‚İƒCƒxƒ“ƒg‚ğœŠO
+        #region è¤‡æ•°ãƒªãƒ¬ãƒ¼ã‹ã‚‰ã®å‡¦ç†æ¸ˆã¿ã‚¤ãƒ™ãƒ³ãƒˆã‚’é™¤å¤–
         /// <summary>
-        /// •¡”ƒŠƒŒ[‚©‚ç‚Ìˆ—Ï‚İƒCƒxƒ“ƒg‚ğœŠO
+        /// è¤‡æ•°ãƒªãƒ¬ãƒ¼ã‹ã‚‰ã®å‡¦ç†æ¸ˆã¿ã‚¤ãƒ™ãƒ³ãƒˆã‚’é™¤å¤–
         /// </summary>
         /// <param name="eventId"></param>
         private bool RemoveCompletedEventIds(string eventId)
@@ -888,24 +888,24 @@ namespace kakoi
         }
         #endregion
 
-        #region “§–¾‰ğœˆ—
-        // ƒ}ƒEƒX“ü‚Á‚½
+        #region é€æ˜è§£é™¤å‡¦ç†
+        // ãƒã‚¦ã‚¹å…¥ã£ãŸæ™‚
         private void Control_MouseEnter(object sender, EventArgs e)
         {
             _tempOpacity = Opacity;
             Opacity = 1.00;
         }
 
-        // ƒ}ƒEƒXo‚½
+        // ãƒã‚¦ã‚¹å‡ºãŸæ™‚
         private void Control_MouseLeave(object sender, EventArgs e)
         {
             Opacity = _tempOpacity;
         }
         #endregion
 
-        #region SSPƒS[ƒXƒg–¼‚ğæ“¾‚·‚é
+        #region SSPã‚´ãƒ¼ã‚¹ãƒˆåã‚’å–å¾—ã™ã‚‹
         /// <summary>
-        /// SSPƒS[ƒXƒg–¼‚ğæ“¾‚·‚é
+        /// SSPã‚´ãƒ¼ã‚¹ãƒˆåã‚’å–å¾—ã™ã‚‹
         /// </summary>
         private void SearchGhost()
         {
@@ -914,20 +914,20 @@ namespace kakoi
             var names = fmo.GetGhostNames();
             if (names.Length > 0)
             {
-                _ghostName = names.First(); // ‚Æ‚è‚ ‚¦‚¸æ“ª‚Å
+                _ghostName = names.First(); // ã¨ã‚Šã‚ãˆãšå…ˆé ­ã§
                 //Debug.Print(_ghostName);
             }
             else
             {
                 _ghostName = string.Empty;
-                //Debug.Print("ƒS[ƒXƒg‚ª‚¢‚Ü‚¹‚ñ");
+                //Debug.Print("ã‚´ãƒ¼ã‚¹ãƒˆãŒã„ã¾ã›ã‚“");
             }
         }
         #endregion
 
-        #region Œ¾Œê”»’è
+        #region è¨€èªåˆ¤å®š
         /// <summary>
-        /// Œ¾Œê”»’è
+        /// è¨€èªåˆ¤å®š
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
@@ -956,50 +956,55 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒ†[ƒU[•\¦–¼‚ğæ“¾‚·‚é
+        #region ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåã‚’å–å¾—ã™ã‚‹
         /// <summary>
-        /// ƒ†[ƒU[•\¦–¼‚ğæ“¾‚·‚é
+        /// ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºåã‚’å–å¾—ã™ã‚‹
         /// </summary>
-        /// <param name="publicKeyHex">ŒöŠJŒ®HEX</param>
-        /// <returns>ƒ†[ƒU[•\¦–¼</returns>
+        /// <param name="publicKeyHex">å…¬é–‹éµHEX</param>
+        /// <returns>ãƒ¦ãƒ¼ã‚¶ãƒ¼è¡¨ç¤ºå</returns>
         private string GetUserName(string publicKeyHex)
         {
             /*
-            // «‘‚É‚È‚¢ê‡ƒvƒƒtƒB[ƒ‹‚ğw“Ç‚·‚é
+            // è¾æ›¸ã«ãªã„å ´åˆãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«ã‚’è³¼èª­ã™ã‚‹
             if (!_users.TryGetValue(publicKeyHex, out User? user))
             {
                 SubscribeProfiles([publicKeyHex]);
             }
             */
-            // kind 0 ‚ğ–ˆ‰ñw“Ç‚·‚é‚æ‚¤‚É•ÏXi•p”É‚Édisplay_name“™‚ğ•ÏX‚·‚éƒ†[ƒU[‚ª‚¢‚é‚½‚ßj
+            // kind 0 ã‚’æ¯å›è³¼èª­ã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ï¼ˆé »ç¹ã«display_nameç­‰ã‚’å¤‰æ›´ã™ã‚‹ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒã„ã‚‹ãŸã‚ï¼‰
             _nostrAccess.SubscribeProfiles([publicKeyHex]);
 
-            // î•ñ‚ª‚ ‚ê‚Î•\¦–¼‚ğæ“¾
+            // æƒ…å ±ãŒã‚ã‚Œã°è¡¨ç¤ºåã‚’å–å¾—
             Users.TryGetValue(publicKeyHex, out User? user);
             string? userName = "???";
             if (null != user)
             {
                 userName = user.DisplayName;
-                // display_name‚ª–³‚¢ê‡‚Í@name‚Æ‚·‚é
+                // display_nameãŒç„¡ã„å ´åˆã¯@nameã¨ã™ã‚‹
                 if (null == userName || string.Empty == userName)
                 {
                     userName = $"@{user.Name}";
                 }
-                // æ“¾“úXV
+                // petnameãŒã‚ã‚‹å ´åˆã¯ğŸ“›petnameã¨ã™ã‚‹
+                if (!user.PetName.IsNullOrEmpty())
+                {
+                    userName = $"ğŸ“›{user.PetName}";
+                }
+                // å–å¾—æ—¥æ›´æ–°
                 user.LastActivity = DateTime.Now;
                 Tools.SaveUsers(Users);
-                Debug.WriteLine($"ƒ†[ƒU[–¼æ“¾ {user.LastActivity} {user.DisplayName} {user.Name}");
+                Debug.WriteLine($"ãƒ¦ãƒ¼ã‚¶ãƒ¼åå–å¾— {user.LastActivity} {user.DisplayName} {user.Name}");
             }
             return userName;
         }
         #endregion
 
-        #region ƒ~ƒ…[ƒg‚³‚ê‚Ä‚¢‚é‚©Šm”F‚·‚é
+        #region ãƒŸãƒ¥ãƒ¼ãƒˆã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã™ã‚‹
         /// <summary>
-        /// ƒ~ƒ…[ƒg‚³‚ê‚Ä‚¢‚é‚©Šm”F‚·‚é
+        /// ãƒŸãƒ¥ãƒ¼ãƒˆã•ã‚Œã¦ã„ã‚‹ã‹ç¢ºèªã™ã‚‹
         /// </summary>
-        /// <param name="publicKeyHex">ŒöŠJŒ®HEX</param>
-        /// <returns>ƒ~ƒ…[ƒgƒtƒ‰ƒO</returns>
+        /// <param name="publicKeyHex">å…¬é–‹éµHEX</param>
+        /// <returns>ãƒŸãƒ¥ãƒ¼ãƒˆãƒ•ãƒ©ã‚°</returns>
         private bool IsMuted(string publicKeyHex)
         {
             if (Users.TryGetValue(publicKeyHex, out User? user))
@@ -1013,8 +1018,8 @@ namespace kakoi
         }
         #endregion
 
-        #region •Â‚¶‚é
-        // •Â‚¶‚é
+        #region é–‰ã˜ã‚‹
+        // é–‰ã˜ã‚‹
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             _nostrAccess.CloseSubscriptions();
@@ -1022,7 +1027,7 @@ namespace kakoi
 
             if (FormWindowState.Normal != WindowState)
             {
-                // Å¬‰»Å‘å‰»ó‘Ô‚ÌAŒ³‚ÌˆÊ’u‚Æ‘å‚«‚³‚ğ•Û‘¶
+                // æœ€å°åŒ–æœ€å¤§åŒ–çŠ¶æ…‹ã®æ™‚ã€å…ƒã®ä½ç½®ã¨å¤§ãã•ã‚’ä¿å­˜
                 Setting.Location = RestoreBounds.Location;
                 Setting.Size = RestoreBounds.Size;
             }
@@ -1035,7 +1040,7 @@ namespace kakoi
             Setting.PostBarSize = _formPostBar.Size;
             if (FormWindowState.Normal != _formWeb.WindowState)
             {
-                // Å¬‰»Å‘å‰»ó‘Ô‚ÌAŒ³‚ÌˆÊ’u‚Æ‘å‚«‚³‚ğ•Û‘¶
+                // æœ€å°åŒ–æœ€å¤§åŒ–çŠ¶æ…‹ã®æ™‚ã€å…ƒã®ä½ç½®ã¨å¤§ãã•ã‚’ä¿å­˜
                 Setting.WebLocation = _formWeb.RestoreBounds.Location;
                 Setting.WebSize = _formWeb.RestoreBounds.Size;
             }
@@ -1049,15 +1054,15 @@ namespace kakoi
             Setting.Save(_configPath);
             Tools.SaveUsers(Users);
             //Tools.SaveEmojis(_emojis);
-            Notifier.SaveSettings(); // •K—v‚È‚¢‚ªXV“ú‚ğ‚»‚ë‚¦‚é‚½‚ß
+            Notifier.SaveSettings(); // å¿…è¦ãªã„ãŒæ›´æ–°æ—¥æ™‚ã‚’ãã‚ãˆã‚‹ãŸã‚
 
-            _ds.Dispose();      // FrmMsgReceiver‚ÌThread’â~‚¹‚¸1000ms‘Ò‚½‚³‚ê‚é‚¤‚¦‚ÉƒvƒƒZƒXc‚é‚Ì‚Åc
-            Application.Exit(); // ©‚±‚ê‚ÅE‚·BSSTLib‚Éè‚ğ“ü‚ê‚½•û‚ª‚¢‚¢‚ªA‚Æ‚è‚ ‚¦‚¸B
+            _ds.Dispose();      // FrmMsgReceiverã®Threadåœæ­¢ã›ãš1000mså¾…ãŸã•ã‚Œã‚‹ã†ãˆã«ãƒ—ãƒ­ã‚»ã‚¹æ®‹ã‚‹ã®ã§â€¦
+            Application.Exit(); // â†ã“ã‚Œã§æ®ºã™ã€‚SSTLibã«æ‰‹ã‚’å…¥ã‚ŒãŸæ–¹ãŒã„ã„ãŒã€ã¨ã‚Šã‚ãˆãšã€‚
         }
         #endregion
 
-        #region ƒ[ƒh
-        // ƒ[ƒh
+        #region ãƒ­ãƒ¼ãƒ‰æ™‚
+        // ãƒ­ãƒ¼ãƒ‰æ™‚
         private void FormMain_Load(object sender, EventArgs e)
         {
             _formPostBar.ShowDialog();
@@ -1065,8 +1070,8 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒ|ƒXƒgƒo[•\¦Ø‚è‘Ö‚¦
-        // ƒ|ƒXƒgƒo[•\¦Ø‚è‘Ö‚¦
+        #region ãƒã‚¹ãƒˆãƒãƒ¼è¡¨ç¤ºåˆ‡ã‚Šæ›¿ãˆ
+        // ãƒã‚¹ãƒˆãƒãƒ¼è¡¨ç¤ºåˆ‡ã‚Šæ›¿ãˆ
         private void CheckBoxPostBar_CheckedChanged(object sender, EventArgs e)
         {
             _formPostBar.textBoxPost.Focus();
@@ -1074,8 +1079,8 @@ namespace kakoi
         }
         #endregion
 
-        #region CTRL + ENTER‚Å“Še
-        // CTRL + ENTER‚Å“Še
+        #region CTRL + ENTERã§æŠ•ç¨¿
+        // CTRL + ENTERã§æŠ•ç¨¿
         private void TextBoxPost_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == (Keys.Enter | Keys.Control))
@@ -1085,8 +1090,8 @@ namespace kakoi
         }
         #endregion
 
-        #region ‰æ–Ê•\¦Ø‘Ö
-        // ‰æ–Ê•\¦Ø‘Ö
+        #region ç”»é¢è¡¨ç¤ºåˆ‡æ›¿
+        // ç”»é¢è¡¨ç¤ºåˆ‡æ›¿
         private void FormMain_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F11 || e.KeyCode == Keys.F12)
@@ -1113,7 +1118,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒ}ƒjƒAƒNƒX•\¦
+        #region ãƒãƒ‹ã‚¢ã‚¯ã‚¹è¡¨ç¤º
         private void FormMain_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
@@ -1133,7 +1138,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒŠƒŒ[ƒŠƒXƒg•\¦
+        #region ãƒªãƒ¬ãƒ¼ãƒªã‚¹ãƒˆè¡¨ç¤º
         private void ButtonRelayList_Click(object sender, EventArgs e)
         {
             _formRelayList = new FormRelayList();
@@ -1146,10 +1151,10 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒZƒ‹ƒ_ƒuƒ‹ƒNƒŠƒbƒN
+        #region ã‚»ãƒ«ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯
         private void DataGridViewNotes_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            // ƒwƒbƒ_[s‚ªƒ_ƒuƒ‹ƒNƒŠƒbƒN‚³‚ê‚½ê‡‚Í–³‹
+            // ãƒ˜ãƒƒãƒ€ãƒ¼è¡ŒãŒãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸå ´åˆã¯ç„¡è¦–
             if (e.RowIndex < 0)
             {
                 return;
@@ -1169,7 +1174,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒJ[ƒ\ƒ‹ƒL[
+        #region ã‚«ãƒ¼ã‚½ãƒ«ã‚­ãƒ¼
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Right)
@@ -1186,7 +1191,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒtƒH[ƒ€ƒ}ƒEƒXƒ_ƒuƒ‹ƒNƒŠƒbƒN
+        #region ãƒ•ã‚©ãƒ¼ãƒ ãƒã‚¦ã‚¹ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯
         private void FormMain_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (dataGridViewNotes.Columns["note"].DefaultCellStyle.WrapMode != DataGridViewTriState.True)
@@ -1200,7 +1205,7 @@ namespace kakoi
         }
         #endregion
 
-        #region ƒZƒ‹‰EƒNƒŠƒbƒN
+        #region ã‚»ãƒ«å³ã‚¯ãƒªãƒƒã‚¯
         private void DataGridViewNotes_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)

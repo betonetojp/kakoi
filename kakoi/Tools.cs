@@ -14,6 +14,8 @@ namespace kakoi
         public bool Mute { get; set; }
         [JsonPropertyName("last_activity")]
         public DateTime? LastActivity { get; set; }
+        [JsonPropertyName("petname")]
+        public string? PetName { get; set; }
         [JsonPropertyName("name")]
         public string? Name { get; set; }
         [JsonPropertyName("display_name")]
