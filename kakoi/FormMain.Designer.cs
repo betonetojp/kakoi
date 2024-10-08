@@ -48,6 +48,7 @@
             emojiBindingSource = new BindingSource(components);
             dataGridViewNotes = new DataGridView();
             time = new DataGridViewTextBoxColumn();
+            avatar = new DataGridViewImageColumn();
             name = new DataGridViewTextBoxColumn();
             note = new DataGridViewTextBoxColumn();
             id = new DataGridViewTextBoxColumn();
@@ -184,7 +185,7 @@
             dataGridViewNotes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewNotes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewNotes.ColumnHeadersVisible = false;
-            dataGridViewNotes.Columns.AddRange(new DataGridViewColumn[] { time, name, note, id, pubkey });
+            dataGridViewNotes.Columns.AddRange(new DataGridViewColumn[] { time, avatar, name, note, id, pubkey });
             dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle5.BackColor = SystemColors.Window;
             dataGridViewCellStyle5.Font = new Font("Yu Gothic UI", 9F);
@@ -220,6 +221,14 @@
             time.Name = "time";
             time.ReadOnly = true;
             time.Width = 5;
+            // 
+            // avatar
+            // 
+            avatar.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
+            avatar.HeaderText = "avatar";
+            avatar.Name = "avatar";
+            avatar.ReadOnly = true;
+            avatar.Width = 5;
             // 
             // name
             // 
@@ -298,12 +307,13 @@
         private Label labelRelays;
         private ToolTip toolTipRelays;
         private DataGridView dataGridViewNotes;
+        private ComboBox comboBoxEmoji;
+        private BindingSource emojiBindingSource;
         private DataGridViewTextBoxColumn time;
+        private DataGridViewImageColumn avatar;
         private DataGridViewTextBoxColumn name;
         private DataGridViewTextBoxColumn note;
         private DataGridViewTextBoxColumn id;
         private DataGridViewTextBoxColumn pubkey;
-        private ComboBox comboBoxEmoji;
-        private BindingSource emojiBindingSource;
     }
 }

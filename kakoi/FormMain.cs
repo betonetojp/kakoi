@@ -1,4 +1,5 @@
 ﻿using kakoi.Properties;
+using Microsoft.VisualBasic.ApplicationServices;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
@@ -6,6 +7,9 @@ using NTextCat;
 using NTextCat.Commons;
 using SSTPLib;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Net;
 
 namespace kakoi
 {
@@ -68,6 +72,7 @@ namespace kakoi
         //private readonly LinkedList<NostrEvent> _noteEvents = new();
 
         private List<Emoji> _emojis = [];
+        private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
         #endregion
 
         #region コンストラクタ
@@ -143,6 +148,12 @@ namespace kakoi
             _formSetting.WebForm = _formWeb;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
+
+            // avatarフォルダを作成
+            if (!Directory.Exists(_avatarPath))
+            {
+                Directory.CreateDirectory(_avatarPath);
+            }
         }
         #endregion
 
@@ -381,12 +392,27 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
+                                new Bitmap(1, 1), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
+
+                            // avatar列にアバターを表示
+                            if (user.Picture != null && user.Picture.Length > 0)
+                            {
+                                // アバター取得
+                                _ = GetAvatar(nostrEvent.PublicKey, user.Picture);
+
+                                string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (File.Exists(avatarPath))
+                                {
+                                    Image avatar = Image.FromFile(avatarPath);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                }
+                            }
 
                             // クライアントタグによる背景色変更のテスト
                             var userClient = nostrEvent.GetTaggedData("client");
@@ -537,6 +563,7 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
+                            new Bitmap(1, 1), // Placeholder for Image
                             $"{headMark} {userName}",
                             $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.",
                             nostrEvent.Id,
@@ -612,6 +639,12 @@ namespace kakoi
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
+                            }
+
+                            if (null != newUserData.Picture)
+                            {
+                                // アバター取得
+                                _ = GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
                             }
                         }
                     }
@@ -1282,5 +1315,24 @@ namespace kakoi
             }
         }
         #endregion
+
+        static async Task GetAvatar(string publicKeyHex, string avatarUrl)
+        {
+            string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
+
+            using HttpClient client = new();
+            byte[] imageData = await client.GetByteArrayAsync(avatarUrl);
+
+            using MemoryStream ms = new(imageData);
+            using Image originalImage = Image.FromStream(ms);
+            using Bitmap resizedImage = new(16, 16);
+            using (Graphics graphics = Graphics.FromImage(resizedImage))
+            {
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage(originalImage, 0, 0, 32, 32);
+            }
+
+            resizedImage.Save(picturePath, ImageFormat.Png);
+        }
     }
 }
