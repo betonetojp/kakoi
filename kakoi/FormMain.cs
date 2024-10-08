@@ -1,5 +1,4 @@
 ﻿using kakoi.Properties;
-using Microsoft.VisualBasic.ApplicationServices;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
@@ -9,7 +8,6 @@ using SSTPLib;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Net;
 
 namespace kakoi
 {
@@ -236,7 +234,7 @@ namespace kakoi
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private async void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             // タイムライン購読
             if (args.subscriptionId == _nostrAccess.SubscriptionId)
@@ -405,7 +403,7 @@ namespace kakoi
                             if (user.Picture != null && user.Picture.Length > 0)
                             {
                                 // アバター取得
-                                _ = GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                await GetAvatar(nostrEvent.PublicKey, user.Picture);
 
                                 string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (File.Exists(avatarPath))
@@ -642,11 +640,11 @@ namespace kakoi
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
                             }
 
-                            if (null != newUserData.Picture)
-                            {
-                                // アバター取得
-                                _ = GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
-                            }
+                            //if (null != newUserData.Picture)
+                            //{
+                            //    // アバター取得
+                            //    _ = GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
+                            //}
                         }
                     }
                 }
@@ -1322,18 +1320,30 @@ namespace kakoi
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
             using HttpClient client = new();
-            byte[] imageData = await client.GetByteArrayAsync(avatarUrl);
-
-            using MemoryStream ms = new(imageData);
-            using Image originalImage = Image.FromStream(ms);
-            using Bitmap resizedImage = new(16, 16);
-            using (Graphics graphics = Graphics.FromImage(resizedImage))
+            client.Timeout = TimeSpan.FromSeconds(10); // Set timeout to 10 seconds
+            try
             {
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.DrawImage(originalImage, 0, 0, 16, 16);
-            }
+                var response = await client.GetAsync(avatarUrl);
+                response.EnsureSuccessStatusCode();
+                var avatarBytes = await response.Content.ReadAsByteArrayAsync();
+                byte[] imageData = await client.GetByteArrayAsync(avatarUrl);
 
-            resizedImage.Save(picturePath, ImageFormat.Png);
+                using MemoryStream ms = new(imageData);
+                using Image originalImage = Image.FromStream(ms);
+                using Bitmap resizedImage = new(16, 16);
+                using (Graphics graphics = Graphics.FromImage(resizedImage))
+                {
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(originalImage, 0, 0, 16, 16);
+                }
+
+                resizedImage.Save(picturePath, ImageFormat.Png);
+            }
+            catch (Exception ex)
+            {
+                // エラーハンドリング
+                Debug.WriteLine($"Error fetching avatar: {ex.Message}");
+            }
         }
     }
 }
