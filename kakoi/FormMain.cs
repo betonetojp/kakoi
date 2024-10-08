@@ -294,6 +294,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
+                                new Bitmap(1, 1), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
