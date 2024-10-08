@@ -372,7 +372,7 @@ namespace kakoi
                                 q != null && 0 < q.Length)
                             {
                                 isReply = true;
-                                headMark = "<";
+                                //headMark = "<";
                             }
 
                             // グリッドに表示
@@ -530,7 +530,7 @@ namespace kakoi
                                 continue;
                             }
 
-                            headMark = ">";
+                            //headMark = ">";
 
                             // グリッドに表示
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
@@ -1009,12 +1009,14 @@ namespace kakoi
                 // display_nameが無い場合は@nameとする
                 if (null == userName || string.Empty == userName)
                 {
-                    userName = $"@{user.Name}";
+                    //userName = $"@{user.Name}";
+                    userName = $"{user.Name}";
                 }
                 // petnameがある場合は📛petnameとする
                 if (!user.PetName.IsNullOrEmpty())
                 {
-                    userName = $"📛{user.PetName}";
+                    //userName = $"📛{user.PetName}";
+                    userName = $"{user.PetName}";
                 }
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
@@ -1196,6 +1198,7 @@ namespace kakoi
                 var url = emoji.Url;
 
                 _ = ReactionAsync(id, pubkey, content, url);
+                textBoxPost.PlaceholderText = $"Sent {content} to {GetUserName(pubkey)}.";
             }
         }
         #endregion
