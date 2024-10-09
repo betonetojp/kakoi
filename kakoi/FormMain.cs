@@ -1365,7 +1365,7 @@ namespace kakoi
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
             using HttpClient client = new();
-            client.Timeout = TimeSpan.FromSeconds(1);
+            client.Timeout = TimeSpan.FromSeconds(3);
             try
             {
                 var response = await client.GetAsync(avatarUrl);
@@ -1381,15 +1381,15 @@ namespace kakoi
                 // 画像をPNG形式で保存
                 image.Save(picturePath, new PngEncoder());
 
-                Console.WriteLine("画像が正常に保存されました。");
+                Debug.WriteLine("画像が正常に保存されました。");
             }
             catch (TaskCanceledException ex)
             {
-                Console.WriteLine("タイムアウトしました。");
+                Debug.WriteLine($"タイムアウトしました: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"エラーが発生しました: {ex.Message}");
+                Debug.WriteLine($"エラーが発生しました: {ex.Message}");
             }
         }
     }
