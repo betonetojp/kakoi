@@ -4,10 +4,14 @@ using NNostr.Client.Protocols;
 using nokakoiCrypt;
 using NTextCat;
 using NTextCat.Commons;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using SSTPLib;
 using System.Diagnostics;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using Color = System.Drawing.Color;
+using Point = System.Drawing.Point;
 
 namespace kakoi
 {
@@ -52,7 +56,7 @@ namespace kakoi
 
         private double _tempOpacity = 1.00;
 
-        private readonly DSSTPSender _ds = new("SakuraUnicode");
+        private static readonly DSSTPSender _ds = new("SakuraUnicode");
         private readonly string _SSTPMethod = "NOTIFY SSTP/1.1";
         private readonly Dictionary<string, string> _baseSSTPHeader = new(){
             {"Charset","UTF-8"},
@@ -105,7 +109,7 @@ namespace kakoi
             comboBoxEmoji.DataSource = _emojis;
 
             Location = Setting.Location;
-            if (new Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
+            if (new System.Drawing.Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
             {
                 StartPosition = FormStartPosition.CenterScreen;
             }
@@ -284,6 +288,12 @@ namespace kakoi
                                 // ユーザー表示名取得
                                 string userName = GetUserName(nostrEvent.PublicKey);
 
+                                // ユーザーが見つからない時は表示しない
+                                if (null == user)
+                                {
+                                    continue;
+                                }
+
                                 headMark = "+";
 
                                 // グリッドに表示
@@ -298,6 +308,22 @@ namespace kakoi
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
+
+                                // avatar列にアバターを表示
+                                if (user.Picture != null && user.Picture.Length > 0)
+                                {
+                                    string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                    if (!File.Exists(avatarPath))
+                                    {
+                                        await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                    }
+
+                                    if (File.Exists(avatarPath))
+                                    {
+                                        var avatar = System.Drawing.Image.FromFile(avatarPath);
+                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                    }
+                                }
 
                                 // ユーザー表示名カット
                                 if (userName.Length > _cutNameLength)
@@ -402,13 +428,15 @@ namespace kakoi
                             // avatar列にアバターを表示
                             if (user.Picture != null && user.Picture.Length > 0)
                             {
-                                // アバター取得
-                                await GetAvatar(nostrEvent.PublicKey, user.Picture);
-
                                 string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!File.Exists(avatarPath))
+                                {
+                                    await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                }
+                                
                                 if (File.Exists(avatarPath))
                                 {
-                                    Image avatar = Image.FromFile(avatarPath);
+                                    var avatar = System.Drawing.Image.FromFile(avatarPath);
                                     dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
                                 }
                             }
@@ -568,6 +596,23 @@ namespace kakoi
                             nostrEvent.Id,
                             nostrEvent.PublicKey
                             );
+
+                            // avatar列にアバターを表示
+                            if (user.Picture != null && user.Picture.Length > 0)
+                            {
+                                string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!File.Exists(avatarPath))
+                                {
+                                    await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                }
+
+                                if (File.Exists(avatarPath))
+                                {
+                                    var avatar = System.Drawing.Image.FromFile(avatarPath);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                }
+                            }
+
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
                         }
                     }
@@ -638,13 +683,13 @@ namespace kakoi
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
-                            }
 
-                            //if (null != newUserData.Picture)
-                            //{
-                            //    // アバター取得
-                            //    _ = GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
-                            //}
+                                if (null != newUserData.Picture)
+                                {
+                                    // アバター取得
+                                    await GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
+                                }
+                            }
                         }
                     }
                 }
@@ -1320,29 +1365,26 @@ namespace kakoi
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
             using HttpClient client = new();
-            client.Timeout = TimeSpan.FromSeconds(10); // Set timeout to 10 seconds
             try
             {
                 var response = await client.GetAsync(avatarUrl);
                 response.EnsureSuccessStatusCode();
+                // URLから画像データを取得
                 var avatarBytes = await response.Content.ReadAsByteArrayAsync();
-                byte[] imageData = await client.GetByteArrayAsync(avatarUrl);
+                // バイト配列をMemoryStreamに変換
+                using MemoryStream ms = new(avatarBytes);
+                // MemoryStreamから画像を読み込む
+                using Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(ms);
+                // 画像をリサイズ
+                image.Mutate(x => x.Resize(20, 20));
+                // 画像をPNG形式で保存
+                image.Save(picturePath, new PngEncoder());
 
-                using MemoryStream ms = new(imageData);
-                using Image originalImage = Image.FromStream(ms);
-                using Bitmap resizedImage = new(16, 16);
-                using (Graphics graphics = Graphics.FromImage(resizedImage))
-                {
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(originalImage, 0, 0, 16, 16);
-                }
-
-                resizedImage.Save(picturePath, ImageFormat.Png);
+                Console.WriteLine("画像が正常に保存されました。");
             }
             catch (Exception ex)
             {
-                // エラーハンドリング
-                Debug.WriteLine($"Error fetching avatar: {ex.Message}");
+                Console.WriteLine($"エラーが発生しました: {ex.Message}");
             }
         }
     }

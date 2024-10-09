@@ -30,11 +30,12 @@
         {
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             buttonStart = new Button();
             buttonStop = new Button();
             textBoxPost = new TextBox();
@@ -186,14 +187,14 @@
             dataGridViewNotes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewNotes.ColumnHeadersVisible = false;
             dataGridViewNotes.Columns.AddRange(new DataGridViewColumn[] { time, avatar, name, note, id, pubkey });
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = SystemColors.Window;
-            dataGridViewCellStyle5.Font = new Font("Yu Gothic UI", 9F);
-            dataGridViewCellStyle5.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = Color.DeepPink;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.False;
-            dataGridViewNotes.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = SystemColors.Window;
+            dataGridViewCellStyle6.Font = new Font("Yu Gothic UI", 9F);
+            dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = Color.DeepPink;
+            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dataGridViewNotes.DefaultCellStyle = dataGridViewCellStyle6;
             dataGridViewNotes.GridColor = Color.DeepPink;
             dataGridViewNotes.Location = new Point(12, 41);
             dataGridViewNotes.MultiSelect = false;
@@ -225,6 +226,9 @@
             // avatar
             // 
             avatar.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.TopCenter;
+            dataGridViewCellStyle3.NullValue = resources.GetObject("dataGridViewCellStyle3.NullValue");
+            avatar.DefaultCellStyle = dataGridViewCellStyle3;
             avatar.HeaderText = "avatar";
             avatar.Name = "avatar";
             avatar.ReadOnly = true;
@@ -232,8 +236,8 @@
             // 
             // name
             // 
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.TopLeft;
-            name.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.TopLeft;
+            name.DefaultCellStyle = dataGridViewCellStyle4;
             name.HeaderText = "name";
             name.Name = "name";
             name.ReadOnly = true;
@@ -242,8 +246,8 @@
             // note
             // 
             note.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.TopLeft;
-            note.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.TopLeft;
+            note.DefaultCellStyle = dataGridViewCellStyle5;
             note.HeaderText = "note";
             note.Name = "note";
             note.ReadOnly = true;
