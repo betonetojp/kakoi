@@ -4,14 +4,10 @@ using NNostr.Client.Protocols;
 using nokakoiCrypt;
 using NTextCat;
 using NTextCat.Commons;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using SkiaSharp;
 using SSTPLib;
+using Svg.Skia;
 using System.Diagnostics;
-using Color = System.Drawing.Color;
-using Point = System.Drawing.Point;
 
 namespace kakoi
 {
@@ -238,7 +234,7 @@ namespace kakoi
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             // タイムライン購読
             if (args.subscriptionId == _nostrAccess.SubscriptionId)
@@ -315,12 +311,12 @@ namespace kakoi
                                     string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!File.Exists(avatarPath))
                                     {
-                                        await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                        GetAvatar(nostrEvent.PublicKey, user.Picture);
                                     }
 
                                     if (File.Exists(avatarPath))
                                     {
-                                        var avatar = System.Drawing.Image.FromFile(avatarPath);
+                                        var avatar = Image.FromFile(avatarPath);
                                         dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
                                     }
                                 }
@@ -431,12 +427,12 @@ namespace kakoi
                                 string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarPath))
                                 {
-                                    await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                    GetAvatar(nostrEvent.PublicKey, user.Picture);
                                 }
-                                
+
                                 if (File.Exists(avatarPath))
                                 {
-                                    var avatar = System.Drawing.Image.FromFile(avatarPath);
+                                    var avatar = Image.FromFile(avatarPath);
                                     dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
                                 }
                             }
@@ -603,12 +599,12 @@ namespace kakoi
                                 string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarPath))
                                 {
-                                    await GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                    GetAvatar(nostrEvent.PublicKey, user.Picture);
                                 }
 
                                 if (File.Exists(avatarPath))
                                 {
-                                    var avatar = System.Drawing.Image.FromFile(avatarPath);
+                                    var avatar = Image.FromFile(avatarPath);
                                     dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
                                 }
                             }
@@ -687,7 +683,7 @@ namespace kakoi
                                 if (null != newUserData.Picture)
                                 {
                                     // アバター取得
-                                    await GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
+                                    GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
                                 }
                             }
                         }
@@ -1161,7 +1157,7 @@ namespace kakoi
             //Tools.SaveEmojis(_emojis);
             Notifier.SaveSettings(); // 必要ないが更新日時をそろえるため
 
-            _ds.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
+            _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
             Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
         }
         #endregion
@@ -1360,26 +1356,48 @@ namespace kakoi
         }
         #endregion
 
-        static async Task GetAvatar(string publicKeyHex, string avatarUrl)
+        private static void GetAvatar(string publicKeyHex, string avatarUrl)
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
             using HttpClient client = new();
             client.Timeout = TimeSpan.FromSeconds(3);
+            SKBitmap bitmap = new();
+
             try
             {
-                var response = await client.GetAsync(avatarUrl);
-                response.EnsureSuccessStatusCode();
-                // URLから画像データを取得
-                var avatarBytes = await response.Content.ReadAsByteArrayAsync();
-                // バイト配列をMemoryStreamに変換
-                using MemoryStream ms = new(avatarBytes);
-                // MemoryStreamから画像を読み込む
-                using Image<Rgba32> image = SixLabors.ImageSharp.Image.Load<Rgba32>(ms);
-                // 画像をリサイズ
-                image.Mutate(x => x.Resize(20, 20));
-                // 画像をPNG形式で保存
-                image.Save(picturePath, new PngEncoder());
+                if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    // SVGファイルの場合
+                    Debug.WriteLine("svg画像処理開始");
+                    // URLからSVGデータをダウンロード
+                    using var svgData = client.GetStreamAsync(avatarUrl).Result;
+                    // SVGデータを読み込む
+                    using var svg = new SKSvg();
+                    svg.Load(svgData);
+                    bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
+                    using var canvas = new SKCanvas(bitmap);
+                    canvas.DrawPicture(svg.Picture);
+                    canvas.Flush();
+                }
+                else
+                {
+                    // URLから画像データを取得
+                    var avatarBytes = client.GetByteArrayAsync(avatarUrl).Result;
+                    // バイト配列をMemoryStreamに変換
+                    using MemoryStream ms = new(avatarBytes);
+                    // MemoryStreamから画像を読み込む
+                    bitmap = SKBitmap.Decode(ms);
+                }
+                // 20x20にリサイズ
+                using (var resizedBitmap = bitmap.Resize(new SKImageInfo(20, 20), SKFilterQuality.High))
+                {
+                    // 画像をPNG形式で保存
+                    using SKImage image = SKImage.FromBitmap(resizedBitmap);
+                    using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+                    using FileStream fs = File.OpenWrite(picturePath);
+                    data.SaveTo(fs);
+                }
 
                 Debug.WriteLine("画像が正常に保存されました。");
             }
@@ -1390,6 +1408,10 @@ namespace kakoi
             catch (Exception ex)
             {
                 Debug.WriteLine($"エラーが発生しました: {ex.Message}");
+            }
+            finally
+            {
+                bitmap.Dispose();
             }
         }
     }
