@@ -308,16 +308,17 @@ namespace kakoi
                                 // avatar列にアバターを表示
                                 if (user.Picture != null && user.Picture.Length > 0)
                                 {
-                                    string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                    if (!File.Exists(avatarPath))
+                                    string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                    if (!File.Exists(avatarFile))
                                     {
                                         GetAvatar(nostrEvent.PublicKey, user.Picture);
                                     }
 
-                                    if (File.Exists(avatarPath))
+                                    if (File.Exists(avatarFile))
                                     {
-                                        var avatar = Image.FromFile(avatarPath);
-                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                        using var avatar = new Bitmap(fileStream);
+                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
                                     }
                                 }
 
@@ -424,16 +425,17 @@ namespace kakoi
                             // avatar列にアバターを表示
                             if (user.Picture != null && user.Picture.Length > 0)
                             {
-                                string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!File.Exists(avatarPath))
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!File.Exists(avatarFile))
                                 {
                                     GetAvatar(nostrEvent.PublicKey, user.Picture);
                                 }
 
-                                if (File.Exists(avatarPath))
+                                if (File.Exists(avatarFile))
                                 {
-                                    var avatar = Image.FromFile(avatarPath);
-                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                    using var avatar = new Bitmap(fileStream);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
                                 }
                             }
 
@@ -596,16 +598,17 @@ namespace kakoi
                             // avatar列にアバターを表示
                             if (user.Picture != null && user.Picture.Length > 0)
                             {
-                                string avatarPath = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!File.Exists(avatarPath))
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!File.Exists(avatarFile))
                                 {
                                     GetAvatar(nostrEvent.PublicKey, user.Picture);
                                 }
 
-                                if (File.Exists(avatarPath))
+                                if (File.Exists(avatarFile))
                                 {
-                                    var avatar = Image.FromFile(avatarPath);
-                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = avatar;
+                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                    using var avatar = new Bitmap(fileStream);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
                                 }
                             }
 
