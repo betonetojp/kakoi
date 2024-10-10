@@ -62,10 +62,10 @@
             // 
             buttonStart.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonStart.Image = Properties.Resources.icons8_start_16;
-            buttonStart.Location = new Point(211, 12);
+            buttonStart.Location = new Point(145, 12);
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(23, 23);
-            buttonStart.TabIndex = 3;
+            buttonStart.TabIndex = 2;
             buttonStart.UseVisualStyleBackColor = true;
             buttonStart.Click += ButtonStart_Click;
             // 
@@ -74,10 +74,10 @@
             buttonStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonStop.Enabled = false;
             buttonStop.Image = Properties.Resources.icons8_stop_16;
-            buttonStop.Location = new Point(240, 12);
+            buttonStop.Location = new Point(174, 12);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(23, 23);
-            buttonStop.TabIndex = 4;
+            buttonStop.TabIndex = 3;
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += ButtonStop_Click;
             // 
@@ -110,10 +110,10 @@
             // 
             buttonSetting.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonSetting.Image = Properties.Resources.icons8_setting_16;
-            buttonSetting.Location = new Point(269, 12);
+            buttonSetting.Location = new Point(203, 12);
             buttonSetting.Name = "buttonSetting";
             buttonSetting.Size = new Size(23, 23);
-            buttonSetting.TabIndex = 5;
+            buttonSetting.TabIndex = 4;
             buttonSetting.UseVisualStyleBackColor = true;
             buttonSetting.Click += ButtonSetting_Click;
             // 
@@ -159,10 +159,10 @@
             comboBoxEmoji.DisplayMember = "Content";
             comboBoxEmoji.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxEmoji.Font = new Font("Segoe UI Emoji", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            comboBoxEmoji.Location = new Point(145, 12);
+            comboBoxEmoji.Location = new Point(232, 11);
             comboBoxEmoji.Name = "comboBoxEmoji";
             comboBoxEmoji.Size = new Size(60, 24);
-            comboBoxEmoji.TabIndex = 2;
+            comboBoxEmoji.TabIndex = 5;
             toolTipRelays.SetToolTip(comboBoxEmoji, "Reaction content");
             comboBoxEmoji.ValueMember = "Content";
             // 
