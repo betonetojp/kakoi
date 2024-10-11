@@ -23,6 +23,21 @@ F12キー ポストバーの表示と非表示
 
 ◆ 更新履歴
 
+2024/10/12 v0.3.0
+ユーザーのアイコンを表示するようにしました。
+※設定画面の「Show avatar」で表示とダウンロードの有無を切り替えられます。
+petnameをkind:3から読み込みんで表示するようにしました。（優先表示）
+※フォローしていないアカウントのpetnameもF10キーで開く画面またはusers.jsonで設定できます。
+リポスト（kind:6）を表示するようにしました。（内容は右クリックで表示）
+グリッドの色、返信の背景色、リポストの背景色をkakoi.configで指定できるようにしました。
+投稿にclientタグが含まれる場合の背景色をclients.jsonで指定できるようにしました。
+ポストバーに画像投稿用URLを開くボタンを追加しました。
+※URLはkakoi.configで指定できます。
+　初期設定は https://nikolat.github.io/nostr-learn-nip96/ です。
+Webビューで開くURLをキーワード通知のURLとは別に指定できるようにしました。
+※URLはkakoi.configで指定できます。
+　初期設定は https://lumilumi.vercel.app/ です。
+
 2024/10/03 v0.2.2
 名前の列幅を保存するようにしました。
 eタグを含む投稿の背景色を変更するようにしました。
@@ -52,6 +67,12 @@ clientタグ修正
 
 NTextCat
 https://github.com/ivanakcheurov/ntextcat
+
+SkiaSharp
+https://github.com/mono/SkiaSharp
+
+Svg.Skia
+https://github.com/wieslawsoltes/Svg.Skia
 
 ◆ Nostrクライアントライブラリ
 

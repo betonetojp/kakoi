@@ -203,10 +203,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 237);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(44, 15);
+            linkLabelVersion.Size = new Size(37, 15);
             linkLabelVersion.TabIndex = 10;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.3.0b";
+            linkLabelVersion.Text = "v0.3.0";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxShowAvatar
