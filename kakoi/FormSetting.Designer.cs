@@ -57,7 +57,7 @@
             textBoxNokakoiKey.MaxLength = 136;
             textBoxNokakoiKey.Name = "textBoxNokakoiKey";
             textBoxNokakoiKey.Size = new Size(184, 23);
-            textBoxNokakoiKey.TabIndex = 7;
+            textBoxNokakoiKey.TabIndex = 6;
             // 
             // textBoxPassword
             // 
@@ -70,7 +70,7 @@
             textBoxPassword.PasswordChar = '*';
             textBoxPassword.PlaceholderText = "password";
             textBoxPassword.Size = new Size(184, 23);
-            textBoxPassword.TabIndex = 8;
+            textBoxPassword.TabIndex = 7;
             // 
             // trackBarOpacity
             // 
@@ -120,7 +120,7 @@
             checkBoxAddClient.Location = new Point(172, 170);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
-            checkBoxAddClient.TabIndex = 3;
+            checkBoxAddClient.TabIndex = 9;
             checkBoxAddClient.Text = "Add client tag";
             checkBoxAddClient.UseVisualStyleBackColor = true;
             // 
@@ -142,7 +142,7 @@
             linkLabelIcons8.Location = new Point(231, 237);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 9;
+            linkLabelIcons8.TabIndex = 11;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -153,7 +153,7 @@
             checkBoxShowOnlyJapanese.Location = new Point(12, 87);
             checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
             checkBoxShowOnlyJapanese.Size = new Size(162, 19);
-            checkBoxShowOnlyJapanese.TabIndex = 6;
+            checkBoxShowOnlyJapanese.TabIndex = 5;
             checkBoxShowOnlyJapanese.Text = "Show only Japanese posts";
             checkBoxShowOnlyJapanese.UseVisualStyleBackColor = true;
             // 
@@ -172,7 +172,7 @@
             checkBoxShowOnlyFollowees.Location = new Point(12, 62);
             checkBoxShowOnlyFollowees.Name = "checkBoxShowOnlyFollowees";
             checkBoxShowOnlyFollowees.Size = new Size(134, 19);
-            checkBoxShowOnlyFollowees.TabIndex = 5;
+            checkBoxShowOnlyFollowees.TabIndex = 4;
             checkBoxShowOnlyFollowees.Text = "Show only followees";
             checkBoxShowOnlyFollowees.UseVisualStyleBackColor = true;
             checkBoxShowOnlyFollowees.CheckedChanged += checkBoxShowOnlyFollowees_CheckedChanged;
@@ -193,13 +193,13 @@
             checkBoxSendDSSTP.Location = new Point(12, 170);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
-            checkBoxSendDSSTP.TabIndex = 4;
+            checkBoxSendDSSTP.TabIndex = 8;
             checkBoxSendDSSTP.Text = "Send DSSTP";
             checkBoxSendDSSTP.UseVisualStyleBackColor = true;
             // 
             // linkLabelVersion
             // 
-            linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 237);
             linkLabelVersion.Name = "linkLabelVersion";
@@ -215,7 +215,7 @@
             checkBoxShowAvatar.Location = new Point(12, 37);
             checkBoxShowAvatar.Name = "checkBoxShowAvatar";
             checkBoxShowAvatar.Size = new Size(90, 19);
-            checkBoxShowAvatar.TabIndex = 11;
+            checkBoxShowAvatar.TabIndex = 3;
             checkBoxShowAvatar.Text = "Show avatar";
             checkBoxShowAvatar.UseVisualStyleBackColor = true;
             // 
