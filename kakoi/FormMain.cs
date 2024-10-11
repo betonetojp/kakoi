@@ -236,9 +236,9 @@ namespace kakoi
         /// <param name="args"></param>
         private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
-            // タイムライン購読
             if (args.subscriptionId == _nostrAccess.SubscriptionId)
             {
+                #region タイムライン購読
                 foreach (var nostrEvent in args.events)
                 {
                     if (RemoveCompletedEventIds(nostrEvent.Id))
@@ -273,6 +273,7 @@ namespace kakoi
                             speaker = "\\0"; //"\\h\\p[0]\\s[0]";
                         }
 
+                        #region リアクション
                         // リアクション
                         if (7 == nostrEvent.Kind)
                         {
@@ -357,6 +358,9 @@ namespace kakoi
                                 textBoxPost.PlaceholderText = $"{timeString} {headMark} {userName} {content}";
                             }
                         }
+                        #endregion
+
+                        #region テキストノート
                         // テキストノート
                         if (1 == nostrEvent.Kind)
                         {
@@ -459,16 +463,6 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
-                            //foreach (var tag in nostrEvent.Tags)
-                            //{
-                            //    // eタグ、pタグがある時は背景色を変える
-                            //    if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
-                            //    {
-                            //        dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                            //        continue;
-                            //    }
-                            //}
-                            // e,p,qタグがある時は背景色を変える
                             if (isReply)
                             {
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
@@ -555,6 +549,9 @@ namespace kakoi
                             }
                             Debug.WriteLine($"{timeString} {userName} {content}");
                         }
+                        #endregion
+
+                        #region リポスト
                         // リポスト
                         if (6 == nostrEvent.Kind)
                         {
@@ -614,12 +611,14 @@ namespace kakoi
 
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
                         }
+                        #endregion
                     }
                 }
+                #endregion
             }
-            // フォロイー購読
             else if (args.subscriptionId == _nostrAccess.GetFolloweesSubscriptionId)
             {
+                #region フォロイー購読
                 foreach (var nostrEvent in args.events)
                 {
                     // フォローリスト
@@ -646,10 +645,11 @@ namespace kakoi
                         }
                     }
                 }
+                #endregion
             }
-            // プロフィール購読
             else if (args.subscriptionId == _nostrAccess.GetProfilesSubscriptionId)
             {
+                #region プロフィール購読
                 foreach (var nostrEvent in args.events)
                 {
                     if (RemoveCompletedEventIds(nostrEvent.Id))
@@ -692,6 +692,7 @@ namespace kakoi
                         }
                     }
                 }
+                #endregion
             }
         }
         #endregion
@@ -1344,11 +1345,10 @@ namespace kakoi
                     EventId = id,
                     Relays = [string.Empty],
                 };
-                var settings = Notifier.Settings;
                 var nevent = nostrEventNote.ToNIP19();
                 try
                 {
-                    _formWeb.webView21.Source = new Uri(settings.FileName + nevent);
+                    _formWeb.webView21.Source = new Uri(Setting.WebViewUrl + nevent);
                 }
                 catch (Exception ex)
                 {
@@ -1359,6 +1359,7 @@ namespace kakoi
         }
         #endregion
 
+        #region avatar取得
         private static void GetAvatar(string publicKeyHex, string avatarUrl)
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
@@ -1378,10 +1379,13 @@ namespace kakoi
                     // SVGデータを読み込む
                     using var svg = new SKSvg();
                     svg.Load(svgData);
-                    bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
-                    using var canvas = new SKCanvas(bitmap);
-                    canvas.DrawPicture(svg.Picture);
-                    canvas.Flush();
+                    if (null != svg.Picture)
+                    {
+                        bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
+                        using var canvas = new SKCanvas(bitmap);
+                        canvas.DrawPicture(svg.Picture);
+                        canvas.Flush();
+                    }
                 }
                 else
                 {
@@ -1417,5 +1421,6 @@ namespace kakoi
                 bitmap.Dispose();
             }
         }
+        #endregion
     }
 }

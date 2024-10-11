@@ -17,22 +17,25 @@ namespace kakoi
         {
             public Point Location { get; set; }
             public Size Size { get; set; } = new Size(320, 320);
-            public bool TopMost { get; set; } = false;
+            public int NameColumnWidth { get; set; } = 60;
             public int CutLength { get; set; } = 40;
             public int CutNameLength { get; set; } = 8;
             public double Opacity { get; set; } = 1.00;
-            public bool AddClient { get; set; } = true;
+            public bool TopMost { get; set; } = false;
             public bool ShowOnlyJapanese { get; set; } = false;
             public bool ShowOnlyFollowees { get; set; } = false;
             public string NokakoiKey { get; set; } = string.Empty;
             public bool SendDSSTP { get; set; } = false;
+            public bool AddClient { get; set; } = true;
+            public string GridColor { get; set; } = "#FF1493";
+            public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
+
             public Point PostBarLocation { get; set; }
             public Size PostBarSize { get; set; } = new Size(300, 132);
+            public string PictureUploadUrl { get; set; } = "https://nikolat.github.io/nostr-learn-nip96/";
+
             public Point WebLocation { get; set; }
             public Size WebSize { get; set; } = new Size(320, 320);
-            public int NameColumnWidth { get; set; } = 60;
-            public string GridColor { get; set; } = "#FF1493";
-            public string PictureUploadUrl { get; set; } = "https://nikolat.github.io/nostr-learn-nip96/";
         }
         #endregion
 
@@ -47,10 +50,10 @@ namespace kakoi
             get => _data.Size;
             set => _data.Size = value;
         }
-        public static bool TopMost
+        public static int NameColumnWidth
         {
-            get => _data.TopMost;
-            set => _data.TopMost = value;
+            get => _data.NameColumnWidth;
+            set => _data.NameColumnWidth = value;
         }
         public static int CutLength
         {
@@ -67,10 +70,10 @@ namespace kakoi
             get => _data.Opacity;
             set => _data.Opacity = value;
         }
-        public static bool AddClient
+        public static bool TopMost
         {
-            get => _data.AddClient;
-            set => _data.AddClient = value;
+            get => _data.TopMost;
+            set => _data.TopMost = value;
         }
         public static bool ShowOnlyJapanese
         {
@@ -92,6 +95,22 @@ namespace kakoi
             get => _data.SendDSSTP;
             set => _data.SendDSSTP = value;
         }
+        public static bool AddClient
+        {
+            get => _data.AddClient;
+            set => _data.AddClient = value;
+        }
+        public static string GridColor
+        {
+            get => _data.GridColor;
+            set => _data.GridColor = value;
+        }
+        public static string WebViewUrl
+        {
+            get => _data.WebViewUrl;
+            set => _data.WebViewUrl = value;
+        }
+
         public static Point PostBarLocation
         {
             get => _data.PostBarLocation;
@@ -102,6 +121,12 @@ namespace kakoi
             get => _data.PostBarSize;
             set => _data.PostBarSize = value;
         }
+        public static string PictureUploadUrl
+        {
+            get => _data.PictureUploadUrl;
+            set => _data.PictureUploadUrl = value;
+        }
+
         public static Point WebLocation
         {
             get => _data.WebLocation;
@@ -111,21 +136,6 @@ namespace kakoi
         {
             get => _data.WebSize;
             set => _data.WebSize = value;
-        }
-        public static int NameColumnWidth
-        {
-            get => _data.NameColumnWidth;
-            set => _data.NameColumnWidth = value;
-        }
-        public static string GridColor
-        {
-            get => _data.GridColor;
-            set => _data.GridColor = value;
-        }
-        public static string PictureUploadUrl
-        {
-            get => _data.PictureUploadUrl;
-            set => _data.PictureUploadUrl = value;
         }
         #endregion
 
