@@ -313,7 +313,7 @@ namespace kakoi
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!File.Exists(avatarFile))
                                     {
-                                        GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                        _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
                                     }
 
                                     if (File.Exists(avatarFile))
@@ -432,7 +432,7 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
-                                    GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -603,7 +603,7 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
-                                    GetAvatar(nostrEvent.PublicKey, user.Picture);
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -691,7 +691,7 @@ namespace kakoi
                                 if (null != newUserData.Picture)
                                 {
                                     // アバター取得
-                                    GetAvatar(nostrEvent.PublicKey, newUserData.Picture);
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
                                 }
                             }
                         }
@@ -1363,12 +1363,12 @@ namespace kakoi
         #endregion
 
         #region avatar取得
-        private static void GetAvatar(string publicKeyHex, string avatarUrl)
+        private static async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
             using HttpClient client = new();
-            client.Timeout = TimeSpan.FromSeconds(3);
+            client.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
             SKBitmap bitmap = new();
 
             try
@@ -1378,7 +1378,7 @@ namespace kakoi
                     // SVGファイルの場合
                     Debug.WriteLine("svg画像処理開始");
                     // URLからSVGデータをダウンロード
-                    using var svgData = client.GetStreamAsync(avatarUrl).Result;
+                    using var svgData = await client.GetStreamAsync(avatarUrl);
                     // SVGデータを読み込む
                     using var svg = new SKSvg();
                     svg.Load(svgData);
@@ -1393,7 +1393,7 @@ namespace kakoi
                 else
                 {
                     // URLから画像データを取得
-                    var avatarBytes = client.GetByteArrayAsync(avatarUrl).Result;
+                    var avatarBytes = await client.GetByteArrayAsync(avatarUrl);
                     // バイト配列をMemoryStreamに変換
                     using MemoryStream ms = new(avatarBytes);
                     // MemoryStreamから画像を読み込む
