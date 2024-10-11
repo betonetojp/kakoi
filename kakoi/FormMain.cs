@@ -309,7 +309,23 @@ namespace kakoi
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!File.Exists(avatarFile))
                                     {
+                                        var postBarFcuced = _formPostBar.ContainsFocus;
+                                        var formSettingFocusd = _formSetting.ContainsFocus;
+
                                         _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                        if (postBarFcuced)
+                                        {
+                                            _formPostBar.Focus();
+                                        }
+                                        else if (formSettingFocusd)
+                                        {
+                                            _formSetting.Focus();
+                                        }
+                                        else
+                                        {
+                                            Focus();
+                                        }
                                     }
 
                                     if (File.Exists(avatarFile))
@@ -422,7 +438,23 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -577,7 +609,23 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -665,7 +713,23 @@ namespace kakoi
                                 if (_showAvatar && null != newUserData.Picture)
                                 {
                                     // アバター取得
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
                             }
                         }
