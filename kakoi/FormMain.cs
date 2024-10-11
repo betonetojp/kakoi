@@ -71,6 +71,8 @@ namespace kakoi
         private List<Emoji> _emojis = [];
         private List<Client> _clients = [];
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
+
+        private ImeStatus _imeStatus = new();
         #endregion
 
         #region コンストラクタ
@@ -308,7 +310,7 @@ namespace kakoi
                                 if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                    if (!File.Exists(avatarFile))
+                                    if (!_imeStatus.Compositing && !File.Exists(avatarFile))
                                     {
                                         var postBarFcuced = _formPostBar.ContainsFocus;
                                         var formSettingFocusd = _formSetting.ContainsFocus;
@@ -437,7 +439,7 @@ namespace kakoi
                             if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!File.Exists(avatarFile))
+                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
                                 {
                                     var postBarFcuced = _formPostBar.ContainsFocus;
                                     var formSettingFocusd = _formSetting.ContainsFocus;
@@ -608,7 +610,7 @@ namespace kakoi
                             if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!File.Exists(avatarFile))
+                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
                                 {
                                     var postBarFcuced = _formPostBar.ContainsFocus;
                                     var formSettingFocusd = _formSetting.ContainsFocus;
@@ -711,7 +713,7 @@ namespace kakoi
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
 
-                                if (_showAvatar && null != newUserData.Picture)
+                                if (!_imeStatus.Compositing && _showAvatar && null != newUserData.Picture)
                                 {
                                     // アバター取得
                                     var postBarFcuced = _formPostBar.ContainsFocus;
