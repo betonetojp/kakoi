@@ -70,6 +70,7 @@ namespace kakoi
         //private readonly LinkedList<NostrEvent> _noteEvents = new();
 
         private List<Emoji> _emojis = [];
+        private List<Client> _clients = [];
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
         #endregion
 
@@ -103,6 +104,7 @@ namespace kakoi
             Users = Tools.LoadUsers();
             _emojis = Tools.LoadEmojis();
             comboBoxEmoji.DataSource = _emojis;
+            _clients = Tools.LoadClients();
 
             Location = Setting.Location;
             if (new Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
@@ -274,7 +276,6 @@ namespace kakoi
                         }
 
                         #region リアクション
-                        // リアクション
                         if (7 == nostrEvent.Kind)
                         {
                             // ログイン済みで自分へのリアクション
@@ -361,7 +362,6 @@ namespace kakoi
                         #endregion
 
                         #region テキストノート
-                        // テキストノート
                         if (1 == nostrEvent.Kind)
                         {
                             //var userClient = nostrEvent.GetTaggedData("client");
@@ -447,25 +447,31 @@ namespace kakoi
                             var userClient = nostrEvent.GetTaggedData("client");
                             if (userClient != null && 0 < userClient.Length)
                             {
-                                Color clientColor = Color.Silver;
+                                Color clientColor = Color.WhiteSmoke;
+                                /*
                                 if (-1 < Array.IndexOf(userClient, "kakoi"))
                                 {
-                                    clientColor = Color.HotPink;
+                                    //clientColor = Color.HotPink;
+                                    var client = _clients.FirstOrDefault(c => c.Name == "kakoi");
+                                    if (client != null && client.Color != null)
+                                    {
+                                        clientColor = Tools.HexToColor(client.Color);
+                                    }
                                 }
-                                else if (-1 < Array.IndexOf(userClient, "lumilumi"))
+                                */
+                                // userClient[0]を_clientsから検索して色を取得
+                                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                                if (client != null && client.ColorCode != null)
                                 {
-                                    clientColor = Color.Orange;
-                                }
-                                else if (-1 < Array.IndexOf(userClient, "noStrudel"))
-                                {
-                                    clientColor = Color.YellowGreen;
+                                    clientColor = Tools.HexToColor(client.ColorCode);
                                 }
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
+                            // リプライの時は背景色変更
                             if (isReply)
                             {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
                             }
 
                             // ユーザー表示名カット
@@ -552,7 +558,6 @@ namespace kakoi
                         #endregion
 
                         #region リポスト
-                        // リポスト
                         if (6 == nostrEvent.Kind)
                         {
                             Users.TryGetValue(nostrEvent.PublicKey, out User? user);
@@ -609,7 +614,7 @@ namespace kakoi
                                 }
                             }
 
-                            dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
+                            dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
                         }
                         #endregion
                     }
@@ -968,6 +973,7 @@ namespace kakoi
             Setting.Save(_configPath);
             _emojis = Tools.LoadEmojis();
             comboBoxEmoji.DataSource = _emojis;
+            _clients = Tools.LoadClients();
         }
         #endregion
 
@@ -1155,11 +1161,8 @@ namespace kakoi
                 Setting.WebViewSize = _formWeb.Size;
             }
             Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
-            Setting.GridColor = Tools.ColorToHex(dataGridViewNotes.GridColor);
             Setting.Save(_configPath);
             Tools.SaveUsers(Users);
-            //Tools.SaveEmojis(_emojis);
-            Notifier.SaveSettings(); // 必要ないが更新日時をそろえるため
 
             _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
             Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。

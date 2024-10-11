@@ -47,61 +47,18 @@ namespace kakoi
         public string? Url { get; set; }
     }
 
+    public class Client
+    {
+        public string? Name { get; set; }
+        public string? ColorCode { get; set; }
+    }
+
     public static class Tools
     {
         private static readonly string _usersJsonPath = Path.Combine(Application.StartupPath, "users.json");
         private static readonly string _relaysJsonPath = Path.Combine(Application.StartupPath, "relays.json");
         private static readonly string _emojisJsonPath = Path.Combine(Application.StartupPath, "emojis.json");
-
-        /// <summary>
-        /// JSONからユーザーを作成
-        /// </summary>
-        /// <param name="contentJson">kind:0のcontent JSON</param>
-        /// <param name="createdAt">kind:0の作成日時</param>
-        /// <returns>ユーザー</returns>
-        public static User? JsonToUser(string contentJson, DateTimeOffset? createdAt, bool shouldMuteMostr = true)
-        {
-            if (string.IsNullOrEmpty(contentJson))
-            {
-                return null;
-            }
-            try
-            {
-                var user = JsonSerializer.Deserialize<User>(contentJson, GetOption());
-                if (null != user)
-                {
-                    user.CreatedAt = createdAt;
-                    if (shouldMuteMostr && null != user.Nip05 && user.Nip05.Contains("mostr"))
-                    {
-                        user.Mute = true;
-                    }
-                }
-                return user;
-            }
-            catch (JsonException e)
-            {
-                Debug.WriteLine(e.Message);
-                return null;
-            }
-        }
-
-        public static Relay? JsonToRelay(string json)
-        {
-            if (string.IsNullOrEmpty(json))
-            {
-                return null;
-            }
-            try
-            {
-                var relay = JsonSerializer.Deserialize<Relay>(json, GetOption());
-                return relay;
-            }
-            catch (JsonException e)
-            {
-                Debug.WriteLine(e.Message);
-                return null;
-            }
-        }
+        private static readonly string _clientsJsonPath = Path.Combine(Application.StartupPath, "clients.json");
 
         private static JsonSerializerOptions GetOption()
         {
@@ -115,46 +72,7 @@ namespace kakoi
             return options;
         }
 
-        /// <summary>
-        /// nsecからnpubを取得する
-        /// </summary>
-        /// <param name="nsec">nsec</param>
-        /// <returns>npub</returns>
-        public static string GetNpub(this string nsec)
-        {
-            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToNIP19();
-        }
-
-        /// <summary>
-        /// nsecからnpub(HEX)を取得する
-        /// </summary>
-        /// <param name="nsec">nsec</param>
-        /// <returns>npub(HEX)</returns>
-        public static string GetNpubHex(this string nsec)
-        {
-            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToHex();
-        }
-
-        /// <summary>
-        /// npubをHEXに変換する
-        /// </summary>
-        /// <param name="npub">npub</param>
-        /// <returns>HEX</returns>
-        public static string ConvertToHex(this string npub)
-        {
-            return npub.FromNIP19Npub().ToHex();
-        }
-
-        /// <summary>
-        /// HEXをnpubに変換する
-        /// </summary>
-        /// <param name="hex">HEX</param>
-        /// <returns>npub</returns>
-        public static string ConvertToNpub(this string hex)
-        {
-            return ECXOnlyPubKey.Create(hex.FromHex()).ToNIP19();
-        }
-
+        #region ユーザー
         /// <summary>
         /// ユーザー辞書をファイルに保存する
         /// </summary>
@@ -201,6 +119,40 @@ namespace kakoi
             }
         }
 
+        /// <summary>
+        /// JSONからユーザーを作成
+        /// </summary>
+        /// <param name="contentJson">kind:0のcontent JSON</param>
+        /// <param name="createdAt">kind:0の作成日時</param>
+        /// <returns>ユーザー</returns>
+        public static User? JsonToUser(string contentJson, DateTimeOffset? createdAt, bool shouldMuteMostr = true)
+        {
+            if (string.IsNullOrEmpty(contentJson))
+            {
+                return null;
+            }
+            try
+            {
+                var user = JsonSerializer.Deserialize<User>(contentJson, GetOption());
+                if (null != user)
+                {
+                    user.CreatedAt = createdAt;
+                    if (shouldMuteMostr && null != user.Nip05 && user.Nip05.Contains("mostr"))
+                    {
+                        user.Mute = true;
+                    }
+                }
+                return user;
+            }
+            catch (JsonException e)
+            {
+                Debug.WriteLine(e.Message);
+                return null;
+            }
+        }
+        #endregion
+
+        #region リレー
         internal static void SaveRelays(List<Relay> relays)
         {
             // relays.jsonに保存
@@ -263,7 +215,9 @@ namespace kakoi
             }
             return [.. enabledRelays];
         }
+        #endregion
 
+        #region 絵文字
         internal static void SaveEmojis(List<Emoji> emojis)
         {
             // emojis.jsonに保存
@@ -313,7 +267,61 @@ namespace kakoi
                 return [];
             }
         }
+        #endregion
 
+        #region クライアント
+        internal static void SaveClients(List<Client> clients)
+        {
+            // clients.jsonに保存
+            try
+            {
+                var jsonContent = JsonSerializer.Serialize(clients, GetOption());
+                File.WriteAllText(_clientsJsonPath, jsonContent);
+            }
+            catch (JsonException e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+        }
+
+        internal static List<Client> LoadClients()
+        {
+            List<Client> defaultClients = [
+                // オリジナルカラー
+                //new Client { Name = "kakoi", ColorCode = "#E4007D" },
+                //new Client { Name = "lumilumi", ColorCode = "#DC7724" },
+                //new Client { Name = "noStrudel", ColorCode = "#8EB61A" },
+                // 50%カラー
+                new Client { Name = "kakoi", ColorCode = "#F280BE" },
+                new Client { Name = "lumilumi", ColorCode = "#EEBB92" },
+                new Client { Name = "noStrudel", ColorCode = "#C7DB8D" },
+                ];
+
+            // clients.jsonを読み込み
+            if (!File.Exists(_clientsJsonPath))
+            {
+                SaveClients(defaultClients);
+                return defaultClients;
+            }
+            try
+            {
+                var jsonContent = File.ReadAllText(_clientsJsonPath);
+                var clients = JsonSerializer.Deserialize<List<Client>>(jsonContent, GetOption());
+                if (null != clients)
+                {
+                    return clients;
+                }
+                return [];
+            }
+            catch (JsonException e)
+            {
+                Debug.WriteLine(e.Message);
+                return [];
+            }
+        }
+        #endregion
+
+        #region 色
         public static Color HexToColor(string hex)
         {
             try
@@ -329,7 +337,7 @@ namespace kakoi
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                return Color.Black;
+                return Color.Silver;
             }
         }
 
@@ -337,5 +345,50 @@ namespace kakoi
         {
             return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
         }
+        #endregion
+
+        #region Nostrツール
+        /// <summary>
+        /// nsecからnpubを取得する
+        /// </summary>
+        /// <param name="nsec">nsec</param>
+        /// <returns>npub</returns>
+        public static string GetNpub(this string nsec)
+        {
+            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToNIP19();
+        }
+
+        /// <summary>
+        /// nsecからnpub(HEX)を取得する
+        /// </summary>
+        /// <param name="nsec">nsec</param>
+        /// <returns>npub(HEX)</returns>
+        public static string GetNpubHex(this string nsec)
+        {
+            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToHex();
+        }
+
+        /// <summary>
+        /// npubをHEXに変換する
+        /// </summary>
+        /// <param name="npub">npub</param>
+        /// <returns>HEX</returns>
+        public static string ConvertToHex(this string npub)
+        {
+            return npub.FromNIP19Npub().ToHex();
+        }
+
+        /// <summary>
+        /// HEXをnpubに変換する
+        /// </summary>
+        /// <param name="hex">HEX</param>
+        /// <returns>npub</returns>
+        public static string ConvertToNpub(this string hex)
+        {
+            return ECXOnlyPubKey.Create(hex.FromHex()).ToNIP19();
+        }
+        #endregion
+
+        
     }
 }

@@ -28,6 +28,8 @@ namespace kakoi
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
             public string GridColor { get; set; } = "#FF1493";
+            public string ReplyColor { get; set; } = "#E6E6FA";
+            public string RepostColor { get; set; } = "#F0F8FF";
             public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
 
             public Point PostBarLocation { get; set; }
@@ -104,6 +106,16 @@ namespace kakoi
         {
             get => _data.GridColor;
             set => _data.GridColor = value;
+        }
+        public static string ReplyColor
+        {
+            get => _data.ReplyColor;
+            set => _data.ReplyColor = value;
+        }
+        public static string RepostColor
+        {
+            get => _data.RepostColor;
+            set => _data.RepostColor = value;
         }
         public static string WebViewUrl
         {
