@@ -34,8 +34,8 @@ namespace kakoi
             public Size PostBarSize { get; set; } = new Size(300, 132);
             public string PictureUploadUrl { get; set; } = "https://nikolat.github.io/nostr-learn-nip96/";
 
-            public Point WebLocation { get; set; }
-            public Size WebSize { get; set; } = new Size(320, 320);
+            public Point WebViewLocation { get; set; }
+            public Size WebViewSize { get; set; } = new Size(320, 320);
         }
         #endregion
 
@@ -127,15 +127,15 @@ namespace kakoi
             set => _data.PictureUploadUrl = value;
         }
 
-        public static Point WebLocation
+        public static Point WebViewLocation
         {
-            get => _data.WebLocation;
-            set => _data.WebLocation = value;
+            get => _data.WebViewLocation;
+            set => _data.WebViewLocation = value;
         }
-        public static Size WebSize
+        public static Size WebViewSize
         {
-            get => _data.WebSize;
-            set => _data.WebSize = value;
+            get => _data.WebViewSize;
+            set => _data.WebViewSize = value;
         }
         #endregion
 

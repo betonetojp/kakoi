@@ -105,7 +105,7 @@ namespace kakoi
             comboBoxEmoji.DataSource = _emojis;
 
             Location = Setting.Location;
-            if (new System.Drawing.Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
+            if (new Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
             {
                 StartPosition = FormStartPosition.CenterScreen;
             }
@@ -120,7 +120,7 @@ namespace kakoi
             }
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _formWeb.Opacity = Opacity;
+            //_formWeb.Opacity = Opacity;
             _addClient = Setting.AddClient;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
@@ -131,19 +131,19 @@ namespace kakoi
             {
                 _formPostBar.StartPosition = FormStartPosition.CenterScreen;
             }
-            _formWeb.Location = Setting.WebLocation;
+            _formWeb.Location = Setting.WebViewLocation;
             if (new Point(0, 0) == _formWeb.Location || _formWeb.Location.X < 0 || _formWeb.Location.Y < 0)
             {
                 _formWeb.StartPosition = FormStartPosition.CenterScreen;
             }
             _formPostBar.Size = Setting.PostBarSize;
-            _formWeb.Size = Setting.WebSize;
+            _formWeb.Size = Setting.WebViewSize;
             dataGridViewNotes.Columns["name"].Width = Setting.NameColumnWidth;
             dataGridViewNotes.GridColor = Tools.HexToColor(Setting.GridColor);
             dataGridViewNotes.DefaultCellStyle.SelectionBackColor = Tools.HexToColor(Setting.GridColor);
 
             _formSetting.PostBarForm = _formPostBar;
-            _formSetting.WebForm = _formWeb;
+            //_formSetting.WebForm = _formWeb;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
 
@@ -881,7 +881,7 @@ namespace kakoi
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
             _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
             _formSetting.textBoxPassword.Text = _password;
-            _formSetting.WebForm = _formWeb;
+            //_formSetting.WebForm = _formWeb;
 
             // 開く
             _formSetting.ShowDialog(this);
@@ -907,7 +907,7 @@ namespace kakoi
             Opacity = _formSetting.trackBarOpacity.Value / 100.0;
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _formWeb.Opacity = Setting.Opacity;
+            //_formWeb.Opacity = Setting.Opacity;
             _addClient = _formSetting.checkBoxAddClient.Checked;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
@@ -1146,13 +1146,13 @@ namespace kakoi
             if (FormWindowState.Normal != _formWeb.WindowState)
             {
                 // 最小化最大化状態の時、元の位置と大きさを保存
-                Setting.WebLocation = _formWeb.RestoreBounds.Location;
-                Setting.WebSize = _formWeb.RestoreBounds.Size;
+                Setting.WebViewLocation = _formWeb.RestoreBounds.Location;
+                Setting.WebViewSize = _formWeb.RestoreBounds.Size;
             }
             else
             {
-                Setting.WebLocation = _formWeb.Location;
-                Setting.WebSize = _formWeb.Size;
+                Setting.WebViewLocation = _formWeb.Location;
+                Setting.WebViewSize = _formWeb.Size;
             }
             Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
             Setting.GridColor = Tools.ColorToHex(dataGridViewNotes.GridColor);
@@ -1322,13 +1322,13 @@ namespace kakoi
                 {
                     _formWeb = new FormWeb
                     {
-                        Location = Setting.WebLocation
+                        Location = Setting.WebViewLocation
                     };
                     if (new Point(0, 0) == _formWeb.Location)
                     {
                         _formWeb.StartPosition = FormStartPosition.CenterScreen;
                     }
-                    _formWeb.Size = Setting.WebSize;
+                    _formWeb.Size = Setting.WebViewSize;
                 }
                 if (!_formWeb.Visible)
                 {
@@ -1338,7 +1338,7 @@ namespace kakoi
                 {
                     _formWeb.WindowState = FormWindowState.Normal;
                 }
-                _formWeb.Opacity = Setting.Opacity;
+                //_formWeb.Opacity = Setting.Opacity;
                 var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? "";
                 NIP19.NostrEventNote nostrEventNote = new()
                 {
@@ -1348,7 +1348,7 @@ namespace kakoi
                 var nevent = nostrEventNote.ToNIP19();
                 try
                 {
-                    _formWeb.webView21.Source = new Uri(Setting.WebViewUrl + nevent);
+                    _formWeb.webView2.Source = new Uri(Setting.WebViewUrl + nevent);
                 }
                 catch (Exception ex)
                 {
