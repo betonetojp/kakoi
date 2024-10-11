@@ -1,10 +1,13 @@
 ﻿using kakoi.Properties;
+using Microsoft.VisualBasic.ApplicationServices;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
 using NTextCat;
 using NTextCat.Commons;
+using SkiaSharp;
 using SSTPLib;
+using Svg.Skia;
 using System.Diagnostics;
 
 namespace kakoi
@@ -23,7 +26,6 @@ namespace kakoi
         private FormWeb _formWeb = new();
 
         private string _nsec = string.Empty;
-        //private string _npub = string.Empty;
         private string _npubHex = string.Empty;
 
         /// <summary>
@@ -39,18 +41,17 @@ namespace kakoi
         /// </summary>
         internal KeywordNotifier Notifier = new();
 
-        private int _cutLength;
-        private int _cutNameLength;
-        private bool _addClient;
-        private bool _showOnlyJapanese;
+        private bool _showAvatar;
         private bool _showOnlyFollowees;
+        private bool _showOnlyJapanese;
         private string _nokakoiKey = string.Empty;
-        private bool _sendDSSTP = true;
         private string _password = string.Empty;
+        private bool _sendDSSTP = true;
+        private bool _addClient;
 
         private double _tempOpacity = 1.00;
 
-        private readonly DSSTPSender _ds = new("SakuraUnicode");
+        private static readonly DSSTPSender _ds = new("SakuraUnicode");
         private readonly string _SSTPMethod = "NOTIFY SSTP/1.1";
         private readonly Dictionary<string, string> _baseSSTPHeader = new(){
             {"Charset","UTF-8"},
@@ -68,6 +69,10 @@ namespace kakoi
         //private readonly LinkedList<NostrEvent> _noteEvents = new();
 
         private List<Emoji> _emojis = [];
+        private List<Client> _clients = [];
+        private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
+
+        private ImeStatus _imeStatus = new();
         #endregion
 
         #region コンストラクタ
@@ -100,6 +105,7 @@ namespace kakoi
             Users = Tools.LoadUsers();
             _emojis = Tools.LoadEmojis();
             comboBoxEmoji.DataSource = _emojis;
+            _clients = Tools.LoadClients();
 
             Location = Setting.Location;
             if (new Point(0, 0) == Location || Location.X < 0 || Location.Y < 0)
@@ -108,8 +114,6 @@ namespace kakoi
             }
             Size = Setting.Size;
             TopMost = Setting.TopMost;
-            _cutLength = Setting.CutLength;
-            _cutNameLength = Setting.CutNameLength;
             Opacity = Setting.Opacity;
             if (0 == Opacity)
             {
@@ -117,32 +121,38 @@ namespace kakoi
             }
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _formWeb.Opacity = Opacity;
-            _addClient = Setting.AddClient;
-            _showOnlyJapanese = Setting.ShowOnlyJapanese;
+            _showAvatar = Setting.ShowAvatar;
+            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
+            _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
+            _addClient = Setting.AddClient;
             _formPostBar.Location = Setting.PostBarLocation;
             if (new Point(0, 0) == _formPostBar.Location || _formPostBar.Location.X < 0 || _formPostBar.Location.Y < 0)
             {
                 _formPostBar.StartPosition = FormStartPosition.CenterScreen;
             }
-            _formWeb.Location = Setting.WebLocation;
+            _formWeb.Location = Setting.WebViewLocation;
             if (new Point(0, 0) == _formWeb.Location || _formWeb.Location.X < 0 || _formWeb.Location.Y < 0)
             {
                 _formWeb.StartPosition = FormStartPosition.CenterScreen;
             }
             _formPostBar.Size = Setting.PostBarSize;
-            _formWeb.Size = Setting.WebSize;
+            _formWeb.Size = Setting.WebViewSize;
             dataGridViewNotes.Columns["name"].Width = Setting.NameColumnWidth;
             dataGridViewNotes.GridColor = Tools.HexToColor(Setting.GridColor);
             dataGridViewNotes.DefaultCellStyle.SelectionBackColor = Tools.HexToColor(Setting.GridColor);
 
             _formSetting.PostBarForm = _formPostBar;
-            _formSetting.WebForm = _formWeb;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
+
+            // avatarフォルダを作成
+            if (!Directory.Exists(_avatarPath))
+            {
+                Directory.CreateDirectory(_avatarPath);
+            }
         }
         #endregion
 
@@ -227,9 +237,9 @@ namespace kakoi
         /// <param name="args"></param>
         private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
-            // タイムライン購読
             if (args.subscriptionId == _nostrAccess.SubscriptionId)
             {
+                #region タイムライン購読
                 foreach (var nostrEvent in args.events)
                 {
                     if (RemoveCompletedEventIds(nostrEvent.Id))
@@ -264,7 +274,7 @@ namespace kakoi
                             speaker = "\\0"; //"\\h\\p[0]\\s[0]";
                         }
 
-                        // リアクション
+                        #region リアクション
                         if (7 == nostrEvent.Kind)
                         {
                             // ログイン済みで自分へのリアクション
@@ -275,6 +285,12 @@ namespace kakoi
                                 // ユーザー表示名取得
                                 string userName = GetUserName(nostrEvent.PublicKey);
 
+                                // ユーザーが見つからない時は表示しない
+                                if (null == user)
+                                {
+                                    continue;
+                                }
+
                                 headMark = "+";
 
                                 // グリッドに表示
@@ -283,16 +299,44 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
+                                new Bitmap(1, 1), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
 
-                                // ユーザー表示名カット
-                                if (userName.Length > _cutNameLength)
+                                // avatar列にアバターを表示
+                                if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
-                                    userName = $"{userName[.._cutNameLength]}...";
+                                    string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                    if (!_imeStatus.Compositing && !File.Exists(avatarFile))
+                                    {
+                                        var postBarFcuced = _formPostBar.ContainsFocus;
+                                        var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                        _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                        if (postBarFcuced)
+                                        {
+                                            _formPostBar.Focus();
+                                        }
+                                        else if (formSettingFocusd)
+                                        {
+                                            _formSetting.Focus();
+                                        }
+                                        else
+                                        {
+                                            Focus();
+                                        }
+                                    }
+
+                                    if (File.Exists(avatarFile))
+                                    {
+                                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                        using var avatar = new Bitmap(fileStream);
+                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                                    }
                                 }
 
                                 // SSPに送る
@@ -324,7 +368,9 @@ namespace kakoi
                                 textBoxPost.PlaceholderText = $"{timeString} {headMark} {userName} {content}";
                             }
                         }
-                        // テキストノート
+                        #endregion
+
+                        #region テキストノート
                         if (1 == nostrEvent.Kind)
                         {
                             //var userClient = nostrEvent.GetTaggedData("client");
@@ -381,6 +427,7 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
+                                new Bitmap(1, 1), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
@@ -388,45 +435,68 @@ namespace kakoi
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
+                            // avatar列にアバターを表示
+                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                            {
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
+                                {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
+                                }
+
+                                if (File.Exists(avatarFile))
+                                {
+                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                    using var avatar = new Bitmap(fileStream);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                                }
+                            }
+
                             // クライアントタグによる背景色変更のテスト
                             var userClient = nostrEvent.GetTaggedData("client");
                             if (userClient != null && 0 < userClient.Length)
                             {
-                                Color clientColor = Color.Silver;
+                                Color clientColor = Color.WhiteSmoke;
+                                /*
                                 if (-1 < Array.IndexOf(userClient, "kakoi"))
                                 {
-                                    clientColor = Color.HotPink;
+                                    //clientColor = Color.HotPink;
+                                    var client = _clients.FirstOrDefault(c => c.Name == "kakoi");
+                                    if (client != null && client.Color != null)
+                                    {
+                                        clientColor = Tools.HexToColor(client.Color);
+                                    }
                                 }
-                                else if (-1 < Array.IndexOf(userClient, "lumilumi"))
+                                */
+                                // userClient[0]を_clientsから検索して色を取得
+                                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                                if (client != null && client.ColorCode != null)
                                 {
-                                    clientColor = Color.Orange;
-                                }
-                                else if (-1 < Array.IndexOf(userClient, "noStrudel"))
-                                {
-                                    clientColor = Color.YellowGreen;
+                                    clientColor = Tools.HexToColor(client.ColorCode);
                                 }
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
-                            //foreach (var tag in nostrEvent.Tags)
-                            //{
-                            //    // eタグ、pタグがある時は背景色を変える
-                            //    if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
-                            //    {
-                            //        dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                            //        continue;
-                            //    }
-                            //}
-                            // e,p,qタグがある時は背景色を変える
+                            // リプライの時は背景色変更
                             if (isReply)
                             {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                            }
-
-                            // ユーザー表示名カット
-                            if (userName.Length > _cutNameLength)
-                            {
-                                userName = $"{userName[.._cutNameLength]}...";
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
                             }
 
                             // SSPに送る
@@ -441,11 +511,6 @@ namespace kakoi
                                 SearchGhost();
 
                                 string msg = content;
-                                // 本文カット
-                                if (msg.Length > _cutLength)
-                                {
-                                    msg = $"{msg[.._cutLength]}...";//\\u\\p[1]\\s[10]長いよっ！";
-                                }
                                 Dictionary<string, string> SSTPHeader = new(_baseSSTPHeader)
                                 {
                                     { "Reference1", "1" }, // kind
@@ -497,14 +562,11 @@ namespace kakoi
 
                             // 改行をスペースに置き換え
                             content = content.Replace('\n', ' ');
-                            // 本文カット
-                            if (content.Length > _cutLength)
-                            {
-                                content = $"{content[.._cutLength]}...";
-                            }
                             Debug.WriteLine($"{timeString} {userName} {content}");
                         }
-                        // リポスト
+                        #endregion
+
+                        #region リポスト
                         if (6 == nostrEvent.Kind)
                         {
                             Users.TryGetValue(nostrEvent.PublicKey, out User? user);
@@ -537,19 +599,56 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
+                            new Bitmap(1, 1), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.",
+                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.", // 先頭のpにしているがスレッドの場合違いそう
                             nostrEvent.Id,
                             nostrEvent.PublicKey
                             );
-                            dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
+
+                            // avatar列にアバターを表示
+                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                            {
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
+                                {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
+                                }
+
+                                if (File.Exists(avatarFile))
+                                {
+                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                    using var avatar = new Bitmap(fileStream);
+                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                                }
+                            }
+
+                            dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
                         }
+                        #endregion
                     }
                 }
+                #endregion
             }
-            // フォロイー購読
             else if (args.subscriptionId == _nostrAccess.GetFolloweesSubscriptionId)
             {
+                #region フォロイー購読
                 foreach (var nostrEvent in args.events)
                 {
                     // フォローリスト
@@ -576,10 +675,11 @@ namespace kakoi
                         }
                     }
                 }
+                #endregion
             }
-            // プロフィール購読
             else if (args.subscriptionId == _nostrAccess.GetProfilesSubscriptionId)
             {
+                #region プロフィール購読
                 foreach (var nostrEvent in args.events)
                 {
                     if (RemoveCompletedEventIds(nostrEvent.Id))
@@ -612,10 +712,33 @@ namespace kakoi
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
+
+                                if (!_imeStatus.Compositing && _showAvatar && null != newUserData.Picture)
+                                {
+                                    // アバター取得
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
+                                    var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                    _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+
+                                    if (postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else if (formSettingFocusd)
+                                    {
+                                        _formSetting.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                #endregion
             }
         }
         #endregion
@@ -795,54 +918,36 @@ namespace kakoi
             // 開く前
             Opacity = _tempOpacity;
             _formSetting.checkBoxTopMost.Checked = TopMost;
-            _formSetting.textBoxCutLength.Text = _cutLength.ToString();
-            _formSetting.textBoxCutNameLength.Text = _cutNameLength.ToString();
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
-            _formSetting.checkBoxAddClient.Checked = _addClient;
+            _formSetting.checkBoxShowAvatar.Checked = _showAvatar;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
-            _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
             _formSetting.textBoxPassword.Text = _password;
-            _formSetting.WebForm = _formWeb;
+            _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
+            _formSetting.checkBoxAddClient.Checked = _addClient;
 
             // 開く
             _formSetting.ShowDialog(this);
 
             // 閉じた後
             TopMost = _formSetting.checkBoxTopMost.Checked;
-            if (!int.TryParse(_formSetting.textBoxCutLength.Text, out _cutLength))
-            {
-                _cutLength = 40;
-            }
-            else if (_cutLength < 1)
-            {
-                _cutLength = 1;
-            }
-            if (!int.TryParse(_formSetting.textBoxCutNameLength.Text, out _cutNameLength))
-            {
-                _cutNameLength = 8;
-            }
-            else if (_cutNameLength < 1)
-            {
-                _cutNameLength = 1;
-            }
             Opacity = _formSetting.trackBarOpacity.Value / 100.0;
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _formWeb.Opacity = Setting.Opacity;
-            _addClient = _formSetting.checkBoxAddClient.Checked;
-            _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
+            _showAvatar = _formSetting.checkBoxShowAvatar.Checked;
+            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
+            _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
-            _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
             _password = _formSetting.textBoxPassword.Text;
+            _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
+            _addClient = _formSetting.checkBoxAddClient.Checked;
             try
             {
                 // 別アカウントログイン失敗に備えてクリアしておく
                 _nsec = string.Empty;
                 _npubHex = string.Empty;
-                //_npub = string.Empty;
                 _followeesHexs.Clear();
                 textBoxPost.PlaceholderText = "Hello Nostr!";
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
@@ -850,7 +955,6 @@ namespace kakoi
                 // 秘密鍵と公開鍵取得
                 _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
                 _npubHex = _nsec.GetNpubHex();
-                //_npub = _npubHex.ConvertToNpub();
 
                 // ログイン済みの時
                 if (!_npubHex.IsNullOrEmpty())
@@ -879,18 +983,18 @@ namespace kakoi
             }
 
             Setting.TopMost = TopMost;
-            Setting.CutLength = _cutLength;
-            Setting.CutNameLength = _cutNameLength;
             Setting.Opacity = Opacity;
-            Setting.AddClient = _addClient;
-            Setting.ShowOnlyJapanese = _showOnlyJapanese;
+            Setting.ShowAvatar = _showAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
+            Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.NokakoiKey = _nokakoiKey;
             Setting.SendDSSTP = _sendDSSTP;
+            Setting.AddClient = _addClient;
 
             Setting.Save(_configPath);
             _emojis = Tools.LoadEmojis();
             comboBoxEmoji.DataSource = _emojis;
+            _clients = Tools.LoadClients();
         }
         #endregion
 
@@ -990,13 +1094,11 @@ namespace kakoi
         /// <returns>ユーザー表示名</returns>
         private string GetUserName(string publicKeyHex)
         {
-            /*
-            // 辞書にない場合プロフィールを購読する
-            if (!_users.TryGetValue(publicKeyHex, out User? user))
-            {
-                SubscribeProfiles([publicKeyHex]);
-            }
-            */
+            //// 辞書にない場合プロフィールを購読する
+            //if (!_users.TryGetValue(publicKeyHex, out User? user))
+            //{
+            //    SubscribeProfiles([publicKeyHex]);
+            //}
             // kind 0 を毎回購読するように変更（頻繁にdisplay_name等を変更するユーザーがいるため）
             _nostrAccess.SubscribeProfiles([publicKeyHex]);
 
@@ -1069,22 +1171,19 @@ namespace kakoi
             if (FormWindowState.Normal != _formWeb.WindowState)
             {
                 // 最小化最大化状態の時、元の位置と大きさを保存
-                Setting.WebLocation = _formWeb.RestoreBounds.Location;
-                Setting.WebSize = _formWeb.RestoreBounds.Size;
+                Setting.WebViewLocation = _formWeb.RestoreBounds.Location;
+                Setting.WebViewSize = _formWeb.RestoreBounds.Size;
             }
             else
             {
-                Setting.WebLocation = _formWeb.Location;
-                Setting.WebSize = _formWeb.Size;
+                Setting.WebViewLocation = _formWeb.Location;
+                Setting.WebViewSize = _formWeb.Size;
             }
             Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
-            Setting.GridColor = Tools.ColorToHex(dataGridViewNotes.GridColor);
             Setting.Save(_configPath);
             Tools.SaveUsers(Users);
-            //Tools.SaveEmojis(_emojis);
-            Notifier.SaveSettings(); // 必要ないが更新日時をそろえるため
 
-            _ds.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
+            _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
             Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
         }
         #endregion
@@ -1206,11 +1305,13 @@ namespace kakoi
         #region カーソルキー
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
+            // リアクション
             if (e.KeyCode == Keys.Right)
             {
                 var ev = new DataGridViewCellEventArgs(0, dataGridViewNotes.SelectedRows[0].Index);
                 DataGridViewNotes_CellDoubleClick(sender, ev);
             }
+            // Webビュー表示
             if (e.KeyCode == Keys.Left)
             {
                 var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
@@ -1245,13 +1346,13 @@ namespace kakoi
                 {
                     _formWeb = new FormWeb
                     {
-                        Location = Setting.WebLocation
+                        Location = Setting.WebViewLocation
                     };
                     if (new Point(0, 0) == _formWeb.Location)
                     {
                         _formWeb.StartPosition = FormStartPosition.CenterScreen;
                     }
-                    _formWeb.Size = Setting.WebSize;
+                    _formWeb.Size = Setting.WebViewSize;
                 }
                 if (!_formWeb.Visible)
                 {
@@ -1261,24 +1362,84 @@ namespace kakoi
                 {
                     _formWeb.WindowState = FormWindowState.Normal;
                 }
-                _formWeb.Opacity = Setting.Opacity;
                 var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? "";
                 NIP19.NostrEventNote nostrEventNote = new()
                 {
                     EventId = id,
                     Relays = [string.Empty],
                 };
-                var settings = Notifier.Settings;
                 var nevent = nostrEventNote.ToNIP19();
                 try
                 {
-                    _formWeb.webView21.Source = new Uri(settings.FileName + nevent);
+                    _formWeb.webView2.Source = new Uri(Setting.WebViewUrl + nevent);
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                     _formWeb.Close();
                 }
+            }
+        }
+        #endregion
+
+        #region avatar取得
+        private static async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
+        {
+            string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
+            using HttpClient httpClient = new();
+            httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
+            SKBitmap bitmap = new();
+            try
+            {
+                if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+                {
+                    // SVGファイルの場合
+                    Debug.WriteLine("svg画像処理開始");
+                    // URLからSVGデータをダウンロード
+                    using var svgData = await httpClient.GetStreamAsync(avatarUrl);
+                    // SVGデータを読み込む
+                    using var svg = new SKSvg();
+                    svg.Load(svgData);
+                    if (null != svg.Picture)
+                    {
+                        bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
+                        using var canvas = new SKCanvas(bitmap);
+                        canvas.DrawPicture(svg.Picture);
+                        canvas.Flush();
+                    }
+                }
+                else
+                {
+                    // URLから画像データを取得
+                    var avatarBytes = await httpClient.GetByteArrayAsync(avatarUrl);
+                    // バイト配列をMemoryStreamに変換
+                    using MemoryStream ms = new(avatarBytes);
+                    // MemoryStreamから画像を読み込む
+                    bitmap = SKBitmap.Decode(ms);
+                }
+                // 20x20にリサイズ
+                using (var resizedBitmap = bitmap.Resize(new SKImageInfo(20, 20), SKFilterQuality.High))
+                {
+                    // 画像をPNG形式で保存
+                    using SKImage image = SKImage.FromBitmap(resizedBitmap);
+                    using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+                    using FileStream fs = File.OpenWrite(picturePath);
+                    data.SaveTo(fs);
+                }
+
+                Debug.WriteLine("画像が正常に保存されました。");
+            }
+            catch (TaskCanceledException ex)
+            {
+                Debug.WriteLine($"タイムアウトしました: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"エラーが発生しました: {ex.Message}");
+            }
+            finally
+            {
+                bitmap.Dispose();
             }
         }
         #endregion

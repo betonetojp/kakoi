@@ -29,28 +29,28 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormWeb));
-            webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
-            ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
+            webView2 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            ((System.ComponentModel.ISupportInitialize)webView2).BeginInit();
             SuspendLayout();
             // 
-            // webView21
+            // webView2
             // 
-            webView21.AllowExternalDrop = true;
-            webView21.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            webView21.CreationProperties = null;
-            webView21.DefaultBackgroundColor = Color.White;
-            webView21.Location = new Point(12, 12);
-            webView21.Name = "webView21";
-            webView21.Size = new Size(280, 257);
-            webView21.TabIndex = 0;
-            webView21.ZoomFactor = 1D;
+            webView2.AllowExternalDrop = true;
+            webView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            webView2.CreationProperties = null;
+            webView2.DefaultBackgroundColor = Color.White;
+            webView2.Location = new Point(12, 12);
+            webView2.Name = "webView2";
+            webView2.Size = new Size(280, 257);
+            webView2.TabIndex = 0;
+            webView2.ZoomFactor = 1D;
             // 
             // FormWeb
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(304, 281);
-            Controls.Add(webView21);
+            Controls.Add(webView2);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(200, 200);
             Name = "FormWeb";
@@ -58,13 +58,12 @@
             StartPosition = FormStartPosition.Manual;
             Text = "kakoi";
             FormClosing += FormWeb_FormClosing;
-            DoubleClick += FormWeb_DoubleClick;
-            ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
+            ((System.ComponentModel.ISupportInitialize)webView2).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
-        internal Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        internal Microsoft.Web.WebView2.WinForms.WebView2 webView2;
     }
 }

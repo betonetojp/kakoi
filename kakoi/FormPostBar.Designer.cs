@@ -49,6 +49,8 @@
             textBoxPost.Size = new Size(251, 52);
             textBoxPost.TabIndex = 1;
             textBoxPost.KeyDown += TextBoxPost_KeyDown;
+            textBoxPost.MouseEnter += Control_MouseEnter;
+            textBoxPost.MouseLeave += Control_MouseLeave;
             // 
             // buttonPost
             // 

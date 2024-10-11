@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormManiacs));
             dataGridViewUsers = new DataGridView();
             buttonSave = new Button();
@@ -254,6 +255,8 @@
             // created_at
             // 
             created_at.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            dataGridViewCellStyle1.NullValue = null;
+            created_at.DefaultCellStyle = dataGridViewCellStyle1;
             created_at.HeaderText = "created_at";
             created_at.MinimumWidth = 20;
             created_at.Name = "created_at";
