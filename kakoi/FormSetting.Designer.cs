@@ -44,6 +44,7 @@
             label3 = new Label();
             checkBoxSendDSSTP = new CheckBox();
             linkLabelVersion = new LinkLabel();
+            checkBoxShowAvatar = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -52,7 +53,7 @@
             textBoxNokakoiKey.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxNokakoiKey.BorderStyle = BorderStyle.FixedSingle;
             textBoxNokakoiKey.ImeMode = ImeMode.Disable;
-            textBoxNokakoiKey.Location = new Point(88, 137);
+            textBoxNokakoiKey.Location = new Point(88, 112);
             textBoxNokakoiKey.MaxLength = 136;
             textBoxNokakoiKey.Name = "textBoxNokakoiKey";
             textBoxNokakoiKey.Size = new Size(184, 23);
@@ -63,7 +64,7 @@
             textBoxPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxPassword.BorderStyle = BorderStyle.FixedSingle;
             textBoxPassword.ImeMode = ImeMode.Disable;
-            textBoxPassword.Location = new Point(88, 166);
+            textBoxPassword.Location = new Point(88, 141);
             textBoxPassword.MaxLength = 256;
             textBoxPassword.Name = "textBoxPassword";
             textBoxPassword.PasswordChar = '*';
@@ -73,11 +74,11 @@
             // 
             // trackBarOpacity
             // 
-            trackBarOpacity.Location = new Point(145, 31);
+            trackBarOpacity.Location = new Point(152, 31);
             trackBarOpacity.Maximum = 100;
             trackBarOpacity.Minimum = 20;
             trackBarOpacity.Name = "trackBarOpacity";
-            trackBarOpacity.Size = new Size(127, 45);
+            trackBarOpacity.Size = new Size(120, 45);
             trackBarOpacity.TabIndex = 2;
             trackBarOpacity.TickFrequency = 20;
             trackBarOpacity.Value = 100;
@@ -86,8 +87,6 @@
             // checkBoxTopMost
             // 
             checkBoxTopMost.AutoSize = true;
-            checkBoxTopMost.Checked = true;
-            checkBoxTopMost.CheckState = CheckState.Checked;
             checkBoxTopMost.Location = new Point(12, 12);
             checkBoxTopMost.Name = "checkBoxTopMost";
             checkBoxTopMost.Size = new Size(101, 19);
@@ -98,7 +97,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(145, 13);
+            label1.Location = new Point(152, 13);
             label1.Name = "label1";
             label1.Size = new Size(48, 15);
             label1.TabIndex = 0;
@@ -107,7 +106,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(12, 139);
+            label2.Location = new Point(12, 114);
             label2.Name = "label2";
             label2.Size = new Size(70, 15);
             label2.TabIndex = 0;
@@ -118,8 +117,7 @@
             checkBoxAddClient.AutoSize = true;
             checkBoxAddClient.Checked = true;
             checkBoxAddClient.CheckState = CheckState.Checked;
-            checkBoxAddClient.ForeColor = SystemColors.ControlText;
-            checkBoxAddClient.Location = new Point(12, 37);
+            checkBoxAddClient.Location = new Point(172, 170);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
             checkBoxAddClient.TabIndex = 3;
@@ -131,7 +129,7 @@
             label4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label4.AutoSize = true;
             label4.ForeColor = SystemColors.GrayText;
-            label4.Location = new Point(12, 237);
+            label4.Location = new Point(99, 237);
             label4.Name = "label4";
             label4.Size = new Size(126, 15);
             label4.TabIndex = 0;
@@ -141,7 +139,7 @@
             // 
             linkLabelIcons8.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelIcons8.AutoSize = true;
-            linkLabelIcons8.Location = new Point(144, 237);
+            linkLabelIcons8.Location = new Point(231, 237);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
             linkLabelIcons8.TabIndex = 9;
@@ -152,7 +150,7 @@
             // checkBoxShowOnlyJapanese
             // 
             checkBoxShowOnlyJapanese.AutoSize = true;
-            checkBoxShowOnlyJapanese.Location = new Point(12, 112);
+            checkBoxShowOnlyJapanese.Location = new Point(12, 87);
             checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
             checkBoxShowOnlyJapanese.Size = new Size(162, 19);
             checkBoxShowOnlyJapanese.TabIndex = 6;
@@ -171,17 +169,18 @@
             // checkBoxShowOnlyFollowees
             // 
             checkBoxShowOnlyFollowees.AutoSize = true;
-            checkBoxShowOnlyFollowees.Location = new Point(12, 87);
+            checkBoxShowOnlyFollowees.Location = new Point(12, 62);
             checkBoxShowOnlyFollowees.Name = "checkBoxShowOnlyFollowees";
             checkBoxShowOnlyFollowees.Size = new Size(134, 19);
             checkBoxShowOnlyFollowees.TabIndex = 5;
             checkBoxShowOnlyFollowees.Text = "Show only followees";
             checkBoxShowOnlyFollowees.UseVisualStyleBackColor = true;
+            checkBoxShowOnlyFollowees.CheckedChanged += checkBoxShowOnlyFollowees_CheckedChanged;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 168);
+            label3.Location = new Point(12, 143);
             label3.Name = "label3";
             label3.Size = new Size(57, 15);
             label3.TabIndex = 0;
@@ -190,7 +189,8 @@
             // checkBoxSendDSSTP
             // 
             checkBoxSendDSSTP.AutoSize = true;
-            checkBoxSendDSSTP.Location = new Point(12, 62);
+            checkBoxSendDSSTP.ForeColor = SystemColors.ControlDark;
+            checkBoxSendDSSTP.Location = new Point(12, 170);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
             checkBoxSendDSSTP.TabIndex = 4;
@@ -201,7 +201,7 @@
             // 
             linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             linkLabelVersion.AutoSize = true;
-            linkLabelVersion.Location = new Point(228, 237);
+            linkLabelVersion.Location = new Point(12, 237);
             linkLabelVersion.Name = "linkLabelVersion";
             linkLabelVersion.Size = new Size(44, 15);
             linkLabelVersion.TabIndex = 10;
@@ -209,11 +209,22 @@
             linkLabelVersion.Text = "v0.3.0b";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
+            // checkBoxShowAvatar
+            // 
+            checkBoxShowAvatar.AutoSize = true;
+            checkBoxShowAvatar.Location = new Point(12, 37);
+            checkBoxShowAvatar.Name = "checkBoxShowAvatar";
+            checkBoxShowAvatar.Size = new Size(90, 19);
+            checkBoxShowAvatar.TabIndex = 11;
+            checkBoxShowAvatar.Text = "Show avatar";
+            checkBoxShowAvatar.UseVisualStyleBackColor = true;
+            // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(284, 261);
+            Controls.Add(checkBoxShowAvatar);
             Controls.Add(linkLabelVersion);
             Controls.Add(checkBoxSendDSSTP);
             Controls.Add(label3);
@@ -265,5 +276,6 @@
         private Label label3;
         internal CheckBox checkBoxSendDSSTP;
         private LinkLabel linkLabelVersion;
+        internal CheckBox checkBoxShowAvatar;
     }
 }

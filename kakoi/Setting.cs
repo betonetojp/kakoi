@@ -19,13 +19,15 @@ namespace kakoi
             public Size Size { get; set; } = new Size(320, 320);
             public int NameColumnWidth { get; set; } = 60;
 
-            public bool TopMost { get; set; } = true;
+            public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
-            public bool AddClient { get; set; } = true;
+            
+            public bool ShowAvatar { get; set; } = false;
             public bool ShowOnlyFollowees { get; set; } = false;
             public bool ShowOnlyJapanese { get; set; } = false;
-            public bool SendDSSTP { get; set; } = false;
             public string NokakoiKey { get; set; } = string.Empty;
+            public bool SendDSSTP { get; set; } = false;
+            public bool AddClient { get; set; } = true;
 
             public string GridColor { get; set; } = "#FF1493";
             public string ReplyColor { get; set; } = "#E6E6FA";
@@ -68,10 +70,10 @@ namespace kakoi
             get => _data.Opacity;
             set => _data.Opacity = value;
         }
-        public static bool AddClient
+        public static bool ShowAvatar
         {
-            get => _data.AddClient;
-            set => _data.AddClient = value;
+            get => _data.ShowAvatar;
+            set => _data.ShowAvatar = value;
         }
         public static bool ShowOnlyFollowees
         {
@@ -83,15 +85,20 @@ namespace kakoi
             get => _data.ShowOnlyJapanese;
             set => _data.ShowOnlyJapanese = value;
         }
+        public static string NokakoiKey
+        {
+            get => _data.NokakoiKey;
+            set => _data.NokakoiKey = value;
+        }
         public static bool SendDSSTP
         {
             get => _data.SendDSSTP;
             set => _data.SendDSSTP = value;
         }
-        public static string NokakoiKey
+        public static bool AddClient
         {
-            get => _data.NokakoiKey;
-            set => _data.NokakoiKey = value;
+            get => _data.AddClient;
+            set => _data.AddClient = value;
         }
         
         public static string GridColor

@@ -62,5 +62,10 @@ namespace kakoi
             };
             Process.Start(app);
         }
+
+        private void checkBoxShowOnlyFollowees_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

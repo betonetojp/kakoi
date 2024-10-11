@@ -25,7 +25,6 @@ namespace kakoi
         private FormWeb _formWeb = new();
 
         private string _nsec = string.Empty;
-        //private string _npub = string.Empty;
         private string _npubHex = string.Empty;
 
         /// <summary>
@@ -41,12 +40,13 @@ namespace kakoi
         /// </summary>
         internal KeywordNotifier Notifier = new();
 
-        private bool _addClient;
+        private bool _showAvatar;
         private bool _showOnlyFollowees;
         private bool _showOnlyJapanese;
         private string _nokakoiKey = string.Empty;
         private string _password = string.Empty;
         private bool _sendDSSTP = true;
+        private bool _addClient;
 
         private double _tempOpacity = 1.00;
 
@@ -118,11 +118,13 @@ namespace kakoi
             }
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _addClient = Setting.AddClient;
+            _showAvatar = Setting.ShowAvatar;
+            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
+            _addClient = Setting.AddClient;
             _formPostBar.Location = Setting.PostBarLocation;
             if (new Point(0, 0) == _formPostBar.Location || _formPostBar.Location.X < 0 || _formPostBar.Location.Y < 0)
             {
@@ -140,7 +142,6 @@ namespace kakoi
             dataGridViewNotes.DefaultCellStyle.SelectionBackColor = Tools.HexToColor(Setting.GridColor);
 
             _formSetting.PostBarForm = _formPostBar;
-            //_formSetting.WebForm = _formWeb;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
 
@@ -303,7 +304,7 @@ namespace kakoi
                                 );
 
                                 // avatar列にアバターを表示
-                                if (user.Picture != null && user.Picture.Length > 0)
+                                if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!File.Exists(avatarFile))
@@ -416,7 +417,7 @@ namespace kakoi
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
                             // avatar列にアバターを表示
-                            if (user.Picture != null && user.Picture.Length > 0)
+                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
@@ -571,7 +572,7 @@ namespace kakoi
                             );
 
                             // avatar列にアバターを表示
-                            if (user.Picture != null && user.Picture.Length > 0)
+                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
@@ -661,7 +662,7 @@ namespace kakoi
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
 
-                                if (null != newUserData.Picture)
+                                if (_showAvatar && null != newUserData.Picture)
                                 {
                                     // アバター取得
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
@@ -851,13 +852,13 @@ namespace kakoi
             Opacity = _tempOpacity;
             _formSetting.checkBoxTopMost.Checked = TopMost;
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
-            _formSetting.checkBoxAddClient.Checked = _addClient;
+            _formSetting.checkBoxShowAvatar.Checked = _showAvatar;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
-            _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
             _formSetting.textBoxPassword.Text = _password;
-            //_formSetting.WebForm = _formWeb;
+            _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
+            _formSetting.checkBoxAddClient.Checked = _addClient;
 
             // 開く
             _formSetting.ShowDialog(this);
@@ -867,18 +868,19 @@ namespace kakoi
             Opacity = _formSetting.trackBarOpacity.Value / 100.0;
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _addClient = _formSetting.checkBoxAddClient.Checked;
+            _showAvatar = _formSetting.checkBoxShowAvatar.Checked;
+            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
             _password = _formSetting.textBoxPassword.Text;
             _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
+            _addClient = _formSetting.checkBoxAddClient.Checked;
             try
             {
                 // 別アカウントログイン失敗に備えてクリアしておく
                 _nsec = string.Empty;
                 _npubHex = string.Empty;
-                //_npub = string.Empty;
                 _followeesHexs.Clear();
                 textBoxPost.PlaceholderText = "Hello Nostr!";
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
@@ -886,7 +888,6 @@ namespace kakoi
                 // 秘密鍵と公開鍵取得
                 _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
                 _npubHex = _nsec.GetNpubHex();
-                //_npub = _npubHex.ConvertToNpub();
 
                 // ログイン済みの時
                 if (!_npubHex.IsNullOrEmpty())
@@ -916,11 +917,12 @@ namespace kakoi
 
             Setting.TopMost = TopMost;
             Setting.Opacity = Opacity;
-            Setting.AddClient = _addClient;
+            Setting.ShowAvatar = _showAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
             Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.NokakoiKey = _nokakoiKey;
             Setting.SendDSSTP = _sendDSSTP;
+            Setting.AddClient = _addClient;
 
             Setting.Save(_configPath);
             _emojis = Tools.LoadEmojis();
@@ -1317,11 +1319,9 @@ namespace kakoi
         private static async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
-
             using HttpClient httpClient = new();
             httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
             SKBitmap bitmap = new();
-
             try
             {
                 if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
