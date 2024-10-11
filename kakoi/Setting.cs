@@ -18,15 +18,15 @@ namespace kakoi
             public Point Location { get; set; }
             public Size Size { get; set; } = new Size(320, 320);
             public int NameColumnWidth { get; set; } = 60;
-            public int CutLength { get; set; } = 40;
-            public int CutNameLength { get; set; } = 8;
+
+            public bool TopMost { get; set; } = true;
             public double Opacity { get; set; } = 1.00;
-            public bool TopMost { get; set; } = false;
-            public bool ShowOnlyJapanese { get; set; } = false;
-            public bool ShowOnlyFollowees { get; set; } = false;
-            public string NokakoiKey { get; set; } = string.Empty;
-            public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
+            public bool ShowOnlyFollowees { get; set; } = false;
+            public bool ShowOnlyJapanese { get; set; } = false;
+            public bool SendDSSTP { get; set; } = false;
+            public string NokakoiKey { get; set; } = string.Empty;
+
             public string GridColor { get; set; } = "#FF1493";
             public string ReplyColor { get; set; } = "#E6E6FA";
             public string RepostColor { get; set; } = "#F0F8FF";
@@ -57,51 +57,43 @@ namespace kakoi
             get => _data.NameColumnWidth;
             set => _data.NameColumnWidth = value;
         }
-        public static int CutLength
+
+        public static bool TopMost
         {
-            get => _data.CutLength;
-            set => _data.CutLength = value;
-        }
-        public static int CutNameLength
-        {
-            get => _data.CutNameLength;
-            set => _data.CutNameLength = value;
+            get => _data.TopMost;
+            set => _data.TopMost = value;
         }
         public static double Opacity
         {
             get => _data.Opacity;
             set => _data.Opacity = value;
         }
-        public static bool TopMost
+        public static bool AddClient
         {
-            get => _data.TopMost;
-            set => _data.TopMost = value;
-        }
-        public static bool ShowOnlyJapanese
-        {
-            get => _data.ShowOnlyJapanese;
-            set => _data.ShowOnlyJapanese = value;
+            get => _data.AddClient;
+            set => _data.AddClient = value;
         }
         public static bool ShowOnlyFollowees
         {
             get => _data.ShowOnlyFollowees;
             set => _data.ShowOnlyFollowees = value;
         }
-        public static string NokakoiKey
+        public static bool ShowOnlyJapanese
         {
-            get => _data.NokakoiKey;
-            set => _data.NokakoiKey = value;
+            get => _data.ShowOnlyJapanese;
+            set => _data.ShowOnlyJapanese = value;
         }
         public static bool SendDSSTP
         {
             get => _data.SendDSSTP;
             set => _data.SendDSSTP = value;
         }
-        public static bool AddClient
+        public static string NokakoiKey
         {
-            get => _data.AddClient;
-            set => _data.AddClient = value;
+            get => _data.NokakoiKey;
+            set => _data.NokakoiKey = value;
         }
+        
         public static string GridColor
         {
             get => _data.GridColor;

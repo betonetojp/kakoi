@@ -41,14 +41,12 @@ namespace kakoi
         /// </summary>
         internal KeywordNotifier Notifier = new();
 
-        private int _cutLength;
-        private int _cutNameLength;
         private bool _addClient;
-        private bool _showOnlyJapanese;
         private bool _showOnlyFollowees;
+        private bool _showOnlyJapanese;
         private string _nokakoiKey = string.Empty;
-        private bool _sendDSSTP = true;
         private string _password = string.Empty;
+        private bool _sendDSSTP = true;
 
         private double _tempOpacity = 1.00;
 
@@ -115,8 +113,6 @@ namespace kakoi
             }
             Size = Setting.Size;
             TopMost = Setting.TopMost;
-            _cutLength = Setting.CutLength;
-            _cutNameLength = Setting.CutNameLength;
             Opacity = Setting.Opacity;
             if (0 == Opacity)
             {
@@ -124,10 +120,9 @@ namespace kakoi
             }
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            //_formWeb.Opacity = Opacity;
             _addClient = Setting.AddClient;
-            _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
+            _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
             _formPostBar.Location = Setting.PostBarLocation;
@@ -328,12 +323,6 @@ namespace kakoi
                                     }
                                 }
 
-                                // ユーザー表示名カット
-                                if (userName.Length > _cutNameLength)
-                                {
-                                    userName = $"{userName[.._cutNameLength]}...";
-                                }
-
                                 // SSPに送る
                                 if (_sendDSSTP && null != _ds)
                                 {
@@ -478,12 +467,6 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
                             }
 
-                            // ユーザー表示名カット
-                            if (userName.Length > _cutNameLength)
-                            {
-                                userName = $"{userName[.._cutNameLength]}...";
-                            }
-
                             // SSPに送る
                             if (_sendDSSTP && null != _ds)
                             {
@@ -496,11 +479,6 @@ namespace kakoi
                                 SearchGhost();
 
                                 string msg = content;
-                                // 本文カット
-                                if (msg.Length > _cutLength)
-                                {
-                                    msg = $"{msg[.._cutLength]}...";//\\u\\p[1]\\s[10]長いよっ！";
-                                }
                                 Dictionary<string, string> SSTPHeader = new(_baseSSTPHeader)
                                 {
                                     { "Reference1", "1" }, // kind
@@ -552,11 +530,6 @@ namespace kakoi
 
                             // 改行をスペースに置き換え
                             content = content.Replace('\n', ' ');
-                            // 本文カット
-                            if (content.Length > _cutLength)
-                            {
-                                content = $"{content[.._cutLength]}...";
-                            }
                             Debug.WriteLine($"{timeString} {userName} {content}");
                         }
                         #endregion
@@ -881,8 +854,6 @@ namespace kakoi
             // 開く前
             Opacity = _tempOpacity;
             _formSetting.checkBoxTopMost.Checked = TopMost;
-            _formSetting.textBoxCutLength.Text = _cutLength.ToString();
-            _formSetting.textBoxCutNameLength.Text = _cutNameLength.ToString();
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
             _formSetting.checkBoxAddClient.Checked = _addClient;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
@@ -897,32 +868,15 @@ namespace kakoi
 
             // 閉じた後
             TopMost = _formSetting.checkBoxTopMost.Checked;
-            if (!int.TryParse(_formSetting.textBoxCutLength.Text, out _cutLength))
-            {
-                _cutLength = 40;
-            }
-            else if (_cutLength < 1)
-            {
-                _cutLength = 1;
-            }
-            if (!int.TryParse(_formSetting.textBoxCutNameLength.Text, out _cutNameLength))
-            {
-                _cutNameLength = 8;
-            }
-            else if (_cutNameLength < 1)
-            {
-                _cutNameLength = 1;
-            }
             Opacity = _formSetting.trackBarOpacity.Value / 100.0;
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            //_formWeb.Opacity = Setting.Opacity;
             _addClient = _formSetting.checkBoxAddClient.Checked;
-            _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
+            _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
-            _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
             _password = _formSetting.textBoxPassword.Text;
+            _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
             try
             {
                 // 別アカウントログイン失敗に備えてクリアしておく
@@ -965,12 +919,10 @@ namespace kakoi
             }
 
             Setting.TopMost = TopMost;
-            Setting.CutLength = _cutLength;
-            Setting.CutNameLength = _cutNameLength;
             Setting.Opacity = Opacity;
             Setting.AddClient = _addClient;
-            Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
+            Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.NokakoiKey = _nokakoiKey;
             Setting.SendDSSTP = _sendDSSTP;
 
@@ -1345,7 +1297,6 @@ namespace kakoi
                 {
                     _formWeb.WindowState = FormWindowState.Normal;
                 }
-                //_formWeb.Opacity = Setting.Opacity;
                 var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? "";
                 NIP19.NostrEventNote nostrEventNote = new()
                 {

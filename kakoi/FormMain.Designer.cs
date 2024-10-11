@@ -232,6 +232,7 @@
             avatar.HeaderText = "avatar";
             avatar.Name = "avatar";
             avatar.ReadOnly = true;
+            avatar.Visible = false;
             avatar.Width = 5;
             // 
             // name
