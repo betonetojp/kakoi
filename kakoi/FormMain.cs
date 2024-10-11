@@ -72,6 +72,8 @@ namespace kakoi
         private List<Emoji> _emojis = [];
         private List<Client> _clients = [];
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
+
+        private static readonly HttpClient _httpClient = new();
         #endregion
 
         #region コンストラクタ
@@ -154,6 +156,8 @@ namespace kakoi
             {
                 Directory.CreateDirectory(_avatarPath);
             }
+
+            _httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
         }
         #endregion
 
@@ -1367,8 +1371,8 @@ namespace kakoi
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
 
-            using HttpClient client = new();
-            client.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
+            //using HttpClient client = new();
+            //client.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
             SKBitmap bitmap = new();
 
             try
@@ -1378,7 +1382,7 @@ namespace kakoi
                     // SVGファイルの場合
                     Debug.WriteLine("svg画像処理開始");
                     // URLからSVGデータをダウンロード
-                    using var svgData = await client.GetStreamAsync(avatarUrl);
+                    using var svgData = await _httpClient.GetStreamAsync(avatarUrl);
                     // SVGデータを読み込む
                     using var svg = new SKSvg();
                     svg.Load(svgData);
@@ -1393,7 +1397,7 @@ namespace kakoi
                 else
                 {
                     // URLから画像データを取得
-                    var avatarBytes = await client.GetByteArrayAsync(avatarUrl);
+                    var avatarBytes = await _httpClient.GetByteArrayAsync(avatarUrl);
                     // バイト配列をMemoryStreamに変換
                     using MemoryStream ms = new(avatarBytes);
                     // MemoryStreamから画像を読み込む
