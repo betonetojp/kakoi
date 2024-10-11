@@ -18,6 +18,19 @@ namespace kakoi
             labelOpacity.Text = $"{trackBarOpacity.Value}%";
         }
 
+        private void FormSetting_Shown(object sender, EventArgs e)
+        {
+            textBoxPassword.Focus();
+        }
+
+        private void FormSetting_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
+        }
+
         private void TrackBarOpacity_Scroll(object sender, EventArgs e)
         {
             labelOpacity.Text = $"{trackBarOpacity.Value}%";
@@ -25,10 +38,6 @@ namespace kakoi
             {
                 Owner.Opacity = trackBarOpacity.Value / 100.0;
                 PostBarForm.Opacity = Owner.Opacity;
-                //if (null != WebForm && !WebForm.IsDisposed)
-                //{
-                //    WebForm.Opacity = Owner.Opacity;
-                //}
             }
         }
 
@@ -43,17 +52,15 @@ namespace kakoi
             Process.Start(app);
         }
 
-        private void FormSetting_KeyDown(object sender, KeyEventArgs e)
+        private void LinkLabelVersion_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
+            linkLabelVersion.LinkVisited = true;
+            var app = new ProcessStartInfo
             {
-                Close();
-            }
-        }
-
-        private void FormSetting_Shown(object sender, EventArgs e)
-        {
-            textBoxPassword.Focus();
+                FileName = "https://github.com/betonetojp/kakoi",
+                UseShellExecute = true
+            };
+            Process.Start(app);
         }
     }
 }

@@ -30,24 +30,20 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetting));
             textBoxNokakoiKey = new TextBox();
-            textBoxCutLength = new TextBox();
-            label1 = new Label();
             textBoxPassword = new TextBox();
             trackBarOpacity = new TrackBar();
             checkBoxTopMost = new CheckBox();
+            label1 = new Label();
             label2 = new Label();
-            label3 = new Label();
             checkBoxAddClient = new CheckBox();
-            label5 = new Label();
+            label4 = new Label();
             linkLabelIcons8 = new LinkLabel();
             checkBoxShowOnlyJapanese = new CheckBox();
-            labelVersion = new Label();
             labelOpacity = new Label();
             checkBoxShowOnlyFollowees = new CheckBox();
-            label4 = new Label();
-            textBoxCutNameLength = new TextBox();
-            label8 = new Label();
+            label3 = new Label();
             checkBoxSendDSSTP = new CheckBox();
+            linkLabelVersion = new LinkLabel();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -56,37 +52,18 @@
             textBoxNokakoiKey.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxNokakoiKey.BorderStyle = BorderStyle.FixedSingle;
             textBoxNokakoiKey.ImeMode = ImeMode.Disable;
-            textBoxNokakoiKey.Location = new Point(88, 145);
+            textBoxNokakoiKey.Location = new Point(88, 137);
             textBoxNokakoiKey.MaxLength = 136;
             textBoxNokakoiKey.Name = "textBoxNokakoiKey";
             textBoxNokakoiKey.Size = new Size(184, 23);
             textBoxNokakoiKey.TabIndex = 7;
-            // 
-            // textBoxCutLength
-            // 
-            textBoxCutLength.BorderStyle = BorderStyle.FixedSingle;
-            textBoxCutLength.ImeMode = ImeMode.Disable;
-            textBoxCutLength.Location = new Point(100, 12);
-            textBoxCutLength.MaxLength = 4;
-            textBoxCutLength.Name = "textBoxCutLength";
-            textBoxCutLength.Size = new Size(26, 23);
-            textBoxCutLength.TabIndex = 1;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(12, 14);
-            label1.Name = "label1";
-            label1.Size = new Size(82, 15);
-            label1.TabIndex = 0;
-            label1.Text = "Cut content at";
             // 
             // textBoxPassword
             // 
             textBoxPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxPassword.BorderStyle = BorderStyle.FixedSingle;
             textBoxPassword.ImeMode = ImeMode.Disable;
-            textBoxPassword.Location = new Point(88, 174);
+            textBoxPassword.Location = new Point(88, 166);
             textBoxPassword.MaxLength = 256;
             textBoxPassword.Name = "textBoxPassword";
             textBoxPassword.PasswordChar = '*';
@@ -109,30 +86,32 @@
             // checkBoxTopMost
             // 
             checkBoxTopMost.AutoSize = true;
-            checkBoxTopMost.Location = new Point(12, 70);
+            checkBoxTopMost.Checked = true;
+            checkBoxTopMost.CheckState = CheckState.Checked;
+            checkBoxTopMost.Location = new Point(12, 12);
             checkBoxTopMost.Name = "checkBoxTopMost";
             checkBoxTopMost.Size = new Size(101, 19);
-            checkBoxTopMost.TabIndex = 4;
+            checkBoxTopMost.TabIndex = 1;
             checkBoxTopMost.Text = "Always on top";
             checkBoxTopMost.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(145, 13);
+            label1.Name = "label1";
+            label1.Size = new Size(48, 15);
+            label1.TabIndex = 0;
+            label1.Text = "Opacity";
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(145, 13);
+            label2.Location = new Point(12, 139);
             label2.Name = "label2";
-            label2.Size = new Size(48, 15);
+            label2.Size = new Size(70, 15);
             label2.TabIndex = 0;
-            label2.Text = "Opacity";
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(12, 147);
-            label3.Name = "label3";
-            label3.Size = new Size(70, 15);
-            label3.TabIndex = 0;
-            label3.Text = "nokakoi key";
+            label2.Text = "nokakoi key";
             // 
             // checkBoxAddClient
             // 
@@ -140,32 +119,32 @@
             checkBoxAddClient.Checked = true;
             checkBoxAddClient.CheckState = CheckState.Checked;
             checkBoxAddClient.ForeColor = SystemColors.ControlText;
-            checkBoxAddClient.Location = new Point(172, 203);
+            checkBoxAddClient.Location = new Point(12, 37);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
-            checkBoxAddClient.TabIndex = 10;
+            checkBoxAddClient.TabIndex = 3;
             checkBoxAddClient.Text = "Add client tag";
             checkBoxAddClient.UseVisualStyleBackColor = true;
             // 
-            // label5
+            // label4
             // 
-            label5.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            label5.AutoSize = true;
-            label5.ForeColor = SystemColors.GrayText;
-            label5.Location = new Point(99, 237);
-            label5.Name = "label5";
-            label5.Size = new Size(126, 15);
-            label5.TabIndex = 0;
-            label5.Text = "Monochrome icons by";
+            label4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            label4.AutoSize = true;
+            label4.ForeColor = SystemColors.GrayText;
+            label4.Location = new Point(12, 237);
+            label4.Name = "label4";
+            label4.Size = new Size(126, 15);
+            label4.TabIndex = 0;
+            label4.Text = "Monochrome icons by";
             // 
             // linkLabelIcons8
             // 
             linkLabelIcons8.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelIcons8.AutoSize = true;
-            linkLabelIcons8.Location = new Point(231, 237);
+            linkLabelIcons8.Location = new Point(144, 237);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 11;
+            linkLabelIcons8.TabIndex = 9;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -173,22 +152,12 @@
             // checkBoxShowOnlyJapanese
             // 
             checkBoxShowOnlyJapanese.AutoSize = true;
-            checkBoxShowOnlyJapanese.Location = new Point(12, 120);
+            checkBoxShowOnlyJapanese.Location = new Point(12, 112);
             checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
             checkBoxShowOnlyJapanese.Size = new Size(162, 19);
             checkBoxShowOnlyJapanese.TabIndex = 6;
             checkBoxShowOnlyJapanese.Text = "Show only Japanese posts";
             checkBoxShowOnlyJapanese.UseVisualStyleBackColor = true;
-            // 
-            // labelVersion
-            // 
-            labelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            labelVersion.AutoSize = true;
-            labelVersion.Location = new Point(12, 237);
-            labelVersion.Name = "labelVersion";
-            labelVersion.Size = new Size(37, 15);
-            labelVersion.TabIndex = 0;
-            labelVersion.Text = "v0.2.2";
             // 
             // labelOpacity
             // 
@@ -202,75 +171,63 @@
             // checkBoxShowOnlyFollowees
             // 
             checkBoxShowOnlyFollowees.AutoSize = true;
-            checkBoxShowOnlyFollowees.Location = new Point(12, 95);
+            checkBoxShowOnlyFollowees.Location = new Point(12, 87);
             checkBoxShowOnlyFollowees.Name = "checkBoxShowOnlyFollowees";
             checkBoxShowOnlyFollowees.Size = new Size(134, 19);
             checkBoxShowOnlyFollowees.TabIndex = 5;
             checkBoxShowOnlyFollowees.Text = "Show only followees";
             checkBoxShowOnlyFollowees.UseVisualStyleBackColor = true;
             // 
-            // label4
+            // label3
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(12, 43);
-            label4.Name = "label4";
-            label4.Size = new Size(70, 15);
-            label4.TabIndex = 0;
-            label4.Text = "Cut name at";
-            // 
-            // textBoxCutNameLength
-            // 
-            textBoxCutNameLength.BorderStyle = BorderStyle.FixedSingle;
-            textBoxCutNameLength.ImeMode = ImeMode.Disable;
-            textBoxCutNameLength.Location = new Point(100, 41);
-            textBoxCutNameLength.MaxLength = 4;
-            textBoxCutNameLength.Name = "textBoxCutNameLength";
-            textBoxCutNameLength.Size = new Size(26, 23);
-            textBoxCutNameLength.TabIndex = 3;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(12, 176);
-            label8.Name = "label8";
-            label8.Size = new Size(57, 15);
-            label8.TabIndex = 0;
-            label8.Text = "password";
+            label3.AutoSize = true;
+            label3.Location = new Point(12, 168);
+            label3.Name = "label3";
+            label3.Size = new Size(57, 15);
+            label3.TabIndex = 0;
+            label3.Text = "password";
             // 
             // checkBoxSendDSSTP
             // 
             checkBoxSendDSSTP.AutoSize = true;
-            checkBoxSendDSSTP.ForeColor = SystemColors.ControlDark;
-            checkBoxSendDSSTP.Location = new Point(12, 203);
+            checkBoxSendDSSTP.Location = new Point(12, 62);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
-            checkBoxSendDSSTP.TabIndex = 9;
+            checkBoxSendDSSTP.TabIndex = 4;
             checkBoxSendDSSTP.Text = "Send DSSTP";
             checkBoxSendDSSTP.UseVisualStyleBackColor = true;
+            // 
+            // linkLabelVersion
+            // 
+            linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            linkLabelVersion.AutoSize = true;
+            linkLabelVersion.Location = new Point(228, 237);
+            linkLabelVersion.Name = "linkLabelVersion";
+            linkLabelVersion.Size = new Size(44, 15);
+            linkLabelVersion.TabIndex = 10;
+            linkLabelVersion.TabStop = true;
+            linkLabelVersion.Text = "v0.3.0b";
+            linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(284, 261);
+            Controls.Add(linkLabelVersion);
             Controls.Add(checkBoxSendDSSTP);
-            Controls.Add(label8);
-            Controls.Add(label4);
-            Controls.Add(textBoxCutNameLength);
+            Controls.Add(label3);
             Controls.Add(checkBoxShowOnlyFollowees);
             Controls.Add(labelOpacity);
-            Controls.Add(labelVersion);
             Controls.Add(checkBoxShowOnlyJapanese);
             Controls.Add(linkLabelIcons8);
-            Controls.Add(label5);
+            Controls.Add(label4);
             Controls.Add(checkBoxAddClient);
-            Controls.Add(label3);
             Controls.Add(label2);
+            Controls.Add(label1);
             Controls.Add(checkBoxTopMost);
             Controls.Add(trackBarOpacity);
             Controls.Add(textBoxPassword);
-            Controls.Add(label1);
-            Controls.Add(textBoxCutLength);
             Controls.Add(textBoxNokakoiKey);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
@@ -294,23 +251,19 @@
         #endregion
 
         internal TextBox textBoxNokakoiKey;
-        private Label label1;
-        internal TextBox textBoxCutLength;
         internal TextBox textBoxPassword;
         internal TrackBar trackBarOpacity;
         internal CheckBox checkBoxTopMost;
+        private Label label1;
         private Label label2;
-        private Label label3;
         internal CheckBox checkBoxAddClient;
-        private Label label5;
+        private Label label4;
         private LinkLabel linkLabelIcons8;
         internal CheckBox checkBoxShowOnlyJapanese;
-        private Label labelVersion;
         private Label labelOpacity;
         internal CheckBox checkBoxShowOnlyFollowees;
-        private Label label4;
-        internal TextBox textBoxCutNameLength;
-        private Label label8;
+        private Label label3;
         internal CheckBox checkBoxSendDSSTP;
+        private LinkLabel linkLabelVersion;
     }
 }
