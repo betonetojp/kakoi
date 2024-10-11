@@ -6,7 +6,7 @@ namespace kakoi
     public partial class FormSetting : Form
     {
         internal FormPostBar? PostBarForm { get; set; }
-        internal FormWeb? WebForm { get; set; }
+        //internal FormWeb? WebForm { get; set; }
         public FormSetting()
         {
             InitializeComponent();
@@ -25,10 +25,10 @@ namespace kakoi
             {
                 Owner.Opacity = trackBarOpacity.Value / 100.0;
                 PostBarForm.Opacity = Owner.Opacity;
-                if (null != WebForm && !WebForm.IsDisposed)
-                {
-                    WebForm.Opacity = Owner.Opacity;
-                }
+                //if (null != WebForm && !WebForm.IsDisposed)
+                //{
+                //    WebForm.Opacity = Owner.Opacity;
+                //}
             }
         }
 

@@ -62,10 +62,10 @@
             // 
             buttonStart.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonStart.Image = Properties.Resources.icons8_start_16;
-            buttonStart.Location = new Point(145, 12);
+            buttonStart.Location = new Point(211, 12);
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(23, 23);
-            buttonStart.TabIndex = 2;
+            buttonStart.TabIndex = 3;
             buttonStart.UseVisualStyleBackColor = true;
             buttonStart.Click += ButtonStart_Click;
             // 
@@ -74,10 +74,10 @@
             buttonStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonStop.Enabled = false;
             buttonStop.Image = Properties.Resources.icons8_stop_16;
-            buttonStop.Location = new Point(174, 12);
+            buttonStop.Location = new Point(240, 12);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(23, 23);
-            buttonStop.TabIndex = 3;
+            buttonStop.TabIndex = 4;
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += ButtonStop_Click;
             // 
@@ -110,10 +110,10 @@
             // 
             buttonSetting.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonSetting.Image = Properties.Resources.icons8_setting_16;
-            buttonSetting.Location = new Point(203, 12);
+            buttonSetting.Location = new Point(269, 12);
             buttonSetting.Name = "buttonSetting";
             buttonSetting.Size = new Size(23, 23);
-            buttonSetting.TabIndex = 4;
+            buttonSetting.TabIndex = 5;
             buttonSetting.UseVisualStyleBackColor = true;
             buttonSetting.Click += ButtonSetting_Click;
             // 
@@ -146,7 +146,7 @@
             labelRelays.ForeColor = SystemColors.GrayText;
             labelRelays.Location = new Point(41, 16);
             labelRelays.Name = "labelRelays";
-            labelRelays.Size = new Size(98, 15);
+            labelRelays.Size = new Size(110, 15);
             labelRelays.TabIndex = 0;
             labelRelays.Text = "Relay info";
             labelRelays.MouseClick += FormMain_MouseClick;
@@ -159,10 +159,10 @@
             comboBoxEmoji.DisplayMember = "Content";
             comboBoxEmoji.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxEmoji.Font = new Font("Segoe UI Emoji", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            comboBoxEmoji.Location = new Point(232, 11);
+            comboBoxEmoji.Location = new Point(157, 12);
             comboBoxEmoji.Name = "comboBoxEmoji";
-            comboBoxEmoji.Size = new Size(60, 24);
-            comboBoxEmoji.TabIndex = 5;
+            comboBoxEmoji.Size = new Size(48, 24);
+            comboBoxEmoji.TabIndex = 2;
             toolTipRelays.SetToolTip(comboBoxEmoji, "Reaction content");
             comboBoxEmoji.ValueMember = "Content";
             // 
@@ -283,7 +283,7 @@
             Controls.Add(buttonStart);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
-            MinimumSize = new Size(200, 200);
+            MinimumSize = new Size(240, 240);
             Name = "FormMain";
             SizeGripStyle = SizeGripStyle.Show;
             StartPosition = FormStartPosition.Manual;

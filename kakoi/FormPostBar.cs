@@ -6,6 +6,7 @@ namespace kakoi
     {
         internal FormMain? MainForm { get; set; }
         private Point _mousePoint;
+        private double _tempOpacity = 1.00;
 
         public FormPostBar()
         {
@@ -126,5 +127,20 @@ namespace kakoi
             };
             Process.Start(app);
         }
+
+        #region 透明解除処理
+        // マウス入った時
+        private void Control_MouseEnter(object sender, EventArgs e)
+        {
+            _tempOpacity = Opacity;
+            Opacity = 1.00;
+        }
+
+        // マウス出た時
+        private void Control_MouseLeave(object sender, EventArgs e)
+        {
+            Opacity = _tempOpacity;
+        }
+        #endregion
     }
 }
