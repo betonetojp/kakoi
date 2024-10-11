@@ -241,7 +241,7 @@ namespace kakoi
                 new Emoji { Content = "🤔" },
                 new Emoji { Content = "🎉" },
                 new Emoji { Content = "🫂" },
-                new Emoji { Content = "kakoi", Url = "https://nokakoi.com/media/kakoi.png" },
+                new Emoji { Content = "nice", Url = "https://nokakoi.com/media/kakoi.png" },
                 new Emoji { Content = "kusa", Url = "https://image.nostr.build/18fa1ce2d056e3d28c05b566969ea7c0a8de4cf5c2cd9422242278ff53910a9d.png" },
                 ];
 
