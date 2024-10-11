@@ -459,15 +459,6 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
-                            //foreach (var tag in nostrEvent.Tags)
-                            //{
-                            //    // eタグ、pタグがある時は背景色を変える
-                            //    if (tag.TagIdentifier == "e" || tag.TagIdentifier == "p")
-                            //    {
-                            //        dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.Lavender;
-                            //        continue;
-                            //    }
-                            //}
                             // e,p,qタグがある時は背景色を変える
                             if (isReply)
                             {
@@ -590,7 +581,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(1, 1), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.",
+                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.", // 先頭のpにしているがスレッドの場合違いそう
                             nostrEvent.Id,
                             nostrEvent.PublicKey
                             );
@@ -611,7 +602,6 @@ namespace kakoi
                                     dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
                                 }
                             }
-
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Color.AliceBlue;
                         }
                     }
@@ -1066,13 +1056,11 @@ namespace kakoi
         /// <returns>ユーザー表示名</returns>
         private string GetUserName(string publicKeyHex)
         {
-            /*
-            // 辞書にない場合プロフィールを購読する
-            if (!_users.TryGetValue(publicKeyHex, out User? user))
-            {
-                SubscribeProfiles([publicKeyHex]);
-            }
-            */
+            //// 辞書にない場合プロフィールを購読する
+            //if (!_users.TryGetValue(publicKeyHex, out User? user))
+            //{
+            //    SubscribeProfiles([publicKeyHex]);
+            //}
             // kind 0 を毎回購読するように変更（頻繁にdisplay_name等を変更するユーザーがいるため）
             _nostrAccess.SubscribeProfiles([publicKeyHex]);
 
@@ -1282,11 +1270,13 @@ namespace kakoi
         #region カーソルキー
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
+            // リアクション
             if (e.KeyCode == Keys.Right)
             {
                 var ev = new DataGridViewCellEventArgs(0, dataGridViewNotes.SelectedRows[0].Index);
                 DataGridViewNotes_CellDoubleClick(sender, ev);
             }
+            // Webビュー表示
             if (e.KeyCode == Keys.Left)
             {
                 var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
@@ -1359,6 +1349,7 @@ namespace kakoi
         }
         #endregion
 
+        #region avatar取得
         private static void GetAvatar(string publicKeyHex, string avatarUrl)
         {
             string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
@@ -1417,5 +1408,6 @@ namespace kakoi
                 bitmap.Dispose();
             }
         }
+        #endregion
     }
 }
