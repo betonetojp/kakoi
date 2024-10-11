@@ -1,4 +1,5 @@
 ﻿using kakoi.Properties;
+using Microsoft.VisualBasic.ApplicationServices;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
@@ -309,7 +310,16 @@ namespace kakoi
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!File.Exists(avatarFile))
                                     {
+                                        var postBarFcuced = _formPostBar.ContainsFocus;
                                         _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+                                        if (_formPostBar.Visible && postBarFcuced)
+                                        {
+                                            _formPostBar.Focus();
+                                        }
+                                        else
+                                        {
+                                            Focus();
+                                        }
                                     }
 
                                     if (File.Exists(avatarFile))
@@ -422,7 +432,16 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+                                    if (_formPostBar.Visible && postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -577,7 +596,16 @@ namespace kakoi
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!File.Exists(avatarFile))
                                 {
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+                                    if (_formPostBar.Visible && postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
 
                                 if (File.Exists(avatarFile))
@@ -665,7 +693,16 @@ namespace kakoi
                                 if (_showAvatar && null != newUserData.Picture)
                                 {
                                     // アバター取得
+                                    var postBarFcuced = _formPostBar.ContainsFocus;
                                     _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+                                    if (_formPostBar.Visible && postBarFcuced)
+                                    {
+                                        _formPostBar.Focus();
+                                    }
+                                    else
+                                    {
+                                        Focus();
+                                    }
                                 }
                             }
                         }
