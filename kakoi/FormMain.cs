@@ -1,5 +1,4 @@
 ﻿using kakoi.Properties;
-using Microsoft.VisualBasic.ApplicationServices;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using nokakoiCrypt;
@@ -1281,12 +1280,16 @@ namespace kakoi
         #region セルダブルクリック
         private void DataGridViewNotes_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
+            // マウスカーソルがデフォルトじゃない時は無視
+            if (Cursor.Current != Cursors.Default)
+            {
+                return;
+            }
             // ヘッダー行がダブルクリックされた場合は無視
             if (e.RowIndex < 0)
             {
                 return;
             }
-
             DataGridViewRow selectedRow = dataGridViewNotes.Rows[e.RowIndex];
             string id = (string)selectedRow.Cells["id"].Value;
             string pubkey = (string)selectedRow.Cells["pubkey"].Value;
@@ -1302,13 +1305,15 @@ namespace kakoi
         }
         #endregion
 
-        #region カーソルキー
+        #region グリッドカーソルキー
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
             // リアクション
             if (e.KeyCode == Keys.Right)
             {
-                var ev = new DataGridViewCellEventArgs(0, dataGridViewNotes.SelectedRows[0].Index);
+                // 画面外に出た時サイズ変更用カーソルを記憶しているのでデフォルトに戻す
+                Cursor.Current = Cursors.Default;
+                var ev = new DataGridViewCellEventArgs(3, dataGridViewNotes.SelectedRows[0].Index);
                 DataGridViewNotes_CellDoubleClick(sender, ev);
             }
             // Webビュー表示
