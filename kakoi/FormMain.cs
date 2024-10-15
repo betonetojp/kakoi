@@ -1398,6 +1398,7 @@ namespace kakoi
                     Debug.WriteLine(ex.Message);
                     _formWeb.Close();
                 }
+                Focus();
             }
         }
         #endregion
