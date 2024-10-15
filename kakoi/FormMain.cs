@@ -1305,7 +1305,7 @@ namespace kakoi
         }
         #endregion
 
-        #region グリッドカーソルキー
+        #region グリッドキー入力
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
             // リアクション
@@ -1322,6 +1322,21 @@ namespace kakoi
                 var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
                 var ev = new DataGridViewCellMouseEventArgs(0, dataGridViewNotes.SelectedRows[0].Index, 0, 0, mev);
                 DataGridViewNotes_CellMouseClick(sender, ev);
+            }
+            // 数字キーで絵文字選択
+            if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+            {
+                int index = e.KeyCode - Keys.D0 - 1;
+                if (e.KeyCode == Keys.D0)
+                {
+                    index = 10 - 1;
+                }
+                if (index < comboBoxEmoji.Items.Count)
+                {
+                    comboBoxEmoji.SelectedIndex = index;
+                    //var ev = new DataGridViewCellEventArgs(3, dataGridViewNotes.SelectedRows[0].Index);
+                    //DataGridViewNotes_CellDoubleClick(sender, ev);
+                }
             }
         }
         #endregion
