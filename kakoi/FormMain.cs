@@ -1308,6 +1308,14 @@ namespace kakoi
         #region グリッドキー入力
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
+            // Cキーで_formWebを閉じる
+            if (e.KeyCode == Keys.C)
+            {
+                if (null != _formWeb && !_formWeb.IsDisposed)
+                {
+                    _formWeb.Close();
+                }
+            }
             // Wキーで選択行を上に
             if (e.KeyCode == Keys.W)
             {
