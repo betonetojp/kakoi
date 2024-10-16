@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace kakoi
 {
-    public class Setting
+    public static class Setting
     {
         private static Data _data = new();
 
