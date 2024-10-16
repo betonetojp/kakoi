@@ -1335,7 +1335,7 @@ namespace kakoi
                 }
             }
             // リアクション
-            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D)
+            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.F)
             {
                 // 画面外に出た時サイズ変更用カーソルを記憶しているのでデフォルトに戻す
                 Cursor.Current = Cursors.Default;
