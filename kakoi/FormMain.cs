@@ -1334,6 +1334,18 @@ namespace kakoi
                     dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.SelectedRows[0].Index];
                 }
             }
+            // Shift + Wキーで選択行を最上部に
+            if (e.KeyCode == Keys.W && e.Shift)
+            {
+                dataGridViewNotes.Rows[0].Selected = true;
+                dataGridViewNotes.CurrentCell = dataGridViewNotes["note", 0];
+            }
+            // Shift + Sキーで選択行を最下部に
+            if (e.KeyCode == Keys.S && e.Shift)
+            {
+                dataGridViewNotes.Rows[dataGridViewNotes.Rows.Count - 1].Selected = true;
+                dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.Rows.Count - 1];
+            }
             // リアクション
             if (e.KeyCode == Keys.Right || e.KeyCode == Keys.F)
             {
