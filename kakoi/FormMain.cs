@@ -8,12 +8,24 @@ using SkiaSharp;
 using SSTPLib;
 using Svg.Skia;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace kakoi
 {
     public partial class FormMain : Form
     {
         #region フィールド
+        private const int HOTKEY_ID = 1;
+        private const int MOD_CONTROL = 0x0002;
+        private const int MOD_SHIFT = 0x0004;
+        private const int WM_HOTKEY = 0x0312;
+
+        [DllImport("user32.dll")]
+        private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+
         //private readonly NostrAccess _nostrAccess = new();
 
         private readonly string _configPath = Path.Combine(Application.StartupPath, "kakoi.config");
@@ -1151,6 +1163,9 @@ namespace kakoi
         // 閉じる
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // ホットキーの登録を解除
+            UnregisterHotKey(this.Handle, HOTKEY_ID);
+
             NostrAccess.CloseSubscriptions();
             NostrAccess.DisconnectAndDispose();
 
@@ -1191,6 +1206,9 @@ namespace kakoi
         // ロード時
         private void FormMain_Load(object sender, EventArgs e)
         {
+            // Ctrl + Shift + A をホットキーとして登録
+            RegisterHotKey(this.Handle, HOTKEY_ID, MOD_CONTROL | MOD_SHIFT, (int)Keys.A);
+
             _formPostBar.ShowDialog();
             ButtonStart_Click(sender, e);
         }
@@ -1506,6 +1524,15 @@ namespace kakoi
         private void FormMain_Shown(object sender, EventArgs e)
         {
             dataGridViewNotes.Focus();
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
+            {
+                this.Activate(); // FormMainをアクティブにする
+            }
+            base.WndProc(ref m);
         }
     }
 }
