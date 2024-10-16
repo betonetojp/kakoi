@@ -142,5 +142,10 @@ namespace kakoi
             Opacity = _tempOpacity;
         }
         #endregion
+
+        private void FormPostBar_Activated(object sender, EventArgs e)
+        {
+            var result = textBoxPost.Focus();
+        }
     }
 }

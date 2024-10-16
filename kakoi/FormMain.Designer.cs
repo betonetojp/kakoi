@@ -291,6 +291,7 @@
             TopMost = true;
             FormClosing += FormMain_FormClosing;
             Load += FormMain_Load;
+            Shown += FormMain_Shown;
             KeyDown += FormMain_KeyDown;
             MouseClick += FormMain_MouseClick;
             MouseDoubleClick += FormMain_MouseDoubleClick;

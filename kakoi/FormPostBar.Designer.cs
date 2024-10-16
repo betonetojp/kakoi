@@ -97,6 +97,7 @@
             SizeGripStyle = SizeGripStyle.Show;
             StartPosition = FormStartPosition.Manual;
             TopMost = true;
+            Activated += FormPostBar_Activated;
             FormClosing += FormPostBar_FormClosing;
             Shown += FormPostBar_Shown;
             DoubleClick += FormPostBar_DoubleClick;

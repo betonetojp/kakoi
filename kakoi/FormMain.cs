@@ -202,7 +202,7 @@ namespace kakoi
 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
-                buttonStop.Focus();
+                //buttonStop.Focus();
                 textBoxPost.Enabled = true;
                 buttonPost.Enabled = true;
                 _formPostBar.textBoxPost.Enabled = true;
@@ -1200,8 +1200,8 @@ namespace kakoi
         // ポストバー表示切り替え
         private void CheckBoxPostBar_CheckedChanged(object sender, EventArgs e)
         {
-            _formPostBar.textBoxPost.Focus();
             _formPostBar.Visible = checkBoxPostBar.Checked;
+            _formPostBar.textBoxPost.Focus();
         }
         #endregion
 
@@ -1308,8 +1308,26 @@ namespace kakoi
         #region グリッドキー入力
         private void DataGridViewNotes_KeyDown(object sender, KeyEventArgs e)
         {
+            // Wキーで選択行を上に
+            if (e.KeyCode == Keys.W)
+            {
+                if (dataGridViewNotes.SelectedRows[0].Index > 0)
+                {
+                    dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index - 1].Selected = true;
+                    dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.SelectedRows[0].Index];
+                }
+            }
+            // Sキーで選択行を下に
+            if (e.KeyCode == Keys.S)
+            {
+                if (dataGridViewNotes.SelectedRows[0].Index < dataGridViewNotes.Rows.Count - 1)
+                {
+                    dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index + 1].Selected = true;
+                    dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.SelectedRows[0].Index];
+                }
+            }
             // リアクション
-            if (e.KeyCode == Keys.Right)
+            if (e.KeyCode == Keys.Right || e.KeyCode == Keys.D)
             {
                 // 画面外に出た時サイズ変更用カーソルを記憶しているのでデフォルトに戻す
                 Cursor.Current = Cursors.Default;
@@ -1317,7 +1335,7 @@ namespace kakoi
                 DataGridViewNotes_CellDoubleClick(sender, ev);
             }
             // Webビュー表示
-            if (e.KeyCode == Keys.Left)
+            if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A)
             {
                 var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
                 var ev = new DataGridViewCellMouseEventArgs(0, dataGridViewNotes.SelectedRows[0].Index, 0, 0, mev);
@@ -1464,5 +1482,10 @@ namespace kakoi
             }
         }
         #endregion
+
+        private void FormMain_Shown(object sender, EventArgs e)
+        {
+            dataGridViewNotes.Focus();
+        }
     }
 }
