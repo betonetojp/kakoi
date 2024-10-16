@@ -14,7 +14,7 @@ namespace kakoi
     public partial class FormMain : Form
     {
         #region フィールド
-        private readonly NostrAccess _nostrAccess = new();
+        //private readonly NostrAccess _nostrAccess = new();
 
         private readonly string _configPath = Path.Combine(Application.StartupPath, "kakoi.config");
 
@@ -162,13 +162,13 @@ namespace kakoi
             try
             {
                 int connectCount;
-                if (null != _nostrAccess.Clients)
+                if (null != NostrAccess.Clients)
                 {
-                    connectCount = await _nostrAccess.ConnectAsync();
+                    connectCount = await NostrAccess.ConnectAsync();
                 }
                 else
                 {
-                    connectCount = await _nostrAccess.ConnectAsync();
+                    connectCount = await NostrAccess.ConnectAsync();
                     switch (connectCount)
                     {
                         case 0:
@@ -176,17 +176,17 @@ namespace kakoi
                             toolTipRelays.SetToolTip(labelRelays, string.Empty);
                             break;
                         case 1:
-                            labelRelays.Text = _nostrAccess.Relays[0].ToString();
-                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", _nostrAccess.Relays.Select(r => r.ToString())));
+                            labelRelays.Text = NostrAccess.Relays[0].ToString();
+                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
                             break;
                         default:
-                            labelRelays.Text = $"{_nostrAccess.Relays.Length} relays";
-                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", _nostrAccess.Relays.Select(r => r.ToString())));
+                            labelRelays.Text = $"{NostrAccess.Relays.Length} relays";
+                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
                             break;
                     }
-                    if (null != _nostrAccess.Clients)
+                    if (null != NostrAccess.Clients)
                     {
-                        _nostrAccess.Clients.EventsReceived += OnClientOnEventsReceived;
+                        NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived;
                     }
                 }
 
@@ -198,7 +198,7 @@ namespace kakoi
 
                 textBoxPost.PlaceholderText = "> Connect.";
 
-                _nostrAccess.Subscribe();
+                NostrAccess.Subscribe();
 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
@@ -213,7 +213,7 @@ namespace kakoi
                 if (!string.IsNullOrEmpty(_npubHex))
                 {
                     // フォロイーを購読をする
-                    _nostrAccess.SubscribeFollows(_npubHex);
+                    NostrAccess.SubscribeFollows(_npubHex);
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
@@ -236,7 +236,7 @@ namespace kakoi
         /// <param name="args"></param>
         private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
-            if (args.subscriptionId == _nostrAccess.SubscriptionId)
+            if (args.subscriptionId == NostrAccess.SubscriptionId)
             {
                 #region タイムライン購読
                 foreach (var nostrEvent in args.events)
@@ -645,7 +645,7 @@ namespace kakoi
                 }
                 #endregion
             }
-            else if (args.subscriptionId == _nostrAccess.GetFolloweesSubscriptionId)
+            else if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
             {
                 #region フォロイー購読
                 foreach (var nostrEvent in args.events)
@@ -676,7 +676,7 @@ namespace kakoi
                 }
                 #endregion
             }
-            else if (args.subscriptionId == _nostrAccess.GetProfilesSubscriptionId)
+            else if (args.subscriptionId == NostrAccess.GetProfilesSubscriptionId)
             {
                 #region プロフィール購読
                 foreach (var nostrEvent in args.events)
@@ -746,20 +746,20 @@ namespace kakoi
         // Stopボタン
         private void ButtonStop_Click(object sender, EventArgs e)
         {
-            if (null == _nostrAccess.Clients)
+            if (null == NostrAccess.Clients)
             {
                 return;
             }
 
             try
             {
-                _nostrAccess.CloseSubscriptions();
+                NostrAccess.CloseSubscriptions();
                 textBoxPost.PlaceholderText = "> Close subscription.";
 
-                _ = _nostrAccess.Clients.Disconnect();
+                _ = NostrAccess.Clients.Disconnect();
                 textBoxPost.PlaceholderText = "> Disconnect.";
-                _nostrAccess.Clients.Dispose();
-                _nostrAccess.Clients = null;
+                NostrAccess.Clients.Dispose();
+                NostrAccess.Clients = null;
 
                 buttonStart.Enabled = true;
                 buttonStart.Focus();
@@ -823,7 +823,7 @@ namespace kakoi
         /// <returns></returns>
         private async Task PostAsync()
         {
-            if (null == _nostrAccess.Clients)
+            if (null == NostrAccess.Clients)
             {
                 return;
             }
@@ -854,7 +854,7 @@ namespace kakoi
                 // sign the event
                 await newEvent.ComputeIdAndSignAsync(key);
                 // send the event
-                await _nostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+                await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -867,7 +867,7 @@ namespace kakoi
         #region リアクション処理
         private async Task ReactionAsync(string e, string p, string? content, string? url = null)
         {
-            if (null == _nostrAccess.Clients)
+            if (null == NostrAccess.Clients)
             {
                 return;
             }
@@ -900,7 +900,7 @@ namespace kakoi
                 // sign the event
                 await newEvent.ComputeIdAndSignAsync(key);
                 // send the event
-                await _nostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+                await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -958,7 +958,7 @@ namespace kakoi
                 // ログイン済みの時
                 if (!_npubHex.IsNullOrEmpty())
                 {
-                    int connectCount = await _nostrAccess.ConnectAsync();
+                    int connectCount = await NostrAccess.ConnectAsync();
                     if (0 == connectCount)
                     {
                         textBoxPost.PlaceholderText = "> No relay enabled.";
@@ -966,7 +966,7 @@ namespace kakoi
                     }
 
                     // フォロイーを購読をする
-                    _nostrAccess.SubscribeFollows(_npubHex);
+                    NostrAccess.SubscribeFollows(_npubHex);
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
@@ -1099,7 +1099,7 @@ namespace kakoi
             //    SubscribeProfiles([publicKeyHex]);
             //}
             // kind 0 を毎回購読するように変更（頻繁にdisplay_name等を変更するユーザーがいるため）
-            _nostrAccess.SubscribeProfiles([publicKeyHex]);
+            NostrAccess.SubscribeProfiles([publicKeyHex]);
 
             // 情報があれば表示名を取得
             Users.TryGetValue(publicKeyHex, out User? user);
@@ -1151,8 +1151,8 @@ namespace kakoi
         // 閉じる
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _nostrAccess.CloseSubscriptions();
-            _nostrAccess.DisconnectAndDispose();
+            NostrAccess.CloseSubscriptions();
+            NostrAccess.DisconnectAndDispose();
 
             if (FormWindowState.Normal != WindowState)
             {

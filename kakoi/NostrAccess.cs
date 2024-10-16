@@ -3,59 +3,59 @@ using System.Net.WebSockets;
 
 namespace kakoi
 {
-    public class NostrAccess
+    public static class NostrAccess
     {
         #region フィールド
         /// <summary>
         /// タイムライン購読をさかのぼる時間
         /// </summary>
-        private readonly TimeSpan _timeSpan = new(0, 0, 0, 0);
+        private static readonly TimeSpan _timeSpan = new(0, 0, 0, 0);
 
         /// <summary>
         /// 複数クライアント
         /// </summary>
-        private CompositeNostrClient? _clients;
+        private static CompositeNostrClient? _clients;
         /// <summary>
         /// 接続リレー配列
         /// </summary>
-        private Uri[] _relays = [];
+        private static Uri[] _relays = [];
 
         /// <summary>
         /// タイムライン購読ID
         /// </summary>
-        private readonly string _subscriptionId = Guid.NewGuid().ToString("N");
+        private static readonly string _subscriptionId = Guid.NewGuid().ToString("N");
         /// <summary>
         /// フォロイー購読ID
         /// </summary>
-        private readonly string _getFolloweesSubscriptionId = Guid.NewGuid().ToString("N");
+        private static readonly string _getFolloweesSubscriptionId = Guid.NewGuid().ToString("N");
         /// <summary>
         /// プロフィール購読ID
         /// </summary>
-        private readonly string _getProfilesSubscriptionId = Guid.NewGuid().ToString("N");
+        private static readonly string _getProfilesSubscriptionId = Guid.NewGuid().ToString("N");
         #endregion
 
         #region プロパティ
         /// <summary>
         /// 複数クライアント
         /// </summary>
-        public CompositeNostrClient? Clients { get => _clients; set => _clients = value; }
+        public static CompositeNostrClient? Clients { get => _clients; set => _clients = value; }
         /// <summary>
         /// 接続リレー配列
         /// </summary>
-        public Uri[] Relays { get => _relays; set => _relays = value; }
+        public static Uri[] Relays { get => _relays; set => _relays = value; }
 
         /// <summary>
         /// タイムライン購読ID
         /// </summary>
-        public string SubscriptionId => _subscriptionId;
+        public static string SubscriptionId => _subscriptionId;
         /// <summary>
         /// フォロイー購読ID
         /// </summary>
-        public string GetFolloweesSubscriptionId => _getFolloweesSubscriptionId;
+        public static string GetFolloweesSubscriptionId => _getFolloweesSubscriptionId;
         /// <summary>
         /// プロフィール購読ID
         /// </summary>
-        public string GetProfilesSubscriptionId => _getProfilesSubscriptionId;
+        public static string GetProfilesSubscriptionId => _getProfilesSubscriptionId;
         #endregion
 
         #region 接続処理
@@ -63,7 +63,7 @@ namespace kakoi
         /// 接続処理
         /// </summary>
         /// <returns></returns>
-        public async Task<int> ConnectAsync()
+        public static async Task<int> ConnectAsync()
         {
             if (null == _clients)
             {
@@ -101,7 +101,7 @@ namespace kakoi
         /// <summary>
         /// タイムライン購読処理
         /// </summary>
-        public void Subscribe()
+        public static void Subscribe()
         {
             if (null == _clients)
             {
@@ -126,7 +126,7 @@ namespace kakoi
         /// フォロイー購読処理
         /// </summary>
         /// <param name="author"></param>
-        public void SubscribeFollows(string author)
+        public static void SubscribeFollows(string author)
         {
             if (null == _clients)
             {
@@ -151,7 +151,7 @@ namespace kakoi
         /// プロフィール購読処理
         /// </summary>
         /// <param name="authors"></param>
-        public void SubscribeProfiles(string[] authors)
+        public static void SubscribeProfiles(string[] authors)
         {
             if (null == _clients)
             {
@@ -175,7 +175,7 @@ namespace kakoi
         /// <summary>
         /// 購読解除処理
         /// </summary>
-        public void CloseSubscriptions()
+        public static void CloseSubscriptions()
         {
             if (null != _clients)
             {
@@ -190,7 +190,7 @@ namespace kakoi
         /// <summary>
         /// 切断処理
         /// </summary>
-        public void DisconnectAndDispose()
+        public static void DisconnectAndDispose()
         {
             if (null != _clients)
             {
