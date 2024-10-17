@@ -290,6 +290,85 @@ namespace kakoi
                         #region リアクション
                         if (7 == nostrEvent.Kind)
                         {
+                            // ログイン済みで自分がしたリアクション
+                            if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
+                            {
+                                Users.TryGetValue(nostrEvent.PublicKey, out User? user);
+
+                                // ユーザー表示名取得
+                                string userName = GetUserName(nostrEvent.PublicKey);
+                                string likedName = GetUserName(nostrEvent.GetTaggedPublicKeys()[0]);
+
+                                // ユーザーが見つからない時は表示しない
+                                if (null == user)
+                                {
+                                    continue;
+                                }
+
+                                headMark = "+";
+
+                                // グリッドに表示
+                                //_noteEvents.AddFirst(nostrEvent);
+                                DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
+                                dataGridViewNotes.Rows.Insert(
+                                0,
+                                dto.ToLocalTime(),
+                                new Bitmap(1, 1), // Placeholder for Image
+                                $"{headMark} {userName}",
+                                $"Sent {content} to {likedName}.",
+                                nostrEvent.Id,
+                                nostrEvent.PublicKey
+                                );
+
+                                // avatar列にアバターを表示
+                                if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                                {
+                                    string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                    if (!_imeStatus.Compositing && !File.Exists(avatarFile))
+                                    {
+                                        var postBarFcuced = _formPostBar.ContainsFocus;
+                                        var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                        _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
+
+                                        if (postBarFcuced)
+                                        {
+                                            _formPostBar.Focus();
+                                        }
+                                        else if (formSettingFocusd)
+                                        {
+                                            _formSetting.Focus();
+                                        }
+                                        else
+                                        {
+                                            Focus();
+                                        }
+                                    }
+
+                                    if (File.Exists(avatarFile))
+                                    {
+                                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                                        using var avatar = new Bitmap(fileStream);
+                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                                    }
+                                }
+
+                                // クライアントタグによる背景色変更
+                                var userClient = nostrEvent.GetTaggedData("client");
+                                if (userClient != null && 0 < userClient.Length)
+                                {
+                                    Color clientColor = Color.WhiteSmoke;
+
+                                    // userClient[0]を_clientsから検索して色を取得
+                                    var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                                    if (client != null && client.ColorCode != null)
+                                    {
+                                        clientColor = Tools.HexToColor(client.ColorCode);
+                                    }
+                                    dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
+                                }
+                            }
+
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
@@ -481,22 +560,12 @@ namespace kakoi
                                 }
                             }
 
-                            // クライアントタグによる背景色変更のテスト
+                            // クライアントタグによる背景色変更
                             var userClient = nostrEvent.GetTaggedData("client");
                             if (userClient != null && 0 < userClient.Length)
                             {
                                 Color clientColor = Color.WhiteSmoke;
-                                /*
-                                if (-1 < Array.IndexOf(userClient, "kakoi"))
-                                {
-                                    //clientColor = Color.HotPink;
-                                    var client = _clients.FirstOrDefault(c => c.Name == "kakoi");
-                                    if (client != null && client.Color != null)
-                                    {
-                                        clientColor = Tools.HexToColor(client.Color);
-                                    }
-                                }
-                                */
+
                                 // userClient[0]を_clientsから検索して色を取得
                                 var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
                                 if (client != null && client.ColorCode != null)
@@ -614,7 +683,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(1, 1), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys()[0])}'s post.", // 先頭のpにしているがスレッドの場合違いそう
+                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post.",
                             nostrEvent.Id,
                             nostrEvent.PublicKey
                             );
