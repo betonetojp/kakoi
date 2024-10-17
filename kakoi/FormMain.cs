@@ -1238,7 +1238,7 @@ namespace kakoi
         // 画面表示切替
         private void FormMain_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F11 || e.KeyCode == Keys.F12)
+            if (e.KeyCode == Keys.F11 || e.KeyCode == Keys.F12 || e.KeyCode == Keys.F1)
             {
                 checkBoxPostBar.Checked = !checkBoxPostBar.Checked;
             }

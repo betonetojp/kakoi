@@ -112,7 +112,7 @@ namespace kakoi
                 // フォーカスキープ
                 Activate();
             }
-            if (e.KeyCode == Keys.F12)
+            if (e.KeyCode == Keys.F12 || e.KeyCode == Keys.F1)
             {
                 Close();
             }
