@@ -1534,5 +1534,10 @@ namespace kakoi
             }
             base.WndProc(ref m);
         }
+
+        private void comboBoxEmoji_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            dataGridViewNotes.Focus();
+        }
     }
 }

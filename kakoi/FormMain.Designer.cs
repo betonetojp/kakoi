@@ -165,6 +165,7 @@
             comboBoxEmoji.TabIndex = 2;
             toolTipRelays.SetToolTip(comboBoxEmoji, "Reaction content");
             comboBoxEmoji.ValueMember = "Content";
+            comboBoxEmoji.SelectionChangeCommitted += comboBoxEmoji_SelectionChangeCommitted;
             // 
             // dataGridViewNotes
             // 
