@@ -231,6 +231,8 @@ namespace kakoi
                     var name = GetUserName(_npubHex);
                     textBoxPost.PlaceholderText = $"> Login as {name}.";
                 }
+
+                dataGridViewNotes.Rows.Clear();
             }
             catch (Exception ex)
             {
@@ -1006,6 +1008,8 @@ namespace kakoi
             _emojis = Tools.LoadEmojis();
             comboBoxEmoji.DataSource = _emojis;
             _clients = Tools.LoadClients();
+
+            dataGridViewNotes.Focus();
         }
         #endregion
 
