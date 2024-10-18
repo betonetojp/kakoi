@@ -229,6 +229,7 @@
             avatar.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCellsExceptHeader;
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.TopCenter;
             dataGridViewCellStyle3.NullValue = resources.GetObject("dataGridViewCellStyle3.NullValue");
+            dataGridViewCellStyle3.Padding = new Padding(2);
             avatar.DefaultCellStyle = dataGridViewCellStyle3;
             avatar.HeaderText = "avatar";
             avatar.Name = "avatar";

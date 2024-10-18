@@ -277,6 +277,9 @@ namespace kakoi
                             timeString = string.Format("{0:D2}", hour) + ":" + string.Format("{0:D2}", minute);
                         }
 
+                        // Public key Color
+                        var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey.Substring(0, 6));
+
                         // フォロイーチェック
                         string headMark = "-";
                         string speaker = "\\1"; //"\\u\\p[1]\\s[10]";
@@ -367,6 +370,11 @@ namespace kakoi
                                     }
                                     dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                                 }
+
+                                //// time列の文字色をpubkeyColorに変更
+                                //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
+                                // avastar列の背景色をpubkeyColorに変更
+                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
                             }
 
                             // ログイン済みで自分へのリアクション
@@ -445,6 +453,11 @@ namespace kakoi
                                     }
                                     dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                                 }
+
+                                //// time列の文字色をpubkeyColorに変更
+                                //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
+                                // avastar列の背景色をpubkeyColorに変更
+                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
 
                                 // SSPに送る
                                 if (_sendDSSTP && null != _ds)
@@ -590,15 +603,16 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
-                            // nostrEvent.PublicKeyの先頭6桁で色を作成して背景変更色変更テスト
-                            //dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(nostrEvent.PublicKey.Substring(0, 6));
-                            
-
                             // リプライの時は背景色変更
                             if (isReply)
                             {
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
                             }
+
+                            //// time列の文字色をpubkeyColorに変更
+                            //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
+                            // avastar列の背景色をpubkeyColorに変更
+                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
 
                             // SSPに送る
                             if (_sendDSSTP && null != _ds)
@@ -740,7 +754,13 @@ namespace kakoi
                                 }
                             }
 
+                            // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
+
+                            //// time列の文字色をpubkeyColorに変更
+                            //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
+                            // avastar列の背景色をpubkeyColorに変更
+                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
                         }
                         #endregion
                     }
@@ -1587,7 +1607,7 @@ namespace kakoi
                     bitmap = SKBitmap.Decode(ms);
                 }
                 // 20x20にリサイズ
-                using (var resizedBitmap = bitmap.Resize(new SKImageInfo(20, 20), SKFilterQuality.High))
+                using (var resizedBitmap = bitmap?.Resize(new SKImageInfo(20, 20), SKFilterQuality.High))
                 {
                     // 画像をPNG形式で保存
                     using SKImage image = SKImage.FromBitmap(resizedBitmap);
