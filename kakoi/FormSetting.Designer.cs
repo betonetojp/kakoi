@@ -214,9 +214,9 @@
             checkBoxShowAvatar.AutoSize = true;
             checkBoxShowAvatar.Location = new Point(12, 37);
             checkBoxShowAvatar.Name = "checkBoxShowAvatar";
-            checkBoxShowAvatar.Size = new Size(90, 19);
+            checkBoxShowAvatar.Size = new Size(79, 19);
             checkBoxShowAvatar.TabIndex = 3;
-            checkBoxShowAvatar.Text = "Show avatar";
+            checkBoxShowAvatar.Text = "Get avatar";
             checkBoxShowAvatar.UseVisualStyleBackColor = true;
             // 
             // FormSetting

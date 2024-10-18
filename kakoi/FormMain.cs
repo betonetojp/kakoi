@@ -59,6 +59,7 @@ namespace kakoi
         private string _password = string.Empty;
         private bool _sendDSSTP = true;
         private bool _addClient;
+        private static int _avatarSize = 32;
 
         private double _tempOpacity = 1.00;
 
@@ -133,12 +134,13 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _showAvatar = Setting.ShowAvatar;
-            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
+            //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
             _addClient = Setting.AddClient;
+            _avatarSize = Setting.AvatarSize;
             _formPostBar.Location = Setting.PostBarLocation;
             if (new Point(0, 0) == _formPostBar.Location || _formPostBar.Location.X < 0 || _formPostBar.Location.Y < 0)
             {
@@ -316,12 +318,15 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(1, 1), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 $"Sent {content} to {likedName}.",
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
+
+                                // avatar列のToolTipに表示名を設定
+                                dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
                                 if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
@@ -399,12 +404,15 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(1, 1), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
+
+                                // avatar列のToolTipに表示名を設定
+                                dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
                                 if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
@@ -547,13 +555,16 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(1, 1), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
+
+                            // avatar列のToolTipに表示名を設定
+                            dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
                             if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
@@ -714,12 +725,15 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
-                            new Bitmap(1, 1), // Placeholder for Image
+                            new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                             $"{headMark} {userName}",
                             $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post.",
                             nostrEvent.Id,
                             nostrEvent.PublicKey
                             );
+
+                            // avatar列のToolTipに表示名を設定
+                            dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
                             if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
@@ -1057,7 +1071,7 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _showAvatar = _formSetting.checkBoxShowAvatar.Checked;
-            dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
+            //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
@@ -1354,6 +1368,21 @@ namespace kakoi
             {
                 checkBoxPostBar.Checked = !checkBoxPostBar.Checked;
             }
+            // F2キーでtime列の表示切替
+            if (e.KeyCode == Keys.F2)
+            {
+                dataGridViewNotes.Columns["time"].Visible = !dataGridViewNotes.Columns["time"].Visible;
+            }
+            // F3キーでavatar列の表示切替
+            if (e.KeyCode == Keys.F3)
+            {
+                dataGridViewNotes.Columns["avatar"].Visible = !dataGridViewNotes.Columns["avatar"].Visible;
+            }
+            // F4キーでname列の表示切替
+            if (e.KeyCode == Keys.F4)
+            {
+                dataGridViewNotes.Columns["name"].Visible = !dataGridViewNotes.Columns["name"].Visible;
+            }
 
             if (e.KeyCode == Keys.Escape)
             {
@@ -1606,8 +1635,8 @@ namespace kakoi
                     // MemoryStreamから画像を読み込む
                     bitmap = SKBitmap.Decode(ms);
                 }
-                // 20x20にリサイズ
-                using (var resizedBitmap = bitmap?.Resize(new SKImageInfo(20, 20), SKFilterQuality.High))
+                // リサイズ
+                using (var resizedBitmap = bitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
                 {
                     // 画像をPNG形式で保存
                     using SKImage image = SKImage.FromBitmap(resizedBitmap);
@@ -1628,7 +1657,10 @@ namespace kakoi
             }
             finally
             {
-                bitmap.Dispose();
+                if (null != bitmap)
+                {
+                    bitmap.Dispose();
+                }
             }
         }
         #endregion

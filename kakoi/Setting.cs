@@ -29,6 +29,7 @@ namespace kakoi
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
 
+            public int AvatarSize { get; set; } = 32;
             public string GridColor { get; set; } = "#FF1493";
             public string ReplyColor { get; set; } = "#E6E6FA";
             public string RepostColor { get; set; } = "#F0F8FF";
@@ -100,7 +101,12 @@ namespace kakoi
             get => _data.AddClient;
             set => _data.AddClient = value;
         }
-        
+
+        public static int AvatarSize
+        {
+            get => _data.AvatarSize;
+            set => _data.AvatarSize = value;
+        }
         public static string GridColor
         {
             get => _data.GridColor;
