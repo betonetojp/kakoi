@@ -222,6 +222,7 @@
             time.HeaderText = "time";
             time.Name = "time";
             time.ReadOnly = true;
+            time.SortMode = DataGridViewColumnSortMode.NotSortable;
             time.Width = 5;
             // 
             // avatar
@@ -243,6 +244,7 @@
             name.HeaderText = "name";
             name.Name = "name";
             name.ReadOnly = true;
+            name.SortMode = DataGridViewColumnSortMode.NotSortable;
             name.Width = 60;
             // 
             // note
@@ -253,12 +255,14 @@
             note.HeaderText = "note";
             note.Name = "note";
             note.ReadOnly = true;
+            note.SortMode = DataGridViewColumnSortMode.NotSortable;
             // 
             // id
             // 
             id.HeaderText = "id";
             id.Name = "id";
             id.ReadOnly = true;
+            id.SortMode = DataGridViewColumnSortMode.NotSortable;
             id.Visible = false;
             // 
             // pubkey
@@ -266,6 +270,7 @@
             pubkey.HeaderText = "pubkey";
             pubkey.Name = "pubkey";
             pubkey.ReadOnly = true;
+            pubkey.SortMode = DataGridViewColumnSortMode.NotSortable;
             pubkey.Visible = false;
             // 
             // FormMain

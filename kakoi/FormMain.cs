@@ -1377,6 +1377,7 @@ namespace kakoi
             if (e.KeyCode == Keys.F3)
             {
                 dataGridViewNotes.Columns["avatar"].Visible = !dataGridViewNotes.Columns["avatar"].Visible;
+
             }
             // F4キーでname列の表示切替
             if (e.KeyCode == Keys.F4)
