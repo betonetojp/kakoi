@@ -590,6 +590,10 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
                             }
 
+                            // nostrEvent.PublicKeyの先頭6桁で色を作成して背景変更色変更テスト
+                            //dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(nostrEvent.PublicKey.Substring(0, 6));
+                            
+
                             // リプライの時は背景色変更
                             if (isReply)
                             {
