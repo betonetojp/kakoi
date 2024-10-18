@@ -431,6 +431,21 @@ namespace kakoi
                                     }
                                 }
 
+                                // クライアントタグによる背景色変更
+                                var userClient = nostrEvent.GetTaggedData("client");
+                                if (userClient != null && 0 < userClient.Length)
+                                {
+                                    Color clientColor = Color.WhiteSmoke;
+
+                                    // userClient[0]を_clientsから検索して色を取得
+                                    var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                                    if (client != null && client.ColorCode != null)
+                                    {
+                                        clientColor = Tools.HexToColor(client.ColorCode);
+                                    }
+                                    dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
+                                }
+
                                 // SSPに送る
                                 if (_sendDSSTP && null != _ds)
                                 {
