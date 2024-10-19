@@ -1364,6 +1364,7 @@ namespace kakoi
         // 画面表示切替
         private void FormMain_KeyDown(object sender, KeyEventArgs e)
         {
+            // ポストバー表示切替
             if (e.KeyCode == Keys.F11 || e.KeyCode == Keys.F12 || e.KeyCode == Keys.F1)
             {
                 checkBoxPostBar.Checked = !checkBoxPostBar.Checked;
@@ -1377,7 +1378,6 @@ namespace kakoi
             if (e.KeyCode == Keys.F3)
             {
                 dataGridViewNotes.Columns["avatar"].Visible = !dataGridViewNotes.Columns["avatar"].Visible;
-
             }
             // F4キーでname列の表示切替
             if (e.KeyCode == Keys.F4)
