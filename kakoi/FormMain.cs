@@ -35,6 +35,8 @@ namespace kakoi
         private FormManiacs _formManiacs = new();
         private FormRelayList _formRelayList = new();
         private FormWeb _formWeb = new();
+        internal Point _formWebLocation = new();
+        internal Size _formWebSize = new();
 
         private string _nsec = string.Empty;
         private string _npubHex = string.Empty;
@@ -141,18 +143,21 @@ namespace kakoi
             _sendDSSTP = Setting.SendDSSTP;
             _addClient = Setting.AddClient;
             _avatarSize = Setting.AvatarSize;
+
             _formPostBar.Location = Setting.PostBarLocation;
             if (new Point(0, 0) == _formPostBar.Location || _formPostBar.Location.X < 0 || _formPostBar.Location.Y < 0)
             {
                 _formPostBar.StartPosition = FormStartPosition.CenterScreen;
             }
-            _formWeb.Location = Setting.WebViewLocation;
-            if (new Point(0, 0) == _formWeb.Location || _formWeb.Location.X < 0 || _formWeb.Location.Y < 0)
+            _formPostBar.Size = Setting.PostBarSize;
+
+            _formWebLocation = Setting.WebViewLocation;
+            if (new Point(0, 0) == _formWebLocation || _formWebLocation.X < 0 || _formWebLocation.Y < 0)
             {
                 _formWeb.StartPosition = FormStartPosition.CenterScreen;
             }
-            _formPostBar.Size = Setting.PostBarSize;
-            _formWeb.Size = Setting.WebViewSize;
+            _formWebSize = Setting.WebViewSize;
+
             dataGridViewNotes.Columns["name"].Width = Setting.NameColumnWidth;
             dataGridViewNotes.GridColor = Tools.HexToColor(Setting.GridColor);
             dataGridViewNotes.DefaultCellStyle.SelectionBackColor = Tools.HexToColor(Setting.GridColor);
@@ -1560,26 +1565,24 @@ namespace kakoi
             {
                 dataGridViewNotes.Rows[e.RowIndex].Selected = true;
                 dataGridViewNotes.Rows[e.RowIndex].Cells["note"].Selected = true;
+
                 if (null == _formWeb || _formWeb.IsDisposed)
                 {
-                    _formWeb = new FormWeb
-                    {
-                        Location = Setting.WebViewLocation
-                    };
-                    if (new Point(0, 0) == _formWeb.Location)
-                    {
-                        _formWeb.StartPosition = FormStartPosition.CenterScreen;
-                    }
-                    _formWeb.Size = Setting.WebViewSize;
+                    _formWeb = new FormWeb();
                 }
                 if (!_formWeb.Visible)
                 {
+                    _formWeb.Location = _formWebLocation;
+                    _formWeb.Size = _formWebSize;
                     _formWeb.Show(this);
                 }
                 if (_formWeb.WindowState == FormWindowState.Minimized)
                 {
                     _formWeb.WindowState = FormWindowState.Normal;
                 }
+                Setting.WebViewLocation = _formWeb.Location;
+                Setting.WebViewSize = _formWeb.Size;
+
                 var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? "";
                 NIP19.NostrEventNote nostrEventNote = new()
                 {
