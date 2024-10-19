@@ -38,8 +38,6 @@
             DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             buttonStart = new Button();
             buttonStop = new Button();
-            textBoxPost = new TextBox();
-            buttonPost = new Button();
             buttonSetting = new Button();
             checkBoxPostBar = new CheckBox();
             buttonRelayList = new Button();
@@ -60,60 +58,35 @@
             // 
             // buttonStart
             // 
-            buttonStart.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonStart.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonStart.Image = Properties.Resources.icons8_start_16;
-            buttonStart.Location = new Point(211, 12);
+            buttonStart.Location = new Point(211, 246);
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(23, 23);
-            buttonStart.TabIndex = 3;
+            buttonStart.TabIndex = 5;
             buttonStart.UseVisualStyleBackColor = true;
             buttonStart.Click += ButtonStart_Click;
             // 
             // buttonStop
             // 
-            buttonStop.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonStop.Enabled = false;
             buttonStop.Image = Properties.Resources.icons8_stop_16;
-            buttonStop.Location = new Point(240, 12);
+            buttonStop.Location = new Point(240, 246);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(23, 23);
-            buttonStop.TabIndex = 4;
+            buttonStop.TabIndex = 6;
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += ButtonStop_Click;
             // 
-            // textBoxPost
-            // 
-            textBoxPost.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxPost.BorderStyle = BorderStyle.FixedSingle;
-            textBoxPost.Enabled = false;
-            textBoxPost.Location = new Point(33, 246);
-            textBoxPost.MaxLength = 1024;
-            textBoxPost.Name = "textBoxPost";
-            textBoxPost.PlaceholderText = "Hello Nostr!";
-            textBoxPost.Size = new Size(230, 23);
-            textBoxPost.TabIndex = 8;
-            textBoxPost.KeyDown += TextBoxPost_KeyDown;
-            // 
-            // buttonPost
-            // 
-            buttonPost.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonPost.Enabled = false;
-            buttonPost.Image = Properties.Resources.icons8_create_16;
-            buttonPost.Location = new Point(269, 246);
-            buttonPost.Name = "buttonPost";
-            buttonPost.Size = new Size(23, 23);
-            buttonPost.TabIndex = 9;
-            buttonPost.UseVisualStyleBackColor = true;
-            buttonPost.Click += ButtonPost_Click;
-            // 
             // buttonSetting
             // 
-            buttonSetting.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonSetting.Image = Properties.Resources.icons8_setting_16;
-            buttonSetting.Location = new Point(269, 12);
+            buttonSetting.Location = new Point(269, 246);
             buttonSetting.Name = "buttonSetting";
             buttonSetting.Size = new Size(23, 23);
-            buttonSetting.TabIndex = 5;
+            buttonSetting.TabIndex = 7;
             buttonSetting.UseVisualStyleBackColor = true;
             buttonSetting.Click += ButtonSetting_Click;
             // 
@@ -124,45 +97,47 @@
             checkBoxPostBar.Location = new Point(12, 251);
             checkBoxPostBar.Name = "checkBoxPostBar";
             checkBoxPostBar.Size = new Size(15, 14);
-            checkBoxPostBar.TabIndex = 7;
+            checkBoxPostBar.TabIndex = 2;
             toolTipRelays.SetToolTip(checkBoxPostBar, "Toggle post bar");
             checkBoxPostBar.UseVisualStyleBackColor = true;
             checkBoxPostBar.CheckedChanged += CheckBoxPostBar_CheckedChanged;
             // 
             // buttonRelayList
             // 
+            buttonRelayList.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonRelayList.Image = Properties.Resources.icons8_list_16;
-            buttonRelayList.Location = new Point(12, 12);
+            buttonRelayList.Location = new Point(182, 246);
             buttonRelayList.Name = "buttonRelayList";
             buttonRelayList.Size = new Size(23, 23);
-            buttonRelayList.TabIndex = 1;
+            buttonRelayList.TabIndex = 4;
             buttonRelayList.UseVisualStyleBackColor = true;
             buttonRelayList.Click += ButtonRelayList_Click;
             // 
             // labelRelays
             // 
-            labelRelays.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            labelRelays.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRelays.AutoEllipsis = true;
             labelRelays.ForeColor = SystemColors.GrayText;
-            labelRelays.Location = new Point(41, 16);
+            labelRelays.Location = new Point(87, 251);
             labelRelays.Name = "labelRelays";
-            labelRelays.Size = new Size(110, 15);
+            labelRelays.Size = new Size(89, 15);
             labelRelays.TabIndex = 0;
             labelRelays.Text = "Relay info";
+            labelRelays.TextAlign = ContentAlignment.TopRight;
             labelRelays.MouseClick += FormMain_MouseClick;
             labelRelays.MouseDoubleClick += FormMain_MouseDoubleClick;
             // 
             // comboBoxEmoji
             // 
-            comboBoxEmoji.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            comboBoxEmoji.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             comboBoxEmoji.DataSource = emojiBindingSource;
             comboBoxEmoji.DisplayMember = "Content";
             comboBoxEmoji.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxEmoji.Font = new Font("Segoe UI Emoji", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            comboBoxEmoji.Location = new Point(157, 12);
+            comboBoxEmoji.Location = new Point(33, 246);
             comboBoxEmoji.Name = "comboBoxEmoji";
             comboBoxEmoji.Size = new Size(48, 24);
-            comboBoxEmoji.TabIndex = 2;
+            comboBoxEmoji.TabIndex = 3;
             toolTipRelays.SetToolTip(comboBoxEmoji, "Reaction content");
             comboBoxEmoji.ValueMember = "Content";
             comboBoxEmoji.SelectionChangeCommitted += comboBoxEmoji_SelectionChangeCommitted;
@@ -197,15 +172,15 @@
             dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
             dataGridViewNotes.DefaultCellStyle = dataGridViewCellStyle6;
             dataGridViewNotes.GridColor = Color.DeepPink;
-            dataGridViewNotes.Location = new Point(12, 41);
+            dataGridViewNotes.Location = new Point(12, 12);
             dataGridViewNotes.MultiSelect = false;
             dataGridViewNotes.Name = "dataGridViewNotes";
             dataGridViewNotes.ReadOnly = true;
             dataGridViewNotes.RowHeadersVisible = false;
             dataGridViewNotes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewNotes.Size = new Size(280, 199);
+            dataGridViewNotes.Size = new Size(280, 228);
             dataGridViewNotes.StandardTab = true;
-            dataGridViewNotes.TabIndex = 6;
+            dataGridViewNotes.TabIndex = 1;
             dataGridViewNotes.CellDoubleClick += DataGridViewNotes_CellDoubleClick;
             dataGridViewNotes.CellMouseClick += DataGridViewNotes_CellMouseClick;
             dataGridViewNotes.KeyDown += DataGridViewNotes_KeyDown;
@@ -284,8 +259,6 @@
             Controls.Add(buttonRelayList);
             Controls.Add(checkBoxPostBar);
             Controls.Add(buttonSetting);
-            Controls.Add(buttonPost);
-            Controls.Add(textBoxPost);
             Controls.Add(buttonStop);
             Controls.Add(buttonStart);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -311,9 +284,7 @@
         #endregion
         private Button buttonStart;
         private Button buttonStop;
-        private Button buttonPost;
         private Button buttonSetting;
-        internal TextBox textBoxPost;
         internal CheckBox checkBoxPostBar;
         private Button buttonRelayList;
         private Label labelRelays;

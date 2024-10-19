@@ -103,7 +103,6 @@ namespace kakoi
                 buttonRelayList.Image = new Bitmap(Resources.icons8_list_16, size, size);
                 buttonStart.Image = new Bitmap(Resources.icons8_start_16, size, size);
                 buttonStop.Image = new Bitmap(Resources.icons8_stop_16, size, size);
-                buttonPost.Image = new Bitmap(Resources.icons8_create_16, size, size);
                 buttonSetting.Image = new Bitmap(Resources.icons8_setting_16, size, size);
             }
             else
@@ -111,7 +110,6 @@ namespace kakoi
                 buttonRelayList.Image = new Bitmap(Resources.icons8_list_32, size, size);
                 buttonStart.Image = new Bitmap(Resources.icons8_start_32, size, size);
                 buttonStop.Image = new Bitmap(Resources.icons8_stop_32, size, size);
-                buttonPost.Image = new Bitmap(Resources.icons8_create_32, size, size);
                 buttonSetting.Image = new Bitmap(Resources.icons8_setting_32, size, size);
             }
 
@@ -191,7 +189,7 @@ namespace kakoi
                     switch (connectCount)
                     {
                         case 0:
-                            labelRelays.Text = "0 relays";
+                            labelRelays.Text = "No relay enabled.";
                             toolTipRelays.SetToolTip(labelRelays, string.Empty);
                             break;
                         case 1:
@@ -209,34 +207,19 @@ namespace kakoi
                     }
                 }
 
-                if (0 == connectCount)
-                {
-                    textBoxPost.PlaceholderText = "> No relay enabled.";
-                    return;
-                }
-
-                textBoxPost.PlaceholderText = "> Connect.";
-
                 NostrAccess.Subscribe();
 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
-                //buttonStop.Focus();
-                textBoxPost.Enabled = true;
-                buttonPost.Enabled = true;
+                dataGridViewNotes.Focus();
                 _formPostBar.textBoxPost.Enabled = true;
                 _formPostBar.buttonPost.Enabled = true;
-                textBoxPost.PlaceholderText = "> Create subscription.";
 
                 // ログイン済みの時
                 if (!string.IsNullOrEmpty(_npubHex))
                 {
                     // フォロイーを購読をする
                     NostrAccess.SubscribeFollows(_npubHex);
-
-                    // ログインユーザー表示名取得
-                    var name = GetUserName(_npubHex);
-                    textBoxPost.PlaceholderText = $"> Login as {name}.";
                 }
 
                 dataGridViewNotes.Rows.Clear();
@@ -244,7 +227,7 @@ namespace kakoi
             catch (Exception ex)
             {
                 Debug.Print(ex.ToString());
-                textBoxPost.PlaceholderText = "> Could not start.";
+                labelRelays.Text = "Could not start.";
             }
         }
         #endregion
@@ -497,8 +480,6 @@ namespace kakoi
                                     string r = _ds.GetSSTPResponse(_ghostName, sstpmsg);
                                     //Debug.WriteLine(r);
                                 }
-                                // 画面に表示
-                                textBoxPost.PlaceholderText = $"{timeString} {headMark} {userName} {content}";
                             }
                         }
                         #endregion
@@ -895,25 +876,23 @@ namespace kakoi
             try
             {
                 NostrAccess.CloseSubscriptions();
-                textBoxPost.PlaceholderText = "> Close subscription.";
+                labelRelays.Text = "Close subscription.";
 
                 _ = NostrAccess.Clients.Disconnect();
-                textBoxPost.PlaceholderText = "> Disconnect.";
+                labelRelays.Text = "Disconnect.";
                 NostrAccess.Clients.Dispose();
                 NostrAccess.Clients = null;
 
                 buttonStart.Enabled = true;
                 buttonStart.Focus();
                 buttonStop.Enabled = false;
-                textBoxPost.Enabled = false;
-                buttonPost.Enabled = false;
                 _formPostBar.textBoxPost.Enabled = false;
                 _formPostBar.buttonPost.Enabled = false;
             }
             catch (Exception ex)
             {
                 Debug.Print(ex.ToString());
-                textBoxPost.PlaceholderText = "> Could not stop.";
+                labelRelays.Text = "Could not stop.";
             }
         }
         #endregion
@@ -924,12 +903,12 @@ namespace kakoi
         {
             if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
             {
-                textBoxPost.PlaceholderText = "> Please set nokakoi key and password.";
+                _formPostBar.textBoxPost.PlaceholderText = "Please set nokakoi key and password.";
                 return;
             }
-            if (0 == textBoxPost.TextLength)
+            if (0 == _formPostBar.textBoxPost.TextLength)
             {
-                textBoxPost.PlaceholderText = "> Cannot post empty.";
+                _formPostBar.textBoxPost.PlaceholderText = "Cannot post empty.";
                 return;
             }
 
@@ -937,22 +916,17 @@ namespace kakoi
             {
                 _ = PostAsync();
 
-                textBoxPost.Text = string.Empty;
                 _formPostBar.textBoxPost.Text = string.Empty;
             }
             catch (Exception ex)
             {
                 Debug.Print(ex.ToString());
-                textBoxPost.PlaceholderText = "> Could not post.";
+                _formPostBar.textBoxPost.PlaceholderText = "Could not post.";
             }
 
             if (checkBoxPostBar.Checked)
             {
                 _formPostBar.textBoxPost.Focus();
-            }
-            else
-            {
-                textBoxPost.Focus();
             }
         }
         #endregion
@@ -982,7 +956,7 @@ namespace kakoi
             var newEvent = new NostrEvent()
             {
                 Kind = 1,
-                Content = textBoxPost.Text
+                Content = _formPostBar.textBoxPost.Text
                             //.Replace("\\n", "\r\n") // 本体の改行をポストバーのマルチラインに合わせる→廃止
                             .Replace("\r\n", "\n"),
                 Tags = tags
@@ -1000,7 +974,7 @@ namespace kakoi
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                textBoxPost.PlaceholderText = "> Decryption failed.";
+                _formPostBar.textBoxPost.PlaceholderText = "Decryption failed.";
             }
         }
         #endregion
@@ -1046,7 +1020,7 @@ namespace kakoi
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                textBoxPost.PlaceholderText = "> Decryption failed.";
+                labelRelays.Text = "Decryption failed.";
             }
         }
         #endregion
@@ -1089,7 +1063,6 @@ namespace kakoi
                 _nsec = string.Empty;
                 _npubHex = string.Empty;
                 _followeesHexs.Clear();
-                textBoxPost.PlaceholderText = "Hello Nostr!";
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
 
                 // 秘密鍵と公開鍵取得
@@ -1100,9 +1073,23 @@ namespace kakoi
                 if (!_npubHex.IsNullOrEmpty())
                 {
                     int connectCount = await NostrAccess.ConnectAsync();
+                    switch (connectCount)
+                    {
+                        case 0:
+                            labelRelays.Text = "No relay enabled.";
+                            toolTipRelays.SetToolTip(labelRelays, string.Empty);
+                            break;
+                        case 1:
+                            labelRelays.Text = NostrAccess.Relays[0].ToString();
+                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
+                            break;
+                        default:
+                            labelRelays.Text = $"{NostrAccess.Relays.Length} relays";
+                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
+                            break;
+                    }
                     if (0 == connectCount)
                     {
-                        textBoxPost.PlaceholderText = "> No relay enabled.";
                         return;
                     }
 
@@ -1111,15 +1098,13 @@ namespace kakoi
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
-                    textBoxPost.PlaceholderText = $"> Login as {name}.";
-                    textBoxPost.PlaceholderText = $"Post as {name}";
                     _formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                textBoxPost.PlaceholderText = "> Decryption failed.";
+                labelRelays.Text = "Decryption failed.";
             }
 
             Setting.TopMost = TopMost;
@@ -1465,7 +1450,6 @@ namespace kakoi
                 var url = emoji.Url;
 
                 _ = ReactionAsync(id, pubkey, content, url);
-                textBoxPost.PlaceholderText = $"Sent {content} to {GetUserName(pubkey)}.";
             }
         }
         #endregion

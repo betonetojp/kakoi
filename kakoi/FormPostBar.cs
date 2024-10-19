@@ -31,7 +31,7 @@ namespace kakoi
         {
             if (null != MainForm)
             {
-                MainForm.textBoxPost.Text = textBoxPost.Text;
+                //MainForm.textBoxPost.Text = textBoxPost.Text;
                 MainForm.ButtonPost_Click(sender, e);
             }
         }
