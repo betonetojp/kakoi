@@ -169,7 +169,7 @@ namespace kakoi
             if (!Visible)
             {
                 RootEvent = null;
-                textBoxPost.PlaceholderText = "";
+                textBoxPost.PlaceholderText = string.Empty;
             }
         }
     }

@@ -928,7 +928,12 @@ namespace kakoi
                 _ = PostAsync(rootEvent);
 
                 _formPostBar.textBoxPost.Text = string.Empty;
+                _formPostBar.textBoxPost.PlaceholderText = string.Empty;
                 _formPostBar.RootEvent = null;
+                // デフォルトの色に戻す
+                _formPostBar.textBoxPost.BackColor = SystemColors.Window;
+                //BackColor = SystemColors.Control;
+                _formPostBar.buttonPost.BackColor = SystemColors.Control;
             }
             catch (Exception ex)
             {
@@ -958,7 +963,7 @@ namespace kakoi
             List<NostrEventTag> tags = [];
             if (null != rootEvent)
             {
-                tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, ""] });
+                tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty] });
                 tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [rootEvent.PublicKey] });
             }
             if (_addClient)
@@ -1593,7 +1598,7 @@ namespace kakoi
                 Setting.WebViewLocation = _formWeb.Location;
                 Setting.WebViewSize = _formWeb.Size;
 
-                var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? "";
+                var id = dataGridViewNotes.Rows[e.RowIndex].Cells["id"].Value.ToString() ?? string.Empty;
                 NIP19.NostrEventNote nostrEventNote = new()
                 {
                     EventId = id,
