@@ -349,6 +349,9 @@ namespace kakoi
                                     }
                                 }
 
+                                // avastar列の背景色をpubkeyColorに変更
+                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+
                                 // クライアントタグによる背景色変更
                                 var userClient = nostrEvent.GetTaggedData("client");
                                 if (userClient != null && 0 < userClient.Length)
@@ -361,13 +364,9 @@ namespace kakoi
                                     {
                                         clientColor = Tools.HexToColor(client.ColorCode);
                                     }
-                                    dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
+                                    // time列の背景色をclientColorに変更
+                                    dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
                                 }
-
-                                //// time列の文字色をpubkeyColorに変更
-                                //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
-                                // avastar列の背景色をpubkeyColorに変更
-                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
                             }
 
                             // ログイン済みで自分へのリアクション
@@ -435,6 +434,9 @@ namespace kakoi
                                     }
                                 }
 
+                                // avastar列の背景色をpubkeyColorに変更
+                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+
                                 // クライアントタグによる背景色変更
                                 var userClient = nostrEvent.GetTaggedData("client");
                                 if (userClient != null && 0 < userClient.Length)
@@ -447,13 +449,9 @@ namespace kakoi
                                     {
                                         clientColor = Tools.HexToColor(client.ColorCode);
                                     }
-                                    dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
+                                    // time列の背景色をclientColorに変更
+                                    dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
                                 }
-
-                                //// time列の文字色をpubkeyColorに変更
-                                //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
-                                // avastar列の背景色をpubkeyColorに変更
-                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
 
                                 // SSPに送る
                                 if (_sendDSSTP && null != _ds)
@@ -585,6 +583,15 @@ namespace kakoi
                                 }
                             }
 
+                            // リプライの時は背景色変更
+                            if (isReply)
+                            {
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
+                            }
+
+                            // avastar列の背景色をpubkeyColorに変更
+                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+
                             // クライアントタグによる背景色変更
                             var userClient = nostrEvent.GetTaggedData("client");
                             if (userClient != null && 0 < userClient.Length)
@@ -597,19 +604,9 @@ namespace kakoi
                                 {
                                     clientColor = Tools.HexToColor(client.ColorCode);
                                 }
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = clientColor;
+                                // time列の背景色をclientColorに変更
+                                dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
                             }
-
-                            // リプライの時は背景色変更
-                            if (isReply)
-                            {
-                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
-                            }
-
-                            //// time列の文字色をpubkeyColorに変更
-                            //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
-                            // avastar列の背景色をpubkeyColorに変更
-                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
 
                             // SSPに送る
                             if (_sendDSSTP && null != _ds)
@@ -757,10 +754,24 @@ namespace kakoi
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
 
-                            //// time列の文字色をpubkeyColorに変更
-                            //dataGridViewNotes.Rows[0].Cells["time"].Style.ForeColor = pubkeyColor;
                             // avastar列の背景色をpubkeyColorに変更
                             dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+
+                            // クライアントタグによる背景色変更
+                            var userClient = nostrEvent.GetTaggedData("client");
+                            if (userClient != null && 0 < userClient.Length)
+                            {
+                                Color clientColor = Color.WhiteSmoke;
+
+                                // userClient[0]を_clientsから検索して色を取得
+                                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                                if (client != null && client.ColorCode != null)
+                                {
+                                    clientColor = Tools.HexToColor(client.ColorCode);
+                                }
+                                // time列の背景色をclientColorに変更
+                                dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
+                            }
                         }
                         #endregion
                     }
@@ -899,7 +910,7 @@ namespace kakoi
 
         #region Postボタン
         // Postボタン
-        internal void ButtonPost_Click(object sender, EventArgs e)
+        internal void ButtonPost_Click(object sender, EventArgs e, NostrEvent? rootEvent)
         {
             if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
             {
@@ -914,9 +925,10 @@ namespace kakoi
 
             try
             {
-                _ = PostAsync();
+                _ = PostAsync(rootEvent);
 
                 _formPostBar.textBoxPost.Text = string.Empty;
+                _formPostBar.RootEvent = null;
             }
             catch (Exception ex)
             {
@@ -936,7 +948,7 @@ namespace kakoi
         /// 投稿処理
         /// </summary>
         /// <returns></returns>
-        private async Task PostAsync()
+        private async Task PostAsync(NostrEvent? rootEvent = null)
         {
             if (null == NostrAccess.Clients)
             {
@@ -944,6 +956,11 @@ namespace kakoi
             }
             // create tags
             List<NostrEventTag> tags = [];
+            if (null != rootEvent)
+            {
+                tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, ""] });
+                tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [rootEvent.PublicKey] });
+            }
             if (_addClient)
             {
                 tags.Add(new NostrEventTag()
@@ -1098,7 +1115,7 @@ namespace kakoi
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
-                    _formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
+                    //_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
                 }
             }
             catch (Exception ex)
@@ -1339,17 +1356,6 @@ namespace kakoi
         }
         #endregion
 
-        #region CTRL + ENTERで投稿
-        // CTRL + ENTERで投稿
-        private void TextBoxPost_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyData == (Keys.Enter | Keys.Control))
-            {
-                ButtonPost_Click(sender, e);
-            }
-        }
-        #endregion
-
         #region 画面表示切替
         // 画面表示切替
         private void FormMain_KeyDown(object sender, KeyEventArgs e)
@@ -1525,6 +1531,26 @@ namespace kakoi
                     //DataGridViewNotes_CellDoubleClick(sender, ev);
                 }
             }
+            // Rキーで_postBar.RootEventに選択行のイベントを設定
+            if (e.KeyCode == Keys.R)
+            {
+                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                {
+                    var rootEvent = new NostrEvent()
+                    {
+                        Id = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["id"].Value,
+                        PublicKey = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["pubkey"].Value
+                    };
+                    _formPostBar.RootEvent = rootEvent;
+                    _formPostBar.textBoxPost.PlaceholderText = $"Reply to {GetUserName(rootEvent.PublicKey)}";
+                    if (!checkBoxPostBar.Checked)
+                    {
+                        checkBoxPostBar.Checked = true;
+                    }
+                    _formPostBar.Focus();
+                }
+            }
+
         }
         #endregion
 

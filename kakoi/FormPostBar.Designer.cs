@@ -100,6 +100,7 @@
             Activated += FormPostBar_Activated;
             FormClosing += FormPostBar_FormClosing;
             Shown += FormPostBar_Shown;
+            VisibleChanged += FormPostBar_VisibleChanged;
             DoubleClick += FormPostBar_DoubleClick;
             KeyDown += FormPostBar_KeyDown;
             MouseClick += FormPostBar_MouseClick;

@@ -1,10 +1,12 @@
-﻿using System.Diagnostics;
+﻿using NNostr.Client;
+using System.Diagnostics;
 
 namespace kakoi
 {
     public partial class FormPostBar : Form
     {
         internal FormMain? MainForm { get; set; }
+        internal NostrEvent? RootEvent { get; set; }
         private Point _mousePoint;
         private double _tempOpacity = 1.00;
 
@@ -32,7 +34,7 @@ namespace kakoi
             if (null != MainForm)
             {
                 //MainForm.textBoxPost.Text = textBoxPost.Text;
-                MainForm.ButtonPost_Click(sender, e);
+                MainForm.ButtonPost_Click(sender, e, RootEvent);
             }
         }
 
@@ -146,6 +148,29 @@ namespace kakoi
         private void FormPostBar_Activated(object sender, EventArgs e)
         {
             var result = textBoxPost.Focus();
+            if (null != RootEvent)
+            {
+                textBoxPost.BackColor = Tools.HexToColor(Setting.ReplyColor);
+                //BackColor = Tools.HexToColor(Setting.ReplyColor);
+                buttonPost.BackColor = Tools.HexToColor(Setting.ReplyColor);
+            }
+            else
+            {
+                // デフォルトの色に戻す
+                textBoxPost.BackColor = SystemColors.Window;
+                //BackColor = SystemColors.Control;
+                buttonPost.BackColor = SystemColors.Control;
+            }
+        }
+
+        // 非表示になる時RootEventをクリア
+        private void FormPostBar_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!Visible)
+            {
+                RootEvent = null;
+                textBoxPost.PlaceholderText = "";
+            }
         }
     }
 }
