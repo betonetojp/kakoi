@@ -72,6 +72,7 @@
             buttonPicture.Name = "buttonPicture";
             buttonPicture.Size = new Size(23, 23);
             buttonPicture.TabIndex = 3;
+            buttonPicture.TabStop = false;
             buttonPicture.UseVisualStyleBackColor = true;
             buttonPicture.Click += ButtonPicture_Click;
             // 

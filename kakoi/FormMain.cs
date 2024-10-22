@@ -934,6 +934,8 @@ namespace kakoi
                 _formPostBar.textBoxPost.BackColor = SystemColors.Window;
                 //BackColor = SystemColors.Control;
                 _formPostBar.buttonPost.BackColor = SystemColors.Control;
+                // 送信後にチェックを外す
+                checkBoxPostBar.Checked = false;
             }
             catch (Exception ex)
             {

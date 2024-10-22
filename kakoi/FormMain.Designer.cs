@@ -64,6 +64,7 @@
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(23, 23);
             buttonStart.TabIndex = 5;
+            buttonStart.TabStop = false;
             buttonStart.UseVisualStyleBackColor = true;
             buttonStart.Click += ButtonStart_Click;
             // 
@@ -76,6 +77,7 @@
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(23, 23);
             buttonStop.TabIndex = 6;
+            buttonStop.TabStop = false;
             buttonStop.UseVisualStyleBackColor = true;
             buttonStop.Click += ButtonStop_Click;
             // 
@@ -87,6 +89,7 @@
             buttonSetting.Name = "buttonSetting";
             buttonSetting.Size = new Size(23, 23);
             buttonSetting.TabIndex = 7;
+            buttonSetting.TabStop = false;
             buttonSetting.UseVisualStyleBackColor = true;
             buttonSetting.Click += ButtonSetting_Click;
             // 
@@ -98,6 +101,7 @@
             checkBoxPostBar.Name = "checkBoxPostBar";
             checkBoxPostBar.Size = new Size(15, 14);
             checkBoxPostBar.TabIndex = 2;
+            checkBoxPostBar.TabStop = false;
             toolTipRelays.SetToolTip(checkBoxPostBar, "Toggle post bar");
             checkBoxPostBar.UseVisualStyleBackColor = true;
             checkBoxPostBar.CheckedChanged += CheckBoxPostBar_CheckedChanged;
@@ -110,6 +114,7 @@
             buttonRelayList.Name = "buttonRelayList";
             buttonRelayList.Size = new Size(23, 23);
             buttonRelayList.TabIndex = 4;
+            buttonRelayList.TabStop = false;
             buttonRelayList.UseVisualStyleBackColor = true;
             buttonRelayList.Click += ButtonRelayList_Click;
             // 
@@ -289,7 +294,6 @@
         private Button buttonRelayList;
         private Label labelRelays;
         private ToolTip toolTipRelays;
-        private DataGridView dataGridViewNotes;
         private ComboBox comboBoxEmoji;
         private BindingSource emojiBindingSource;
         private DataGridViewTextBoxColumn time;
@@ -298,5 +302,6 @@
         private DataGridViewTextBoxColumn note;
         private DataGridViewTextBoxColumn id;
         private DataGridViewTextBoxColumn pubkey;
+        internal DataGridView dataGridViewNotes;
     }
 }

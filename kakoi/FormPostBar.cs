@@ -62,6 +62,7 @@ namespace kakoi
                 if (null != MainForm)
                 {
                     MainForm.checkBoxPostBar.Checked = false;
+                    MainForm.dataGridViewNotes.Focus();
                 }
                 Visible = false;
                 e.Cancel = true;
