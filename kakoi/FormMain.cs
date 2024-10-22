@@ -1028,7 +1028,11 @@ namespace kakoi
             }
             if (_addClient)
             {
-                tags.Add(new NostrEventTag() { TagIdentifier = "client", Data = ["kakoi"] });
+                tags.Add(new NostrEventTag()
+                {
+                    TagIdentifier = "client",
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://relay.nostr.band"]
+                });
             }
             // create a new event
             var newEvent = new NostrEvent()
@@ -1054,6 +1058,48 @@ namespace kakoi
             }
         }
         #endregion
+
+        private async Task RepostAsync(string e, string p)
+        {
+            if (null == NostrAccess.Clients)
+            {
+                return;
+            }
+            // create tags
+            List<NostrEventTag> tags = [];
+            tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [e, string.Empty] });
+            tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [p] });
+            if (_addClient)
+            {
+                tags.Add(new NostrEventTag()
+                {
+                    TagIdentifier = "client",
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://relay.nostr.band"]
+                });
+            }
+            // create a new event
+            var newEvent = new NostrEvent()
+            {
+                Kind = 6,
+                Content = string.Empty,
+                Tags = tags
+            };
+
+            try
+            {
+                // load from an nsec string
+                var key = _nsec.FromNIP19Nsec();
+                // sign the event
+                await newEvent.ComputeIdAndSignAsync(key);
+                // send the event
+                await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                labelRelays.Text = "Decryption failed.";
+            }
+        }
 
         #region Settingボタン
         // Settingボタン
@@ -1568,6 +1614,16 @@ namespace kakoi
             {
                 var ev = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0);
                 FormMain_MouseDoubleClick(sender, ev);
+            }
+            // Bキーで選択行をリポスト
+            if (e.KeyCode == Keys.B)
+            {
+                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                {
+                    var id = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["id"].Value;
+                    var pubkey = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["pubkey"].Value;
+                    _ = RepostAsync(id, pubkey);
+                }
             }
 
         }
