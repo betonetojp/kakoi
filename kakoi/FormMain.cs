@@ -349,6 +349,9 @@ namespace kakoi
                                     }
                                 }
 
+                                // 背景色をリアクションカラーに変更
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
+
                                 // avastar列の背景色をpubkeyColorに変更
                                 dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
 
@@ -433,6 +436,9 @@ namespace kakoi
                                         dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
                                     }
                                 }
+
+                                // 背景色をリアクションカラーに変更
+                                dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
                                 // avastar列の背景色をpubkeyColorに変更
                                 dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;

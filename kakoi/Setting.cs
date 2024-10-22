@@ -31,6 +31,7 @@ namespace kakoi
 
             public int AvatarSize { get; set; } = 32;
             public string GridColor { get; set; } = "#FF1493";
+            public string ReactionColor { get; set; } = "#FFFFE0";
             public string ReplyColor { get; set; } = "#E6E6FA";
             public string RepostColor { get; set; } = "#F0F8FF";
             public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
@@ -111,6 +112,11 @@ namespace kakoi
         {
             get => _data.GridColor;
             set => _data.GridColor = value;
+        }
+        public static string ReactionColor
+        {
+            get => _data.ReactionColor;
+            set => _data.ReactionColor = value;
         }
         public static string ReplyColor
         {
