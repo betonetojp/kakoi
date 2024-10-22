@@ -1563,6 +1563,12 @@ namespace kakoi
                     _formPostBar.Focus();
                 }
             }
+            // Zキーでnote列の折り返し切り替え
+            if (e.KeyCode == Keys.Z)
+            {
+                var ev = new MouseEventArgs(MouseButtons.Left, 2, 0, 0, 0);
+                FormMain_MouseDoubleClick(sender, ev);
+            }
 
         }
         #endregion
