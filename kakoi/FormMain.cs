@@ -916,7 +916,7 @@ namespace kakoi
 
         #region Postボタン
         // Postボタン
-        internal void ButtonPost_Click(object sender, EventArgs e, NostrEvent? rootEvent)
+        internal void ButtonPost_Click(object sender, EventArgs e, NostrEvent? rootEvent, bool isQuote)
         {
             if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
             {
@@ -931,7 +931,7 @@ namespace kakoi
 
             try
             {
-                _ = PostAsync(rootEvent);
+                _ = PostAsync(rootEvent, isQuote);
 
                 _formPostBar.textBoxPost.Text = string.Empty;
                 _formPostBar.textBoxPost.PlaceholderText = string.Empty;
@@ -961,7 +961,7 @@ namespace kakoi
         /// 投稿処理
         /// </summary>
         /// <returns></returns>
-        private async Task PostAsync(NostrEvent? rootEvent = null)
+        private async Task PostAsync(NostrEvent? rootEvent = null, bool isQuote = false)
         {
             if (null == NostrAccess.Clients)
             {
@@ -971,8 +971,15 @@ namespace kakoi
             List<NostrEventTag> tags = [];
             if (null != rootEvent)
             {
-                tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty] });
-                tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [rootEvent.PublicKey] });
+                if (isQuote)
+                {
+                    tags.Add(new NostrEventTag() { TagIdentifier = "q", Data = [rootEvent.Id, string.Empty] });
+                }
+                else
+                {
+                    tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty] });
+                    tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [rootEvent.PublicKey] });
+                }
             }
             if (_addClient)
             {
@@ -1059,6 +1066,7 @@ namespace kakoi
         }
         #endregion
 
+        #region リポスト処理
         private async Task RepostAsync(string e, string p)
         {
             if (null == NostrAccess.Clients)
@@ -1100,6 +1108,7 @@ namespace kakoi
                 labelRelays.Text = "Decryption failed.";
             }
         }
+        #endregion
 
         #region Settingボタン
         // Settingボタン
@@ -1590,7 +1599,7 @@ namespace kakoi
                     //DataGridViewNotes_CellDoubleClick(sender, ev);
                 }
             }
-            // Rキーで_postBar.RootEventに選択行のイベントを設定
+            // Rキーで返信
             if (e.KeyCode == Keys.R)
             {
                 if (dataGridViewNotes.SelectedRows[0].Index >= 0)
@@ -1609,6 +1618,33 @@ namespace kakoi
                     _formPostBar.Focus();
                 }
             }
+            // Qキーで引用
+            if (e.KeyCode == Keys.Q)
+            {
+                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                {
+                    var rootEvent = new NostrEvent()
+                    {
+                        Id = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["id"].Value,
+                        PublicKey = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["pubkey"].Value
+                    };
+                    _formPostBar.RootEvent = rootEvent;
+                    var eventNote = new NIP19.NostrEventNote()
+                    {
+                        EventId = rootEvent.Id,
+                        Relays = [string.Empty],
+                    };
+                    _formPostBar.textBoxPost.Text = $"{Environment.NewLine}nostr:{eventNote.ToNIP19()}";
+                    _formPostBar.textBoxPost.SelectionStart = 0;
+                    _formPostBar.IsQuote = true;
+                    if (!checkBoxPostBar.Checked)
+                    {
+                        checkBoxPostBar.Checked = true;
+                    }
+                    _formPostBar.Focus();
+                }
+            }
+
             // Zキーでnote列の折り返し切り替え
             if (e.KeyCode == Keys.Z)
             {
