@@ -938,10 +938,10 @@ namespace kakoi
                 _formPostBar.RootEvent = null;
                 // デフォルトの色に戻す
                 _formPostBar.textBoxPost.BackColor = SystemColors.Window;
-                //BackColor = SystemColors.Control;
                 _formPostBar.buttonPost.BackColor = SystemColors.Control;
                 // 送信後にチェックを外す
                 checkBoxPostBar.Checked = false;
+                dataGridViewNotes.Focus();
             }
             catch (Exception ex)
             {
