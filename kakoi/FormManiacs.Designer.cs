@@ -249,7 +249,6 @@
             picture.HeaderText = "picture";
             picture.MinimumWidth = 20;
             picture.Name = "picture";
-            picture.ReadOnly = true;
             picture.Width = 110;
             // 
             // created_at
