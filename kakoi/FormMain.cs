@@ -1763,8 +1763,37 @@ namespace kakoi
                 // リサイズ
                 using (var resizedBitmap = bitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
                 {
+                    if (null == resizedBitmap)
+                    {
+                        return;
+                    }
+
+                    // 円形に切り抜くためのマスクを作成
+                    int size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
+                    using var maskBitmap = new SKBitmap(size, size);
+                    using var canvas = new SKCanvas(maskBitmap);
+                    var paint = new SKPaint
+                    {
+                        IsAntialias = true,
+                        Color = SKColors.Black
+                    };
+                    canvas.Clear(SKColors.Transparent);
+                    canvas.DrawCircle(size / 2, size / 2, size / 2, paint);
+
+                    // マスクを適用して新しいビットマップを作成
+                    using var resultBitmap = new SKBitmap(size, size);
+                    using var resultCanvas = new SKCanvas(resultBitmap);
+                    resultCanvas.Clear(SKColors.Transparent);
+                    resultCanvas.DrawBitmap(resizedBitmap, new SKRect(0, 0, size, size));
+                    paint = new SKPaint
+                    {
+                        IsAntialias = true,
+                        BlendMode = SKBlendMode.DstIn
+                    };
+                    resultCanvas.DrawBitmap(maskBitmap, 0, 0, paint);
+
                     // 画像をPNG形式で保存
-                    using SKImage image = SKImage.FromBitmap(resizedBitmap);
+                    using SKImage image = SKImage.FromBitmap(resultBitmap);
                     using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
                     using FileStream fs = File.OpenWrite(picturePath);
                     data.SaveTo(fs);
