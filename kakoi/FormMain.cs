@@ -1134,7 +1134,10 @@ namespace kakoi
             List<NostrEventTag> tags = [];
             tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [e, string.Empty] });
             tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [p] });
-            tags.Add(new NostrEventTag() { TagIdentifier = "k", Data = [k.ToString()] });
+            if (1 != k)
+            {
+                tags.Add(new NostrEventTag() { TagIdentifier = "k", Data = [k.ToString()] });
+            }
             if (_addClient)
             {
                 tags.Add(new NostrEventTag()
