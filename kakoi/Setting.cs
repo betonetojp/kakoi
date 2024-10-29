@@ -22,7 +22,7 @@ namespace kakoi
             public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
             
-            public bool ShowAvatar { get; set; } = false;
+            public bool GetAvatar { get; set; } = true;
             public bool ShowOnlyFollowees { get; set; } = false;
             public bool ShowOnlyJapanese { get; set; } = false;
             public string NokakoiKey { get; set; } = string.Empty;
@@ -72,10 +72,10 @@ namespace kakoi
             get => _data.Opacity;
             set => _data.Opacity = value;
         }
-        public static bool ShowAvatar
+        public static bool GetAvatar
         {
-            get => _data.ShowAvatar;
-            set => _data.ShowAvatar = value;
+            get => _data.GetAvatar;
+            set => _data.GetAvatar = value;
         }
         public static bool ShowOnlyFollowees
         {

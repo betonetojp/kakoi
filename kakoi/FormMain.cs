@@ -54,7 +54,7 @@ namespace kakoi
         /// </summary>
         internal KeywordNotifier Notifier = new();
 
-        private bool _showAvatar;
+        private bool _getAvatar;
         private bool _showOnlyFollowees;
         private bool _showOnlyJapanese;
         private string _nokakoiKey = string.Empty;
@@ -133,7 +133,7 @@ namespace kakoi
             }
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _showAvatar = Setting.ShowAvatar;
+            _getAvatar = Setting.GetAvatar;
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
@@ -238,7 +238,7 @@ namespace kakoi
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private async void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             if (args.subscriptionId == NostrAccess.SubscriptionId)
             {
@@ -286,17 +286,31 @@ namespace kakoi
                             // ログイン済みで自分がしたリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
-                                Users.TryGetValue(nostrEvent.PublicKey, out User? user);
-
-                                // ユーザー表示名取得
-                                string userName = GetUserName(nostrEvent.PublicKey);
-                                string likedName = GetUserName(nostrEvent.GetTaggedPublicKeys()[0]);
-
+                                // プロフィール購読
+                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                                // ユーザー取得
+                                User? user = null;
+                                int retryCount = 0;
+                                while (retryCount < 4)
+                                {
+                                    Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                    // ユーザーが見つかった場合、ループを抜ける
+                                    if (user != null)
+                                    {
+                                        break;
+                                    }
+                                    // 一定時間待機してから再試行
+                                    await Task.Delay(500);
+                                    retryCount++;
+                                }
                                 // ユーザーが見つからない時は表示しない
                                 if (null == user)
                                 {
                                     continue;
                                 }
+                                // ユーザー表示名取得
+                                string userName = GetUserName(nostrEvent.PublicKey);
+                                string likedName = GetUserName(nostrEvent.GetTaggedPublicKeys()[0]);
 
                                 headMark = "+";
 
@@ -318,7 +332,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                                if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!_imeStatus.Compositing && !File.Exists(avatarFile))
@@ -376,16 +390,30 @@ namespace kakoi
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
-                                Users.TryGetValue(nostrEvent.PublicKey, out User? user);
-
-                                // ユーザー表示名取得
-                                string userName = GetUserName(nostrEvent.PublicKey);
-
+                                // プロフィール購読
+                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                                // ユーザー取得
+                                User? user = null;
+                                int retryCount = 0;
+                                while (retryCount < 4)
+                                {
+                                    Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                    // ユーザーが見つかった場合、ループを抜ける
+                                    if (user != null)
+                                    {
+                                        break;
+                                    }
+                                    // 一定時間待機してから再試行
+                                    await Task.Delay(500);
+                                    retryCount++;
+                                }
                                 // ユーザーが見つからない時は表示しない
                                 if (null == user)
                                 {
                                     continue;
                                 }
+                                // ユーザー表示名取得
+                                string userName = GetUserName(nostrEvent.PublicKey);
 
                                 headMark = "+";
 
@@ -407,7 +435,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                                if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
                                     string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                     if (!_imeStatus.Compositing && !File.Exists(avatarFile))
@@ -493,41 +521,52 @@ namespace kakoi
                         #region テキストノート
                         if (1 == nostrEvent.Kind)
                         {
-                            //var userClient = nostrEvent.GetTaggedData("client");
-                            //var isKakoi = -1 < Array.IndexOf(userClient, "kakoi");
                             var lang = DetermineLanguage(content);
-                            if (Users.TryGetValue(nostrEvent.PublicKey, out User? user) && null != user)
-                            {
-                                //// 言語判定結果を更新（既存ユーザー）
-                                //user.Language = lang;
-                            }
-
+                            //if (Users.TryGetValue(nostrEvent.PublicKey, out User? user) && null != user)
+                            //{
+                            //    //// 言語判定結果を更新（既存ユーザー）
+                            //    //user.Language = lang;
+                            //}
                             // 日本語限定表示オンで日本語じゃない時は表示しない
                             if (_showOnlyJapanese && "jpn" != lang)
                             {
                                 continue;
                             }
-
                             // フォロイー限定表示オンでフォロイーじゃない時は表示しない
                             if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
-
                             // ミュートしている時は表示しない
                             if (IsMuted(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ユーザー表示名取得（ユーザー辞書メモリ節約のため↑のフラグ処理後に）
-                            string userName = GetUserName(nostrEvent.PublicKey);
-
+                            // プロフィール購読
+                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                            // ユーザー取得
+                            User? user = null;
+                            int retryCount = 0;
+                            while (retryCount < 4)
+                            {
+                                Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                // ユーザーが見つかった場合、ループを抜ける
+                                if (user != null)
+                                {
+                                    break;
+                                }
+                                // 一定時間待機してから再試行
+                                await Task.Delay(500);
+                                retryCount++;
+                            }
                             // ユーザーが見つからない時は表示しない
                             if (null == user)
                             {
                                 continue;
                             }
+                            // ユーザー表示名取得
+                            string userName = GetUserName(nostrEvent.PublicKey);
 
                             bool isReply = false;
                             var e = nostrEvent.GetTaggedData("e");
@@ -560,7 +599,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                            if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!_imeStatus.Compositing && !File.Exists(avatarFile))
@@ -687,28 +726,42 @@ namespace kakoi
                         #region リポスト
                         if (6 == nostrEvent.Kind || 16 == nostrEvent.Kind)
                         {
-                            Users.TryGetValue(nostrEvent.PublicKey, out User? user);
-
                             // フォロイー限定表示オンでフォロイーじゃない時は表示しない
                             if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
-
                             // ミュートしている時は表示しない
                             if (IsMuted(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
-                            // ユーザー表示名取得
-                            string userName = GetUserName(nostrEvent.PublicKey);
-
+                            // プロフィール購読
+                            string originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
+                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey, originalPublicKey]);
+                            // ユーザー取得
+                            User? user = null;
+                            int retryCount = 0;
+                            while (retryCount < 4)
+                            {
+                                Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                // ユーザーが見つかった場合、ループを抜ける
+                                if (user != null)
+                                {
+                                    break;
+                                }
+                                // 一定時間待機してから再試行
+                                await Task.Delay(500);
+                                retryCount++;
+                            }
                             // ユーザーが見つからない時は表示しない
                             if (null == user)
                             {
                                 continue;
                             }
+                            // ユーザー表示名取得
+                            string userName = GetUserName(nostrEvent.PublicKey);
 
                             //headMark = ">";
 
@@ -719,7 +772,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post. [k:{nostrEvent.Kind}]",
+                            $"reposted {GetUserName(originalPublicKey)}'s post. [k:{nostrEvent.Kind}]",
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
@@ -729,7 +782,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            if (_showAvatar && user.Picture != null && user.Picture.Length > 0)
+                            if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
                                 string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (!_imeStatus.Compositing && !File.Exists(avatarFile))
@@ -855,7 +908,7 @@ namespace kakoi
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
 
-                                if (!_imeStatus.Compositing && _showAvatar && null != newUserData.Picture)
+                                if (!_imeStatus.Compositing && _getAvatar && null != newUserData.Picture)
                                 {
                                     // アバター取得
                                     var postBarFcuced = _formPostBar.ContainsFocus;
@@ -1123,7 +1176,7 @@ namespace kakoi
             Opacity = _tempOpacity;
             _formSetting.checkBoxTopMost.Checked = TopMost;
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
-            _formSetting.checkBoxShowAvatar.Checked = _showAvatar;
+            _formSetting.checkBoxGetAvatar.Checked = _getAvatar;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
@@ -1139,7 +1192,7 @@ namespace kakoi
             Opacity = _formSetting.trackBarOpacity.Value / 100.0;
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
-            _showAvatar = _formSetting.checkBoxShowAvatar.Checked;
+            _getAvatar = _formSetting.checkBoxGetAvatar.Checked;
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
@@ -1199,7 +1252,7 @@ namespace kakoi
 
             Setting.TopMost = TopMost;
             Setting.Opacity = Opacity;
-            Setting.ShowAvatar = _showAvatar;
+            Setting.GetAvatar = _getAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
             Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.NokakoiKey = _nokakoiKey;
@@ -1317,7 +1370,7 @@ namespace kakoi
             //    SubscribeProfiles([publicKeyHex]);
             //}
             // kind 0 を毎回購読するように変更（頻繁にdisplay_name等を変更するユーザーがいるため）
-            NostrAccess.SubscribeProfiles([publicKeyHex]);
+            //NostrAccess.SubscribeProfiles([publicKeyHex]);
 
             // 情報があれば表示名を取得
             Users.TryGetValue(publicKeyHex, out User? user);
@@ -1766,6 +1819,11 @@ namespace kakoi
                     using MemoryStream ms = new(avatarBytes);
                     // MemoryStreamから画像を読み込む
                     bitmap = SKBitmap.Decode(ms);
+                }
+
+                if (null == bitmap)
+                {
+                    return;
                 }
 
                 // 中央から正方形に切り取る

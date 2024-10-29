@@ -44,7 +44,7 @@
             label3 = new Label();
             checkBoxSendDSSTP = new CheckBox();
             linkLabelVersion = new LinkLabel();
-            checkBoxShowAvatar = new CheckBox();
+            checkBoxGetAvatar = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -209,22 +209,22 @@
             linkLabelVersion.Text = "v0.4.2";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
-            // checkBoxShowAvatar
+            // checkBoxGetAvatar
             // 
-            checkBoxShowAvatar.AutoSize = true;
-            checkBoxShowAvatar.Location = new Point(12, 37);
-            checkBoxShowAvatar.Name = "checkBoxShowAvatar";
-            checkBoxShowAvatar.Size = new Size(79, 19);
-            checkBoxShowAvatar.TabIndex = 3;
-            checkBoxShowAvatar.Text = "Get avatar";
-            checkBoxShowAvatar.UseVisualStyleBackColor = true;
+            checkBoxGetAvatar.AutoSize = true;
+            checkBoxGetAvatar.Location = new Point(12, 37);
+            checkBoxGetAvatar.Name = "checkBoxGetAvatar";
+            checkBoxGetAvatar.Size = new Size(79, 19);
+            checkBoxGetAvatar.TabIndex = 3;
+            checkBoxGetAvatar.Text = "Get avatar";
+            checkBoxGetAvatar.UseVisualStyleBackColor = true;
             // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(284, 261);
-            Controls.Add(checkBoxShowAvatar);
+            Controls.Add(checkBoxGetAvatar);
             Controls.Add(linkLabelVersion);
             Controls.Add(checkBoxSendDSSTP);
             Controls.Add(label3);
@@ -276,6 +276,6 @@
         private Label label3;
         internal CheckBox checkBoxSendDSSTP;
         private LinkLabel linkLabelVersion;
-        internal CheckBox checkBoxShowAvatar;
+        internal CheckBox checkBoxGetAvatar;
     }
 }
