@@ -651,7 +651,7 @@ namespace kakoi
                             {
                                 if (settings.Reaction)
                                 {
-                                    _ = ReactionAsync(nostrEvent.Id, nostrEvent.PublicKey, "+");
+                                    _ = ReactionAsync(nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind, "+");
                                 }
 
                                 if (settings.Open)
@@ -1021,7 +1021,7 @@ namespace kakoi
         #endregion
 
         #region リアクション処理
-        private async Task ReactionAsync(string e, string p, string? content, string? url = null)
+        private async Task ReactionAsync(string e, string p, int k, string? content, string? url = null)
         {
             if (null == NostrAccess.Clients)
             {
@@ -1031,7 +1031,7 @@ namespace kakoi
             List<NostrEventTag> tags = [];
             tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [e] });
             tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [p] });
-            //tags.Add(new NostrEventTag() { TagIdentifier = "k", Data = ["1"] });
+            tags.Add(new NostrEventTag() { TagIdentifier = "k", Data = [k.ToString()] });
             if (!url.IsNullOrEmpty())
             {
                 tags.Add(new NostrEventTag() { TagIdentifier = "emoji", Data = [$"{content}", $"{url}"] });
@@ -1522,13 +1522,14 @@ namespace kakoi
             DataGridViewRow selectedRow = dataGridViewNotes.Rows[e.RowIndex];
             string id = (string)selectedRow.Cells["id"].Value;
             string pubkey = (string)selectedRow.Cells["pubkey"].Value;
+            int kind = (int)selectedRow.Cells["kind"].Value;
 
             if (comboBoxEmoji.SelectedItem is Emoji emoji)
             {
                 var content = emoji.Content;
                 var url = emoji.Url;
 
-                _ = ReactionAsync(id, pubkey, content, url);
+                _ = ReactionAsync(id, pubkey, kind, content, url);
             }
         }
         #endregion
