@@ -685,7 +685,7 @@ namespace kakoi
                         #endregion
 
                         #region リポスト
-                        if (6 == nostrEvent.Kind)
+                        if (6 == nostrEvent.Kind || 16 == nostrEvent.Kind)
                         {
                             Users.TryGetValue(nostrEvent.PublicKey, out User? user);
 
@@ -719,7 +719,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post.",
+                            $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post. [k:{nostrEvent.Kind}]",
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
