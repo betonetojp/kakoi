@@ -1767,8 +1767,19 @@ namespace kakoi
                     // MemoryStreamから画像を読み込む
                     bitmap = SKBitmap.Decode(ms);
                 }
+
+                // 中央から正方形に切り取る
+                int size = Math.Min(bitmap.Width, bitmap.Height);
+                int x = (bitmap.Width - size) / 2;
+                int y = (bitmap.Height - size) / 2;
+                using var croppedBitmap = new SKBitmap(size, size);
+                using (var canvas = new SKCanvas(croppedBitmap))
+                {
+                    canvas.DrawBitmap(bitmap, new SKRect(x, y, x + size, y + size), new SKRect(0, 0, size, size));
+                }
+
                 // リサイズ
-                using (var resizedBitmap = bitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
+                using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
                 {
                     if (null == resizedBitmap)
                     {
@@ -1776,7 +1787,7 @@ namespace kakoi
                     }
 
                     // 円形に切り抜くためのマスクを作成
-                    int size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
+                    size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
                     using var maskBitmap = new SKBitmap(size, size);
                     using var canvas = new SKCanvas(maskBitmap);
                     var paint = new SKPaint
