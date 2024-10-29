@@ -310,7 +310,8 @@ namespace kakoi
                                 $"{headMark} {userName}",
                                 $"Sent {content} to {likedName}.",
                                 nostrEvent.Id,
-                                nostrEvent.PublicKey
+                                nostrEvent.PublicKey,
+                                nostrEvent.Kind
                                 );
 
                                 // avatar列のToolTipに表示名を設定
@@ -398,7 +399,8 @@ namespace kakoi
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
-                                nostrEvent.PublicKey
+                                nostrEvent.PublicKey,
+                                nostrEvent.Kind
                                 );
 
                                 // avatar列のToolTipに表示名を設定
@@ -549,7 +551,8 @@ namespace kakoi
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
-                                nostrEvent.PublicKey
+                                nostrEvent.PublicKey,
+                                nostrEvent.Kind
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
@@ -718,7 +721,8 @@ namespace kakoi
                             $"{headMark} {userName}",
                             $"reposted {GetUserName(nostrEvent.GetTaggedPublicKeys().Last())}'s post.",
                             nostrEvent.Id,
-                            nostrEvent.PublicKey
+                            nostrEvent.PublicKey,
+                            nostrEvent.Kind
                             );
 
                             // avatar列のToolTipに表示名を設定
@@ -1067,7 +1071,7 @@ namespace kakoi
         #endregion
 
         #region リポスト処理
-        private async Task RepostAsync(string e, string p)
+        private async Task RepostAsync(string e, string p, int k)
         {
             if (null == NostrAccess.Clients)
             {
@@ -1077,6 +1081,7 @@ namespace kakoi
             List<NostrEventTag> tags = [];
             tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [e, string.Empty] });
             tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [p] });
+            tags.Add(new NostrEventTag() { TagIdentifier = "k", Data = [k.ToString()] });
             if (_addClient)
             {
                 tags.Add(new NostrEventTag()
@@ -1088,7 +1093,7 @@ namespace kakoi
             // create a new event
             var newEvent = new NostrEvent()
             {
-                Kind = 6,
+                Kind = k == 1 ? 6 : 16,
                 Content = string.Empty,
                 Tags = tags
             };
@@ -1658,7 +1663,8 @@ namespace kakoi
                 {
                     var id = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["id"].Value;
                     var pubkey = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["pubkey"].Value;
-                    _ = RepostAsync(id, pubkey);
+                    var kind = (int)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["kind"].Value;
+                    _ = RepostAsync(id, pubkey, kind);
                 }
             }
 

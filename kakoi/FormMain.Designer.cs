@@ -52,6 +52,7 @@
             note = new DataGridViewTextBoxColumn();
             id = new DataGridViewTextBoxColumn();
             pubkey = new DataGridViewTextBoxColumn();
+            kind = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)emojiBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewNotes).BeginInit();
             SuspendLayout();
@@ -167,7 +168,7 @@
             dataGridViewNotes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewNotes.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewNotes.ColumnHeadersVisible = false;
-            dataGridViewNotes.Columns.AddRange(new DataGridViewColumn[] { time, avatar, name, note, id, pubkey });
+            dataGridViewNotes.Columns.AddRange(new DataGridViewColumn[] { time, avatar, name, note, id, pubkey, kind });
             dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle6.BackColor = SystemColors.Window;
             dataGridViewCellStyle6.Font = new Font("Yu Gothic UI", 9F);
@@ -253,6 +254,14 @@
             pubkey.SortMode = DataGridViewColumnSortMode.NotSortable;
             pubkey.Visible = false;
             // 
+            // kind
+            // 
+            kind.HeaderText = "kind";
+            kind.Name = "kind";
+            kind.ReadOnly = true;
+            kind.SortMode = DataGridViewColumnSortMode.NotSortable;
+            kind.Visible = false;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -296,12 +305,13 @@
         private ToolTip toolTipRelays;
         private ComboBox comboBoxEmoji;
         private BindingSource emojiBindingSource;
+        internal DataGridView dataGridViewNotes;
         private DataGridViewTextBoxColumn time;
         private DataGridViewImageColumn avatar;
         private DataGridViewTextBoxColumn name;
         private DataGridViewTextBoxColumn note;
         private DataGridViewTextBoxColumn id;
         private DataGridViewTextBoxColumn pubkey;
-        internal DataGridView dataGridViewNotes;
+        private DataGridViewTextBoxColumn kind;
     }
 }
