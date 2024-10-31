@@ -61,7 +61,7 @@
             // 
             buttonStart.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonStart.Image = Properties.Resources.icons8_start_16;
-            buttonStart.Location = new Point(211, 246);
+            buttonStart.Location = new Point(291, 326);
             buttonStart.Name = "buttonStart";
             buttonStart.Size = new Size(23, 23);
             buttonStart.TabIndex = 5;
@@ -74,7 +74,7 @@
             buttonStop.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonStop.Enabled = false;
             buttonStop.Image = Properties.Resources.icons8_stop_16;
-            buttonStop.Location = new Point(240, 246);
+            buttonStop.Location = new Point(320, 326);
             buttonStop.Name = "buttonStop";
             buttonStop.Size = new Size(23, 23);
             buttonStop.TabIndex = 6;
@@ -86,7 +86,7 @@
             // 
             buttonSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonSetting.Image = Properties.Resources.icons8_setting_16;
-            buttonSetting.Location = new Point(269, 246);
+            buttonSetting.Location = new Point(349, 326);
             buttonSetting.Name = "buttonSetting";
             buttonSetting.Size = new Size(23, 23);
             buttonSetting.TabIndex = 7;
@@ -98,7 +98,7 @@
             // 
             checkBoxPostBar.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             checkBoxPostBar.AutoSize = true;
-            checkBoxPostBar.Location = new Point(12, 251);
+            checkBoxPostBar.Location = new Point(12, 331);
             checkBoxPostBar.Name = "checkBoxPostBar";
             checkBoxPostBar.Size = new Size(15, 14);
             checkBoxPostBar.TabIndex = 2;
@@ -111,7 +111,7 @@
             // 
             buttonRelayList.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonRelayList.Image = Properties.Resources.icons8_list_16;
-            buttonRelayList.Location = new Point(182, 246);
+            buttonRelayList.Location = new Point(262, 326);
             buttonRelayList.Name = "buttonRelayList";
             buttonRelayList.Size = new Size(23, 23);
             buttonRelayList.TabIndex = 4;
@@ -124,9 +124,9 @@
             labelRelays.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRelays.AutoEllipsis = true;
             labelRelays.ForeColor = SystemColors.GrayText;
-            labelRelays.Location = new Point(87, 251);
+            labelRelays.Location = new Point(87, 331);
             labelRelays.Name = "labelRelays";
-            labelRelays.Size = new Size(89, 15);
+            labelRelays.Size = new Size(169, 15);
             labelRelays.TabIndex = 0;
             labelRelays.Text = "Relay info";
             labelRelays.TextAlign = ContentAlignment.TopRight;
@@ -140,13 +140,12 @@
             comboBoxEmoji.DisplayMember = "Content";
             comboBoxEmoji.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxEmoji.Font = new Font("Segoe UI Emoji", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            comboBoxEmoji.Location = new Point(33, 246);
+            comboBoxEmoji.Location = new Point(33, 326);
             comboBoxEmoji.Name = "comboBoxEmoji";
-            comboBoxEmoji.Size = new Size(48, 24);
+            comboBoxEmoji.Size = new Size(60, 24);
             comboBoxEmoji.TabIndex = 3;
             toolTipRelays.SetToolTip(comboBoxEmoji, "Reaction content");
             comboBoxEmoji.ValueMember = "Content";
-            comboBoxEmoji.SelectionChangeCommitted += comboBoxEmoji_SelectionChangeCommitted;
             // 
             // dataGridViewNotes
             // 
@@ -184,7 +183,7 @@
             dataGridViewNotes.ReadOnly = true;
             dataGridViewNotes.RowHeadersVisible = false;
             dataGridViewNotes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewNotes.Size = new Size(280, 228);
+            dataGridViewNotes.Size = new Size(360, 308);
             dataGridViewNotes.StandardTab = true;
             dataGridViewNotes.TabIndex = 1;
             dataGridViewNotes.CellDoubleClick += DataGridViewNotes_CellDoubleClick;
@@ -197,6 +196,7 @@
             // 
             time.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.TopRight;
+            dataGridViewCellStyle2.Font = new Font("メイリオ", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 128);
             dataGridViewCellStyle2.Format = "t";
             dataGridViewCellStyle2.NullValue = null;
             time.DefaultCellStyle = dataGridViewCellStyle2;
@@ -221,17 +221,20 @@
             // name
             // 
             dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.TopLeft;
+            dataGridViewCellStyle4.Font = new Font("メイリオ", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 128);
             name.DefaultCellStyle = dataGridViewCellStyle4;
             name.HeaderText = "name";
             name.Name = "name";
             name.ReadOnly = true;
             name.SortMode = DataGridViewColumnSortMode.NotSortable;
-            name.Width = 60;
+            name.Width = 70;
             // 
             // note
             // 
             note.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.TopLeft;
+            dataGridViewCellStyle5.Font = new Font("メイリオ", 9F, FontStyle.Regular, GraphicsUnit.Point, 128);
+            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
             note.DefaultCellStyle = dataGridViewCellStyle5;
             note.HeaderText = "note";
             note.Name = "note";
@@ -266,7 +269,7 @@
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(304, 281);
+            ClientSize = new Size(384, 361);
             Controls.Add(comboBoxEmoji);
             Controls.Add(dataGridViewNotes);
             Controls.Add(labelRelays);
@@ -277,7 +280,7 @@
             Controls.Add(buttonStart);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
-            MinimumSize = new Size(240, 240);
+            MinimumSize = new Size(320, 320);
             Name = "FormMain";
             SizeGripStyle = SizeGripStyle.Show;
             StartPosition = FormStartPosition.Manual;

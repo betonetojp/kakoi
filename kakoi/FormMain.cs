@@ -738,8 +738,12 @@ namespace kakoi
                             }
 
                             // プロフィール購読
-                            string originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
-                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey, originalPublicKey]);
+                            string originalPublicKey = string.Empty;
+                            if (nostrEvent.GetTaggedPublicKeys().Any())
+                            {
+                                originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
+                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey, originalPublicKey]);
+                            }
                             // ユーザー取得
                             User? user = null;
                             int retryCount = 0;
@@ -1657,8 +1661,7 @@ namespace kakoi
                 if (index < comboBoxEmoji.Items.Count)
                 {
                     comboBoxEmoji.SelectedIndex = index;
-                    //var ev = new DataGridViewCellEventArgs(3, dataGridViewNotes.SelectedRows[0].Index);
-                    //DataGridViewNotes_CellDoubleClick(sender, ev);
+                    dataGridViewNotes.Focus();
                 }
             }
             // Rキーで返信
@@ -1753,6 +1756,8 @@ namespace kakoi
                 if (null == _formWeb || _formWeb.IsDisposed)
                 {
                     _formWeb = new FormWeb();
+                    _formWeb.Location = _formWebLocation;
+                    _formWeb.Size = _formWebSize;
                 }
                 if (!_formWeb.Visible)
                 {
@@ -1910,11 +1915,6 @@ namespace kakoi
                 this.Activate(); // FormMainをアクティブにする
             }
             base.WndProc(ref m);
-        }
-
-        private void comboBoxEmoji_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            dataGridViewNotes.Focus();
         }
     }
 }

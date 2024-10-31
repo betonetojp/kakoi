@@ -16,7 +16,7 @@ namespace kakoi
         public class Data
         {
             public Point Location { get; set; }
-            public Size Size { get; set; } = new Size(320, 320);
+            public Size Size { get; set; } = new Size(400, 400);
             public int NameColumnWidth { get; set; } = 60;
 
             public bool TopMost { get; set; } = false;
@@ -37,11 +37,11 @@ namespace kakoi
             public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
 
             public Point PostBarLocation { get; set; }
-            public Size PostBarSize { get; set; } = new Size(300, 132);
+            public Size PostBarSize { get; set; } = new Size(400, 120);
             public string PictureUploadUrl { get; set; } = "https://nikolat.github.io/nostr-learn-nip96/";
 
             public Point WebViewLocation { get; set; }
-            public Size WebViewSize { get; set; } = new Size(320, 320);
+            public Size WebViewSize { get; set; } = new Size(400, 400);
         }
         #endregion
 

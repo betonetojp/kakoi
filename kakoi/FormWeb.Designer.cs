@@ -41,7 +41,7 @@
             webView2.DefaultBackgroundColor = Color.White;
             webView2.Location = new Point(12, 12);
             webView2.Name = "webView2";
-            webView2.Size = new Size(280, 257);
+            webView2.Size = new Size(360, 337);
             webView2.TabIndex = 0;
             webView2.ZoomFactor = 1D;
             // 
@@ -49,10 +49,10 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(304, 281);
+            ClientSize = new Size(384, 361);
             Controls.Add(webView2);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new Size(200, 200);
+            MinimumSize = new Size(320, 320);
             Name = "FormWeb";
             SizeGripStyle = SizeGripStyle.Show;
             StartPosition = FormStartPosition.Manual;

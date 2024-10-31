@@ -46,7 +46,7 @@
             textBoxPost.Name = "textBoxPost";
             textBoxPost.PlaceholderText = "kakoi";
             textBoxPost.ScrollBars = ScrollBars.Vertical;
-            textBoxPost.Size = new Size(251, 52);
+            textBoxPost.Size = new Size(331, 80);
             textBoxPost.TabIndex = 1;
             textBoxPost.KeyDown += TextBoxPost_KeyDown;
             textBoxPost.MouseEnter += Control_MouseEnter;
@@ -57,7 +57,7 @@
             buttonPost.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonPost.Enabled = false;
             buttonPost.Image = Properties.Resources.icons8_create_16;
-            buttonPost.Location = new Point(269, 12);
+            buttonPost.Location = new Point(349, 12);
             buttonPost.Name = "buttonPost";
             buttonPost.Size = new Size(23, 23);
             buttonPost.TabIndex = 2;
@@ -68,7 +68,7 @@
             // 
             buttonPicture.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonPicture.Image = Properties.Resources.icons8_picture_16;
-            buttonPicture.Location = new Point(269, 41);
+            buttonPicture.Location = new Point(349, 69);
             buttonPicture.Name = "buttonPicture";
             buttonPicture.Size = new Size(23, 23);
             buttonPicture.TabIndex = 3;
@@ -80,7 +80,7 @@
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(304, 76);
+            ClientSize = new Size(384, 104);
             ControlBox = false;
             Controls.Add(buttonPicture);
             Controls.Add(buttonPost);
@@ -91,7 +91,7 @@
             MaximizeBox = false;
             MaximumSize = new Size(480, 240);
             MinimizeBox = false;
-            MinimumSize = new Size(200, 92);
+            MinimumSize = new Size(320, 120);
             Name = "FormPostBar";
             ShowIcon = false;
             ShowInTaskbar = false;
