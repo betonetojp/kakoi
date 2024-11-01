@@ -542,6 +542,11 @@ namespace kakoi
                             {
                                 continue;
                             }
+                            // pタグにミュートされている公開鍵が含まれている時は表示しない
+                            if (nostrEvent.GetTaggedPublicKeys().Any(pk => IsMuted(pk)))
+                            {
+                                continue;
+                            }
 
                             // プロフィール購読
                             NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
