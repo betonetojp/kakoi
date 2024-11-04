@@ -101,14 +101,14 @@ namespace kakoi
         /// <summary>
         /// タイムライン購読処理
         /// </summary>
-        public static void Subscribe()
+        public static async Task SubscribeAsync()
         {
             if (null == _clients)
             {
                 return;
             }
 
-            _ = _clients.CreateSubscription(
+            await _clients.CreateSubscription(
                     _subscriptionId,
                     [
                         new NostrSubscriptionFilter()
@@ -126,14 +126,14 @@ namespace kakoi
         /// フォロイー購読処理
         /// </summary>
         /// <param name="author"></param>
-        public static void SubscribeFollows(string author)
+        public static async Task SubscribeFollowsAsync(string author)
         {
             if (null == _clients)
             {
                 return;
             }
 
-            _ = _clients.CreateSubscription(
+            await _clients.CreateSubscription(
                     _getFolloweesSubscriptionId,
                     [
                         new NostrSubscriptionFilter
@@ -151,14 +151,14 @@ namespace kakoi
         /// プロフィール購読処理
         /// </summary>
         /// <param name="authors"></param>
-        public static void SubscribeProfiles(string[] authors)
+        public static async Task SubscribeProfilesAsync(string[] authors)
         {
             if (null == _clients)
             {
                 return;
             }
 
-            _ = _clients.CreateSubscription(
+            await _clients.CreateSubscription(
                     _getProfilesSubscriptionId,
                     [
                         new NostrSubscriptionFilter
@@ -168,6 +168,9 @@ namespace kakoi
                         }
                     ]
                  );
+
+            // 待機
+            await Task.Delay(1000);
         }
         #endregion
 

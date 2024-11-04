@@ -208,7 +208,7 @@ namespace kakoi
                     }
                 }
 
-                NostrAccess.Subscribe();
+                await NostrAccess.SubscribeAsync();
 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
@@ -220,7 +220,7 @@ namespace kakoi
                 if (!string.IsNullOrEmpty(_npubHex))
                 {
                     // フォロイーを購読をする
-                    NostrAccess.SubscribeFollows(_npubHex);
+                    await NostrAccess.SubscribeFollowsAsync(_npubHex);
                 }
 
                 dataGridViewNotes.Rows.Clear();
@@ -392,12 +392,8 @@ namespace kakoi
                             // ログイン済みで自分がしたリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
-                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-
                                 // プロフィール購読
-                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
-                                // 待機
-                                await Task.Delay(1000);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                                 // ユーザー取得
                                 User? user = null;
@@ -431,7 +427,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize),
                                 $"{headMark} {userName}",
                                 $"Sent {content} to {likedName}.",
                                 nostrEvent.Id,
@@ -443,15 +439,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
-                                {
-                                    if (File.Exists(avatarFile))
-                                    {
-                                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                        using var avatar = new Bitmap(fileStream);
-                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                                    }
-                                }
+                                PutAvatar(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -479,12 +467,8 @@ namespace kakoi
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
-                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-
                                 // プロフィール購読
-                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
-                                // 待機
-                                await Task.Delay(1000);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                                 // ユーザー取得
                                 User? user = null;
@@ -517,7 +501,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize),
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
@@ -529,15 +513,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
-                                {
-                                    if (File.Exists(avatarFile))
-                                    {
-                                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                        using var avatar = new Bitmap(fileStream);
-                                        dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                                    }
-                                }
+                                PutAvatar(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -615,12 +591,8 @@ namespace kakoi
                                 continue;
                             }
 
-                            string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-
                             // プロフィール購読
-                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
-                            // 待機
-                            await Task.Delay(1000);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                             // ユーザー取得
                             User? user = null;
@@ -665,7 +637,7 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
+                                new Bitmap(_avatarSize, _avatarSize),
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
@@ -678,15 +650,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
-                            {
-                                if (File.Exists(avatarFile))
-                                {
-                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                    using var avatar = new Bitmap(fileStream);
-                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                                }
-                            }
+                            PutAvatar(user, nostrEvent.PublicKey);
 
                             // リプライの時は背景色変更
                             if (isReply)
@@ -794,22 +758,16 @@ namespace kakoi
                                 continue;
                             }
 
-                            string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-
                             // プロフィール購読
-                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
-                            // 待機
-                            await Task.Delay(1000);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                             // リポスト元プロフィール購読
                             string originalPublicKey = string.Empty;
                             if (nostrEvent.GetTaggedPublicKeys().Length != 0)
                             {
                                 originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
-                                NostrAccess.SubscribeProfiles([nostrEvent.PublicKey, originalPublicKey]);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey, originalPublicKey]);
                             }
-                            // 500ms待機
-                            await Task.Delay(500);
 
                             // ユーザー取得
                             User? user = null;
@@ -853,14 +811,12 @@ namespace kakoi
                             // ユーザー表示名取得
                             string originalUserName = GetUserName(originalPublicKey);
 
-                            //headMark = ">";
-
                             // グリッドに表示
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
-                            new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
+                            new Bitmap(_avatarSize, _avatarSize),
                             $"{headMark} {userName}",
                             $"reposted {originalUserName}'s post. [k:{nostrEvent.Kind}]",
                             nostrEvent.Id,
@@ -872,15 +828,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
-                            {
-                                if (File.Exists(avatarFile))
-                                {
-                                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                                    using var avatar = new Bitmap(fileStream);
-                                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                                }
-                            }
+                            PutAvatar(user, nostrEvent.PublicKey);
 
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
@@ -908,6 +856,22 @@ namespace kakoi
                     }
                 }
                 #endregion
+            }
+        }
+        #endregion
+
+        #region avatar列にアバターを表示
+        private void PutAvatar(User? user, string pubkey)
+        {
+            if (_getAvatar && user?.Picture != null && user.Picture.Length > 0)
+            {
+                string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
+                if (File.Exists(avatarFile))
+                {
+                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using var avatar = new Bitmap(fileStream);
+                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                }
             }
         }
         #endregion
@@ -1214,7 +1178,7 @@ namespace kakoi
                     }
 
                     // フォロイーを購読をする
-                    NostrAccess.SubscribeFollows(_npubHex);
+                    NostrAccess.SubscribeFollowsAsync(_npubHex);
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
