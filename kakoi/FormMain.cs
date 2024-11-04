@@ -203,6 +203,7 @@ namespace kakoi
                     }
                     if (null != NostrAccess.Clients)
                     {
+                        NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived2;
                         NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived;
                     }
                 }
@@ -231,6 +232,112 @@ namespace kakoi
             }
         }
         #endregion
+
+        #region イベント受信時処理2
+        /// <summary>
+        /// イベント受信時処理
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private async void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        {
+            if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
+            {
+                #region フォロイー購読
+                foreach (var nostrEvent in args.events)
+                {
+                    // フォローリスト
+                    if (3 == nostrEvent.Kind)
+                    {
+                        var tags = nostrEvent.Tags;
+                        foreach (var tag in tags)
+                        {
+                            if ("p" == tag.TagIdentifier)
+                            {
+                                // 公開鍵をハッシュに保存
+                                _followeesHexs.Add(tag.Data[0]);
+
+                                // petnameをユーザー辞書に保存
+                                if (2 < tag.Data.Count)
+                                {
+                                    Users.TryGetValue(tag.Data[0], out User? user);
+                                    if (null != user)
+                                    {
+                                        user.PetName = tag.Data[2];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                #endregion
+            }
+            else if (args.subscriptionId == NostrAccess.GetProfilesSubscriptionId)
+            {
+                #region プロフィール購読
+                foreach (var nostrEvent in args.events)
+                {
+                    if (RemoveCompletedEventIds(nostrEvent.Id))
+                    {
+                        continue;
+                    }
+
+                    // プロフィール
+                    if (0 == nostrEvent.Kind && null != nostrEvent.Content && null != nostrEvent.PublicKey)
+                    {
+                        var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
+                        if (null != newUserData)
+                        {
+                            if (!_imeStatus.Compositing && _getAvatar && null != newUserData.Picture)
+                            {
+                                // アバター取得
+                                var postBarFcuced = _formPostBar.ContainsFocus;
+                                var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+
+                                if (postBarFcuced)
+                                {
+                                    _formPostBar.Focus();
+                                }
+                                else if (formSettingFocusd)
+                                {
+                                    _formSetting.Focus();
+                                }
+                                else
+                                {
+                                    Focus();
+                                }
+                            }
+
+                            DateTimeOffset? cratedAt = DateTimeOffset.MinValue;
+                            if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
+                            {
+                                cratedAt = existingUserData?.CreatedAt;
+                            }
+                            if (false == existingUserData?.Mute)
+                            {
+                                // 既にミュートオフのMostrアカウントのミュートを解除
+                                newUserData.Mute = false;
+                            }
+                            if (null == cratedAt || (cratedAt < newUserData.CreatedAt))
+                            {
+                                newUserData.LastActivity = DateTime.Now;
+                                newUserData.PetName = existingUserData?.PetName;
+                                Tools.SaveUsers(Users);
+                                // 辞書に追加（上書き）
+                                Users[nostrEvent.PublicKey] = newUserData;
+                                Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
+                                Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
+                            }
+                        }
+                    }
+                }
+                #endregion
+            }
+        }
+        #endregion
+
 
         #region イベント受信時処理
         /// <summary>
@@ -286,12 +393,17 @@ namespace kakoi
                             // ログイン済みで自分がしたリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+
                                 // プロフィール購読
                                 NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                                // 待機
+                                await Task.Delay(1000);
+
                                 // ユーザー取得
                                 User? user = null;
                                 int retryCount = 0;
-                                while (retryCount < 4)
+                                while (retryCount < 10)
                                 {
                                     Users.TryGetValue(nostrEvent.PublicKey, out user);
                                     // ユーザーが見つかった場合、ループを抜ける
@@ -334,28 +446,6 @@ namespace kakoi
                                 // avatar列にアバターを表示
                                 if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
-                                    string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                    if (!_imeStatus.Compositing && !File.Exists(avatarFile))
-                                    {
-                                        var postBarFcuced = _formPostBar.ContainsFocus;
-                                        var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                        _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
-
-                                        if (postBarFcuced)
-                                        {
-                                            _formPostBar.Focus();
-                                        }
-                                        else if (formSettingFocusd)
-                                        {
-                                            _formSetting.Focus();
-                                        }
-                                        else
-                                        {
-                                            Focus();
-                                        }
-                                    }
-
                                     if (File.Exists(avatarFile))
                                     {
                                         using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -390,12 +480,17 @@ namespace kakoi
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+
                                 // プロフィール購読
                                 NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                                // 待機
+                                await Task.Delay(1000);
+
                                 // ユーザー取得
                                 User? user = null;
                                 int retryCount = 0;
-                                while (retryCount < 4)
+                                while (retryCount < 10)
                                 {
                                     Users.TryGetValue(nostrEvent.PublicKey, out user);
                                     // ユーザーが見つかった場合、ループを抜ける
@@ -437,28 +532,6 @@ namespace kakoi
                                 // avatar列にアバターを表示
                                 if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                                 {
-                                    string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                    if (!_imeStatus.Compositing && !File.Exists(avatarFile))
-                                    {
-                                        var postBarFcuced = _formPostBar.ContainsFocus;
-                                        var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                        _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
-
-                                        if (postBarFcuced)
-                                        {
-                                            _formPostBar.Focus();
-                                        }
-                                        else if (formSettingFocusd)
-                                        {
-                                            _formSetting.Focus();
-                                        }
-                                        else
-                                        {
-                                            Focus();
-                                        }
-                                    }
-
                                     if (File.Exists(avatarFile))
                                     {
                                         using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -548,13 +621,19 @@ namespace kakoi
                                 continue;
                             }
 
+                            string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+
                             // プロフィール購読
                             NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                            // 待機
+                            await Task.Delay(1000);
+
                             // ユーザー取得
                             User? user = null;
                             int retryCount = 0;
-                            while (retryCount < 4)
+                            while (retryCount < 10)
                             {
+                                Debug.Print($"retryCount = {retryCount}");
                                 Users.TryGetValue(nostrEvent.PublicKey, out user);
                                 // ユーザーが見つかった場合、ループを抜ける
                                 if (user != null)
@@ -570,6 +649,7 @@ namespace kakoi
                             {
                                 continue;
                             }
+
                             // ユーザー表示名取得
                             string userName = GetUserName(nostrEvent.PublicKey);
 
@@ -606,28 +686,6 @@ namespace kakoi
                             // avatar列にアバターを表示
                             if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
-                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
-                                {
-                                    var postBarFcuced = _formPostBar.ContainsFocus;
-                                    var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
-
-                                    if (postBarFcuced)
-                                    {
-                                        _formPostBar.Focus();
-                                    }
-                                    else if (formSettingFocusd)
-                                    {
-                                        _formSetting.Focus();
-                                    }
-                                    else
-                                    {
-                                        Focus();
-                                    }
-                                }
-
                                 if (File.Exists(avatarFile))
                                 {
                                     using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -742,17 +800,27 @@ namespace kakoi
                                 continue;
                             }
 
+                            string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+
                             // プロフィール購読
+                            NostrAccess.SubscribeProfiles([nostrEvent.PublicKey]);
+                            // 待機
+                            await Task.Delay(1000);
+
+                            // リポスト元プロフィール購読
                             string originalPublicKey = string.Empty;
-                            if (nostrEvent.GetTaggedPublicKeys().Any())
+                            if (nostrEvent.GetTaggedPublicKeys().Length != 0)
                             {
                                 originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
                                 NostrAccess.SubscribeProfiles([nostrEvent.PublicKey, originalPublicKey]);
                             }
+                            // 500ms待機
+                            await Task.Delay(500);
+
                             // ユーザー取得
                             User? user = null;
                             int retryCount = 0;
-                            while (retryCount < 4)
+                            while (retryCount < 10)
                             {
                                 Users.TryGetValue(nostrEvent.PublicKey, out user);
                                 // ユーザーが見つかった場合、ループを抜ける
@@ -772,6 +840,25 @@ namespace kakoi
                             // ユーザー表示名取得
                             string userName = GetUserName(nostrEvent.PublicKey);
 
+                            // リポスト元ユーザー取得
+                            User? originalUser = null;
+                            retryCount = 0;
+                            while (retryCount < 10)
+                            {
+                                Users.TryGetValue(originalPublicKey, out originalUser);
+                                // ユーザーが見つかった場合、ループを抜ける
+                                if (originalUser != null)
+                                {
+                                    break;
+                                }
+                                // 一定時間待機してから再試行
+                                await Task.Delay(500);
+                                retryCount++;
+                            }
+
+                            // ユーザー表示名取得
+                            string originalUserName = GetUserName(originalPublicKey);
+
                             //headMark = ">";
 
                             // グリッドに表示
@@ -781,7 +868,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(_avatarSize, _avatarSize), // Placeholder for Image
                             $"{headMark} {userName}",
-                            $"reposted {GetUserName(originalPublicKey)}'s post. [k:{nostrEvent.Kind}]",
+                            $"reposted {originalUserName}'s post. [k:{nostrEvent.Kind}]",
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
@@ -793,28 +880,6 @@ namespace kakoi
                             // avatar列にアバターを表示
                             if (_getAvatar && user.Picture != null && user.Picture.Length > 0)
                             {
-                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
-                                if (!_imeStatus.Compositing && !File.Exists(avatarFile))
-                                {
-                                    var postBarFcuced = _formPostBar.ContainsFocus;
-                                    var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                    _ = GetAvatarAsync(nostrEvent.PublicKey, user.Picture);
-
-                                    if (postBarFcuced)
-                                    {
-                                        _formPostBar.Focus();
-                                    }
-                                    else if (formSettingFocusd)
-                                    {
-                                        _formSetting.Focus();
-                                    }
-                                    else
-                                    {
-                                        Focus();
-                                    }
-                                }
-
                                 if (File.Exists(avatarFile))
                                 {
                                     using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -846,100 +911,6 @@ namespace kakoi
                             }
                         }
                         #endregion
-                    }
-                }
-                #endregion
-            }
-            else if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
-            {
-                #region フォロイー購読
-                foreach (var nostrEvent in args.events)
-                {
-                    // フォローリスト
-                    if (3 == nostrEvent.Kind)
-                    {
-                        var tags = nostrEvent.Tags;
-                        foreach (var tag in tags)
-                        {
-                            if ("p" == tag.TagIdentifier)
-                            {
-                                // 公開鍵をハッシュに保存
-                                _followeesHexs.Add(tag.Data[0]);
-
-                                // petnameをユーザー辞書に保存
-                                if (2 < tag.Data.Count)
-                                {
-                                    Users.TryGetValue(tag.Data[0], out User? user);
-                                    if (null != user)
-                                    {
-                                        user.PetName = tag.Data[2];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                #endregion
-            }
-            else if (args.subscriptionId == NostrAccess.GetProfilesSubscriptionId)
-            {
-                #region プロフィール購読
-                foreach (var nostrEvent in args.events)
-                {
-                    if (RemoveCompletedEventIds(nostrEvent.Id))
-                    {
-                        continue;
-                    }
-
-                    // プロフィール
-                    if (0 == nostrEvent.Kind && null != nostrEvent.Content && null != nostrEvent.PublicKey)
-                    {
-                        var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
-                        if (null != newUserData)
-                        {
-                            DateTimeOffset? cratedAt = DateTimeOffset.MinValue;
-                            if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
-                            {
-                                cratedAt = existingUserData?.CreatedAt;
-                            }
-                            if (false == existingUserData?.Mute)
-                            {
-                                // 既にミュートオフのMostrアカウントのミュートを解除
-                                newUserData.Mute = false;
-                            }
-                            if (null == cratedAt || (cratedAt < newUserData.CreatedAt))
-                            {
-                                newUserData.LastActivity = DateTime.Now;
-                                newUserData.PetName = existingUserData?.PetName;
-                                Tools.SaveUsers(Users);
-                                // 辞書に追加（上書き）
-                                Users[nostrEvent.PublicKey] = newUserData;
-                                Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
-                                Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
-
-                                if (!_imeStatus.Compositing && _getAvatar && null != newUserData.Picture)
-                                {
-                                    // アバター取得
-                                    var postBarFcuced = _formPostBar.ContainsFocus;
-                                    var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                    _ = GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
-
-                                    if (postBarFcuced)
-                                    {
-                                        _formPostBar.Focus();
-                                    }
-                                    else if (formSettingFocusd)
-                                    {
-                                        _formSetting.Focus();
-                                    }
-                                    else
-                                    {
-                                        Focus();
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
                 #endregion
@@ -1327,7 +1298,7 @@ namespace kakoi
             if (names.Length > 0)
             {
                 _ghostName = names.First(); // とりあえず先頭で
-                //Debug.Print(_ghostName);
+                                            //Debug.Print(_ghostName);
             }
             else
             {
