@@ -338,7 +338,6 @@ namespace kakoi
         }
         #endregion
 
-
         #region イベント受信時処理
         /// <summary>
         /// イベント受信時処理
@@ -595,11 +594,6 @@ namespace kakoi
                         if (1 == nostrEvent.Kind)
                         {
                             var lang = DetermineLanguage(content);
-                            //if (Users.TryGetValue(nostrEvent.PublicKey, out User? user) && null != user)
-                            //{
-                            //    //// 言語判定結果を更新（既存ユーザー）
-                            //    //user.Language = lang;
-                            //}
                             // 日本語限定表示オンで日本語じゃない時は表示しない
                             if (_showOnlyJapanese && "jpn" != lang)
                             {
@@ -1347,14 +1341,6 @@ namespace kakoi
         /// <returns>ユーザー表示名</returns>
         private string GetUserName(string publicKeyHex)
         {
-            //// 辞書にない場合プロフィールを購読する
-            //if (!_users.TryGetValue(publicKeyHex, out User? user))
-            //{
-            //    SubscribeProfiles([publicKeyHex]);
-            //}
-            // kind 0 を毎回購読するように変更（頻繁にdisplay_name等を変更するユーザーがいるため）
-            //NostrAccess.SubscribeProfiles([publicKeyHex]);
-
             // 情報があれば表示名を取得
             Users.TryGetValue(publicKeyHex, out User? user);
             string? userName = "???";
