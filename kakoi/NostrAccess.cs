@@ -172,7 +172,10 @@ namespace kakoi
             // 待機
             if (wait)
             {
-                await Task.Delay(Setting.WaitForProfile);
+                if (0 < Setting.WaitForProfile)
+                {
+                    await Task.Delay(Setting.WaitForProfile);
+                }
             }
         }
         #endregion
