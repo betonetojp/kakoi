@@ -371,7 +371,7 @@ namespace kakoi
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
                                 // プロフィール購読
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                                 // ユーザー取得
                                 User? user = null;
@@ -446,7 +446,7 @@ namespace kakoi
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
                                 // プロフィール購読
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                                 // ユーザー取得
                                 User? user = null;
@@ -570,7 +570,7 @@ namespace kakoi
                             }
 
                             // プロフィール購読
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                             // ユーザー取得
                             User? user = null;
@@ -736,14 +736,14 @@ namespace kakoi
                             }
 
                             // プロフィール購読
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                             // リポスト元プロフィール購読
                             string originalPublicKey = string.Empty;
                             if (nostrEvent.GetTaggedPublicKeys().Length != 0)
                             {
                                 originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey, originalPublicKey]);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey, originalPublicKey], _getAvatar);
                             }
 
                             // ユーザー取得
