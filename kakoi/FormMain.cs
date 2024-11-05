@@ -227,7 +227,7 @@ namespace kakoi
             }
             catch (Exception ex)
             {
-                Debug.Print(ex.ToString());
+                Debug.WriteLine(ex.Message);
                 labelRelays.Text = "Could not start.";
             }
         }
@@ -239,7 +239,7 @@ namespace kakoi
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
             {
@@ -288,28 +288,6 @@ namespace kakoi
                         var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
                         if (null != newUserData)
                         {
-                            if (!_imeStatus.Compositing && _getAvatar && null != newUserData.Picture)
-                            {
-                                // アバター取得
-                                var postBarFcuced = _formPostBar.ContainsFocus;
-                                var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
-
-                                if (postBarFcuced)
-                                {
-                                    _formPostBar.Focus();
-                                }
-                                else if (formSettingFocusd)
-                                {
-                                    _formSetting.Focus();
-                                }
-                                else
-                                {
-                                    Focus();
-                                }
-                            }
-
                             DateTimeOffset? cratedAt = DateTimeOffset.MinValue;
                             if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
                             {
@@ -328,7 +306,7 @@ namespace kakoi
                                 // 辞書に追加（上書き）
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
-                                Debug.WriteLine($"プロフィール更新 {newUserData.LastActivity} {newUserData.DisplayName} {newUserData.Name}");
+                                Debug.WriteLine($"プロフィール更新: {newUserData.DisplayName} @{newUserData.Name}");
                             }
                         }
                     }
@@ -439,7 +417,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                PutAvatar(user, nostrEvent.PublicKey);
+                                await PutAvatarAsync(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -513,7 +491,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                PutAvatar(user, nostrEvent.PublicKey);
+                                await PutAvatarAsync(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -599,7 +577,7 @@ namespace kakoi
                             int retryCount = 0;
                             while (retryCount < 10)
                             {
-                                Debug.Print($"retryCount = {retryCount}");
+                                Debug.WriteLine($"retryCount = {retryCount}");
                                 Users.TryGetValue(nostrEvent.PublicKey, out user);
                                 // ユーザーが見つかった場合、ループを抜ける
                                 if (user != null)
@@ -650,7 +628,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            PutAvatar(user, nostrEvent.PublicKey);
+                            await PutAvatarAsync(user, nostrEvent.PublicKey);
 
                             // リプライの時は背景色変更
                             if (isReply)
@@ -738,9 +716,8 @@ namespace kakoi
                                 }
                             }
 
-                            // 改行をスペースに置き換え
-                            content = content.Replace('\n', ' ');
-                            Debug.WriteLine($"{timeString} {userName} {content}");
+                            // 改行をスペースに置き換えてログ表示
+                            Debug.WriteLine($"{timeString} {userName} {content.Replace('\n', ' ')}");
                         }
                         #endregion
 
@@ -828,7 +805,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            PutAvatar(user, nostrEvent.PublicKey);
+                            await PutAvatarAsync(user, nostrEvent.PublicKey);
 
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
@@ -861,16 +838,39 @@ namespace kakoi
         #endregion
 
         #region avatar列にアバターを表示
-        private void PutAvatar(User? user, string pubkey)
+        private async Task PutAvatarAsync(User? user, string pubkey)
         {
+            string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
             if (_getAvatar && user?.Picture != null && user.Picture.Length > 0)
             {
-                string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
+                if (!_imeStatus.Compositing)
+                {
+                    // アバター取得
+                    var postBarFcuced = _formPostBar.ContainsFocus;
+                    var formSettingFocusd = _formSetting.ContainsFocus;
+
+                    await GetAvatarAsync(pubkey, user.Picture);
+
+                    if (postBarFcuced)
+                    {
+                        _formPostBar.Focus();
+                    }
+                    else if (formSettingFocusd)
+                    {
+                        _formSetting.Focus();
+                    }
+                    else
+                    {
+                        Focus();
+                    }
+                }
+
                 if (File.Exists(avatarFile))
                 {
                     using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     using var avatar = new Bitmap(fileStream);
                     dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                    Debug.WriteLine("画像を表示しました。");
                 }
             }
         }
@@ -903,7 +903,7 @@ namespace kakoi
             }
             catch (Exception ex)
             {
-                Debug.Print(ex.ToString());
+                Debug.WriteLine(ex.Message);
                 labelRelays.Text = "Could not stop.";
             }
         }
@@ -940,7 +940,7 @@ namespace kakoi
             }
             catch (Exception ex)
             {
-                Debug.Print(ex.ToString());
+                Debug.WriteLine(ex.Message);
                 _formPostBar.textBoxPost.PlaceholderText = "Could not post.";
             }
 
@@ -1178,7 +1178,7 @@ namespace kakoi
                     }
 
                     // フォロイーを購読をする
-                    NostrAccess.SubscribeFollowsAsync(_npubHex);
+                    await NostrAccess.SubscribeFollowsAsync(_npubHex);
 
                     // ログインユーザー表示名取得
                     var name = GetUserName(_npubHex);
@@ -1256,12 +1256,12 @@ namespace kakoi
             if (names.Length > 0)
             {
                 _ghostName = names.First(); // とりあえず先頭で
-                                            //Debug.Print(_ghostName);
+                                            //Debug.WriteLine(_ghostName);
             }
             else
             {
                 _ghostName = string.Empty;
-                //Debug.Print("ゴーストがいません");
+                //Debug.WriteLine("ゴーストがいません");
             }
         }
         #endregion
@@ -1326,7 +1326,7 @@ namespace kakoi
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
                 Tools.SaveUsers(Users);
-                Debug.WriteLine($"ユーザー名取得 {user.LastActivity} {user.DisplayName} {user.Name}");
+                Debug.WriteLine($"ユーザー名取得: {user.DisplayName} @{user.Name} 📛{user.PetName}");
             }
             return userName;
         }
@@ -1809,7 +1809,7 @@ namespace kakoi
                     data.SaveTo(fs);
                 }
 
-                Debug.WriteLine("画像が正常に保存されました。");
+                Debug.WriteLine("画像が保存されました。");
             }
             catch (TaskCanceledException ex)
             {
