@@ -17,7 +17,7 @@ namespace kakoi
         {
             public Point Location { get; set; }
             public Size Size { get; set; } = new Size(400, 400);
-            public int NameColumnWidth { get; set; } = 60;
+            public int NameColumnWidth { get; set; } = 64;
 
             public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
@@ -29,6 +29,7 @@ namespace kakoi
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
 
+            public int WaitForProfile { get; set; } = 1000;
             public int AvatarSize { get; set; } = 32;
             public string GridColor { get; set; } = "#FF1493";
             public string ReactionColor { get; set; } = "#FFFFE0";
@@ -101,6 +102,11 @@ namespace kakoi
         {
             get => _data.AddClient;
             set => _data.AddClient = value;
+        }
+        public static int WaitForProfile
+        {
+            get => _data.WaitForProfile;
+            set => _data.WaitForProfile = value;
         }
 
         public static int AvatarSize

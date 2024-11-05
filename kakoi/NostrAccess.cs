@@ -170,7 +170,7 @@ namespace kakoi
                  );
 
             // 待機
-            await Task.Delay(500);
+            await Task.Delay(Setting.WaitForProfile);
         }
         #endregion
 
