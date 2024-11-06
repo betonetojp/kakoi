@@ -26,8 +26,6 @@ namespace kakoi
         [DllImport("user32.dll")]
         private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
-        //private readonly NostrAccess _nostrAccess = new();
-
         private readonly string _configPath = Path.Combine(Application.StartupPath, "kakoi.config");
 
         private readonly FormSetting _formSetting = new();
@@ -86,7 +84,7 @@ namespace kakoi
         private List<Client> _clients = [];
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
 
-        private ImeStatus _imeStatus = new();
+        private readonly ImeStatus _imeStatus = new();
         #endregion
 
         #region コンストラクタ
@@ -224,6 +222,8 @@ namespace kakoi
                 }
 
                 dataGridViewNotes.Rows.Clear();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
             catch (Exception ex)
             {
@@ -235,7 +235,7 @@ namespace kakoi
 
         #region イベント受信時処理2
         /// <summary>
-        /// イベント受信時処理
+        /// イベント受信時処理2
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
@@ -308,30 +308,9 @@ namespace kakoi
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新: {newUserData.DisplayName} @{newUserData.Name}");
 
-                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
                                 if (_getAvatar && newUserData.Picture != null && newUserData.Picture.Length > 0)
                                 {
-                                    if (!File.Exists(avatarFile) && !_imeStatus.Compositing)
-                                    {
-                                        // アバター取得
-                                        var postBarFcuced = _formPostBar.ContainsFocus;
-                                        var formSettingFocusd = _formSetting.ContainsFocus;
-
-                                        await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
-
-                                        if (postBarFcuced)
-                                        {
-                                            _formPostBar.Focus();
-                                        }
-                                        else if (formSettingFocusd)
-                                        {
-                                            _formSetting.Focus();
-                                        }
-                                        else
-                                        {
-                                            Focus();
-                                        }
-                                    }
+                                    await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
                                 }
                             }
                         }
@@ -363,22 +342,8 @@ namespace kakoi
                     var content = nostrEvent.Content;
                     if (content != null)
                     {
-                        // 時間表示
-                        DateTimeOffset time;
-                        int hour;
-                        int minute;
-                        string timeString = "- ";
-                        if (nostrEvent.CreatedAt != null)
-                        {
-                            time = (DateTimeOffset)nostrEvent.CreatedAt;
-                            time = time.LocalDateTime;
-                            hour = time.Hour;
-                            minute = time.Minute;
-                            timeString = string.Format("{0:D2}", hour) + ":" + string.Format("{0:D2}", minute);
-                        }
-
-                        // Public key Color
-                        var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey.Substring(0, 6));
+                        string userName = string.Empty;
+                        User? user = null;
 
                         // フォロイーチェック
                         string headMark = "-";
@@ -400,27 +365,14 @@ namespace kakoi
                                 await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                                 // ユーザー取得
-                                User? user = null;
-                                int retryCount = 0;
-                                while (retryCount < 10)
-                                {
-                                    Users.TryGetValue(nostrEvent.PublicKey, out user);
-                                    // ユーザーが見つかった場合、ループを抜ける
-                                    if (user != null)
-                                    {
-                                        break;
-                                    }
-                                    // 一定時間待機してから再試行
-                                    await Task.Delay(500);
-                                    retryCount++;
-                                }
+                                user = await GetUserAsync(nostrEvent.PublicKey);
                                 // ユーザーが見つからない時は表示しない
                                 if (null == user)
                                 {
                                     continue;
                                 }
                                 // ユーザー表示名取得
-                                string userName = GetUserName(nostrEvent.PublicKey);
+                                userName = GetUserName(nostrEvent.PublicKey);
                                 string likedName = GetUserName(nostrEvent.GetTaggedPublicKeys()[0]);
 
                                 headMark = "+";
@@ -439,33 +391,11 @@ namespace kakoi
                                 nostrEvent.Kind
                                 );
 
-                                // avatar列のToolTipに表示名を設定
-                                dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
-
-                                // avatar列にアバターを表示
-                                PutAvatar(user, nostrEvent.PublicKey);
-
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
-                                // avastar列の背景色をpubkeyColorに変更
-                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
-
-                                // クライアントタグによる背景色変更
-                                var userClient = nostrEvent.GetTaggedData("client");
-                                if (userClient != null && 0 < userClient.Length)
-                                {
-                                    Color clientColor = Color.WhiteSmoke;
-
-                                    // userClient[0]を_clientsから検索して色を取得
-                                    var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
-                                    if (client != null && client.ColorCode != null)
-                                    {
-                                        clientColor = Tools.HexToColor(client.ColorCode);
-                                    }
-                                    // time列の背景色をclientColorに変更
-                                    dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
-                                }
+                                // 行を装飾
+                                await EditRowAsync(nostrEvent, user, userName);
                             }
 
                             // ログイン済みで自分へのリアクション
@@ -475,27 +405,14 @@ namespace kakoi
                                 await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                                 // ユーザー取得
-                                User? user = null;
-                                int retryCount = 0;
-                                while (retryCount < 10)
-                                {
-                                    Users.TryGetValue(nostrEvent.PublicKey, out user);
-                                    // ユーザーが見つかった場合、ループを抜ける
-                                    if (user != null)
-                                    {
-                                        break;
-                                    }
-                                    // 一定時間待機してから再試行
-                                    await Task.Delay(500);
-                                    retryCount++;
-                                }
+                                user = await GetUserAsync(nostrEvent.PublicKey);
                                 // ユーザーが見つからない時は表示しない
                                 if (null == user)
                                 {
                                     continue;
                                 }
                                 // ユーザー表示名取得
-                                string userName = GetUserName(nostrEvent.PublicKey);
+                                userName = GetUserName(nostrEvent.PublicKey);
 
                                 headMark = "+";
 
@@ -513,33 +430,11 @@ namespace kakoi
                                 nostrEvent.Kind
                                 );
 
-                                // avatar列のToolTipに表示名を設定
-                                dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
-
-                                // avatar列にアバターを表示
-                                PutAvatar(user, nostrEvent.PublicKey);
-
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
-                                // avastar列の背景色をpubkeyColorに変更
-                                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
-
-                                // クライアントタグによる背景色変更
-                                var userClient = nostrEvent.GetTaggedData("client");
-                                if (userClient != null && 0 < userClient.Length)
-                                {
-                                    Color clientColor = Color.WhiteSmoke;
-
-                                    // userClient[0]を_clientsから検索して色を取得
-                                    var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
-                                    if (client != null && client.ColorCode != null)
-                                    {
-                                        clientColor = Tools.HexToColor(client.ColorCode);
-                                    }
-                                    // time列の背景色をclientColorに変更
-                                    dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
-                                }
+                                // 行を装飾
+                                await EditRowAsync(nostrEvent, user, userName);
 
                                 // SSPに送る
                                 if (_sendDSSTP && null != _ds)
@@ -599,29 +494,14 @@ namespace kakoi
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
                             // ユーザー取得
-                            User? user = null;
-                            int retryCount = 0;
-                            while (retryCount < 10)
-                            {
-                                Debug.WriteLine($"retryCount = {retryCount}");
-                                Users.TryGetValue(nostrEvent.PublicKey, out user);
-                                // ユーザーが見つかった場合、ループを抜ける
-                                if (user != null)
-                                {
-                                    break;
-                                }
-                                // 一定時間待機してから再試行
-                                await Task.Delay(500);
-                                retryCount++;
-                            }
+                            user = await GetUserAsync(nostrEvent.PublicKey);
                             // ユーザーが見つからない時は表示しない
                             if (null == user)
                             {
                                 continue;
                             }
-
                             // ユーザー表示名取得
-                            string userName = GetUserName(nostrEvent.PublicKey);
+                            userName = GetUserName(nostrEvent.PublicKey);
 
                             bool isReply = false;
                             var e = nostrEvent.GetTaggedData("e");
@@ -650,36 +530,14 @@ namespace kakoi
                                 );
                             //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
-                            // avatar列のToolTipに表示名を設定
-                            dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
-
-                            // avatar列にアバターを表示
-                            PutAvatar(user, nostrEvent.PublicKey);
-
                             // リプライの時は背景色変更
                             if (isReply)
                             {
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReplyColor);
                             }
 
-                            // avastar列の背景色をpubkeyColorに変更
-                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
-
-                            // クライアントタグによる背景色変更
-                            var userClient = nostrEvent.GetTaggedData("client");
-                            if (userClient != null && 0 < userClient.Length)
-                            {
-                                Color clientColor = Color.WhiteSmoke;
-
-                                // userClient[0]を_clientsから検索して色を取得
-                                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
-                                if (client != null && client.ColorCode != null)
-                                {
-                                    clientColor = Tools.HexToColor(client.ColorCode);
-                                }
-                                // time列の背景色をclientColorに変更
-                                dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
-                            }
+                            // 行を装飾
+                            await EditRowAsync(nostrEvent, user, userName);
 
                             // SSPに送る
                             if (_sendDSSTP && null != _ds)
@@ -743,7 +601,7 @@ namespace kakoi
                             }
 
                             // 改行をスペースに置き換えてログ表示
-                            Debug.WriteLine($"{timeString} {userName} {content.Replace('\n', ' ')}");
+                            Debug.WriteLine($"{userName}: {content.Replace('\n', ' ')}");
                         }
                         #endregion
 
@@ -764,54 +622,24 @@ namespace kakoi
                             // プロフィール購読
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
 
-                            // リポスト元プロフィール購読
+                            // リポスト元公開鍵取得
                             string originalPublicKey = string.Empty;
                             if (nostrEvent.GetTaggedPublicKeys().Length != 0)
                             {
                                 originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey, originalPublicKey], _getAvatar);
                             }
 
                             // ユーザー取得
-                            User? user = null;
-                            int retryCount = 0;
-                            while (retryCount < 10)
-                            {
-                                Users.TryGetValue(nostrEvent.PublicKey, out user);
-                                // ユーザーが見つかった場合、ループを抜ける
-                                if (user != null)
-                                {
-                                    break;
-                                }
-                                // 一定時間待機してから再試行
-                                await Task.Delay(500);
-                                retryCount++;
-                            }
+                            user = await GetUserAsync(nostrEvent.PublicKey);
                             // ユーザーが見つからない時は表示しない
                             if (null == user)
                             {
                                 continue;
                             }
                             // ユーザー表示名取得
-                            string userName = GetUserName(nostrEvent.PublicKey);
+                            userName = GetUserName(nostrEvent.PublicKey);
 
-                            // リポスト元ユーザー取得
-                            User? originalUser = null;
-                            retryCount = 0;
-                            while (retryCount < 10)
-                            {
-                                Users.TryGetValue(originalPublicKey, out originalUser);
-                                // ユーザーが見つかった場合、ループを抜ける
-                                if (originalUser != null)
-                                {
-                                    break;
-                                }
-                                // 一定時間待機してから再試行
-                                await Task.Delay(500);
-                                retryCount++;
-                            }
-
-                            // ユーザー表示名取得
+                            // リポスト元ユーザー表示名取得
                             string originalUserName = GetUserName(originalPublicKey);
 
                             // グリッドに表示
@@ -827,33 +655,13 @@ namespace kakoi
                             nostrEvent.Kind
                             );
 
-                            // avatar列のToolTipに表示名を設定
-                            dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
-
-                            // avatar列にアバターを表示
-                            PutAvatar(user, nostrEvent.PublicKey);
-
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
 
-                            // avastar列の背景色をpubkeyColorに変更
-                            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+                            // 行を装飾
+                            await EditRowAsync(nostrEvent, user, userName);
 
-                            // クライアントタグによる背景色変更
-                            var userClient = nostrEvent.GetTaggedData("client");
-                            if (userClient != null && 0 < userClient.Length)
-                            {
-                                Color clientColor = Color.WhiteSmoke;
-
-                                // userClient[0]を_clientsから検索して色を取得
-                                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
-                                if (client != null && client.ColorCode != null)
-                                {
-                                    clientColor = Tools.HexToColor(client.ColorCode);
-                                }
-                                // time列の背景色をclientColorに変更
-                                dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
-                            }
+                            Debug.WriteLine($"リポスト: {userName} が {originalUserName} をリポスト");
                         }
                         #endregion
                     }
@@ -863,18 +671,206 @@ namespace kakoi
         }
         #endregion
 
+        private async Task EditRowAsync(NostrEvent nostrEvent, User user, string userName)
+        {
+            // avatar列のToolTipに表示名を設定
+            dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
+
+            // avastar列の背景色をpubkeyColorに変更
+            var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey[..6]); // [i..j] で「i番目からj番目の範囲」
+            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+
+            // クライアントタグによる背景色変更
+            var userClient = nostrEvent.GetTaggedData("client");
+            if (userClient != null && 0 < userClient.Length)
+            {
+                Color clientColor = Color.WhiteSmoke;
+
+                // userClient[0]を_clientsから検索して色を取得
+                var client = _clients.FirstOrDefault(c => c.Name == userClient[0]);
+                if (client != null && client.ColorCode != null)
+                {
+                    clientColor = Tools.HexToColor(client.ColorCode);
+                }
+                // time列の背景色をclientColorに変更
+                dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
+            }
+
+            // avatar列にアバターを表示
+            await PutAvatarAsync(user, nostrEvent.PublicKey);
+        }
+
+        private async Task<User?> GetUserAsync(string pubkey)
+        {
+            User? user = null;
+            int retryCount = 0;
+            while (retryCount < 10)
+            {
+                Debug.WriteLine($"retryCount = {retryCount} {GetUserName(pubkey)}");
+                Users.TryGetValue(pubkey, out user);
+                // ユーザーが見つかった場合、ループを抜ける
+                if (user != null)
+                {
+                    break;
+                }
+                // 一定時間待機してから再試行
+                await Task.Delay(100);
+                retryCount++;
+            }
+            return user;
+        }
+
+        #region avatar取得
+        private async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
+        {
+            if (!_imeStatus.Compositing)
+            {
+                var postBarFcuced = _formPostBar.ContainsFocus;
+                var formSettingFocusd = _formSetting.ContainsFocus;
+
+                string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
+                using HttpClient httpClient = new();
+                httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
+                SKBitmap bitmap = new();
+                try
+                {
+                    if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // SVGファイルの場合
+                        Debug.WriteLine("svg画像処理開始");
+                        // URLからSVGデータをダウンロード
+                        using var svgData = await httpClient.GetStreamAsync(avatarUrl);
+                        // SVGデータを読み込む
+                        using var svg = new SKSvg();
+                        svg.Load(svgData);
+                        if (null != svg.Picture)
+                        {
+                            bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
+                            using var canvas = new SKCanvas(bitmap);
+                            canvas.DrawPicture(svg.Picture);
+                            canvas.Flush();
+                        }
+                    }
+                    else
+                    {
+                        // URLから画像データを取得
+                        var avatarBytes = await httpClient.GetByteArrayAsync(avatarUrl);
+                        // バイト配列をMemoryStreamに変換
+                        using MemoryStream ms = new(avatarBytes);
+                        // MemoryStreamから画像を読み込む
+                        bitmap = SKBitmap.Decode(ms);
+                    }
+
+                    if (null == bitmap)
+                    {
+                        return;
+                    }
+
+                    // 中央から正方形に切り取る
+                    int size = Math.Min(bitmap.Width, bitmap.Height);
+                    int x = (bitmap.Width - size) / 2;
+                    int y = (bitmap.Height - size) / 2;
+                    using var croppedBitmap = new SKBitmap(size, size);
+                    using (var canvas = new SKCanvas(croppedBitmap))
+                    {
+                        canvas.DrawBitmap(bitmap, new SKRect(x, y, x + size, y + size), new SKRect(0, 0, size, size));
+                    }
+
+                    // リサイズ
+                    using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
+                    {
+                        if (null == resizedBitmap)
+                        {
+                            return;
+                        }
+
+                        // 円形に切り抜くためのマスクを作成
+                        size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
+                        using var maskBitmap = new SKBitmap(size, size);
+                        using var canvas = new SKCanvas(maskBitmap);
+                        var paint = new SKPaint
+                        {
+                            IsAntialias = true,
+                            Color = SKColors.Black
+                        };
+                        canvas.Clear(SKColors.Transparent);
+                        canvas.DrawCircle(size / 2, size / 2, size / 2, paint);
+
+                        // マスクを適用して新しいビットマップを作成
+                        using var resultBitmap = new SKBitmap(size, size);
+                        using var resultCanvas = new SKCanvas(resultBitmap);
+                        resultCanvas.Clear(SKColors.Transparent);
+                        resultCanvas.DrawBitmap(resizedBitmap, new SKRect(0, 0, size, size));
+                        paint = new SKPaint
+                        {
+                            IsAntialias = true,
+                            BlendMode = SKBlendMode.DstIn
+                        };
+                        resultCanvas.DrawBitmap(maskBitmap, 0, 0, paint);
+
+                        // 画像をPNG形式で保存
+                        using SKImage image = SKImage.FromBitmap(resultBitmap);
+                        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+                        using FileStream fs = File.OpenWrite(picturePath);
+                        data.SaveTo(fs);
+                    }
+
+                    Debug.WriteLine($"画像保存: {GetUserName(publicKeyHex)}");
+
+                }
+                catch (TaskCanceledException ex)
+                {
+                    Debug.WriteLine($"タイムアウトしました: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"エラーが発生しました: {ex.Message}");
+                }
+                finally
+                {
+                    bitmap?.Dispose();
+
+                    if (postBarFcuced)
+                    {
+                        _formPostBar.Focus();
+                    }
+                    else if (formSettingFocusd)
+                    {
+                        _formSetting.Focus();
+                    }
+                    else
+                    {
+                        Focus();
+                    }
+                }
+            }
+        }
+        #endregion
+
         #region avatar列にアバターを表示
-        private void PutAvatar(User? user, string pubkey)
+        private async Task PutAvatarAsync(User? user, string pubkey)
         {
             string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
             if (_getAvatar && user?.Picture != null && user.Picture.Length > 0)
             {
+                if (!File.Exists(avatarFile))
+                {
+                    await GetAvatarAsync(pubkey, user.Picture);
+                }
                 if (File.Exists(avatarFile))
                 {
                     using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     using var avatar = new Bitmap(fileStream);
-                    dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                    Debug.WriteLine("画像を表示しました。");
+                    //dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
+                    foreach (DataGridViewRow row in dataGridViewNotes.Rows)
+                    {
+                        if (row.Cells["pubkey"].Value != null && row.Cells["pubkey"].Value.ToString() == pubkey)
+                        {
+                            row.Cells["avatar"].Value = new Bitmap(avatar); ;
+                            break;
+                        }
+                    }
+                    Debug.WriteLine($"画像表示: {GetUserName(pubkey)}");
                 }
             }
         }
@@ -915,7 +911,7 @@ namespace kakoi
 
         #region Postボタン
         // Postボタン
-        internal void ButtonPost_Click(object sender, EventArgs e, NostrEvent? rootEvent, bool isQuote)
+        internal void ButtonPost_Click(NostrEvent? rootEvent, bool isQuote)
         {
             if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
             {
@@ -1330,7 +1326,7 @@ namespace kakoi
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
                 Tools.SaveUsers(Users);
-                Debug.WriteLine($"ユーザー名取得: {user.DisplayName} @{user.Name} 📛{user.PetName}");
+                //Debug.WriteLine($"名前取得: {user.DisplayName} @{user.Name} 📛{user.PetName}");
             }
             return userName;
         }
@@ -1562,7 +1558,7 @@ namespace kakoi
             // Shift + Sキーで選択行を最下部に
             if (e.KeyCode == Keys.S && e.Shift)
             {
-                dataGridViewNotes.Rows[dataGridViewNotes.Rows.Count - 1].Selected = true;
+                dataGridViewNotes.Rows[^1].Selected = true; // インデックス演算子 [^i] で「後ろからi番目の要素」
                 dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.Rows.Count - 1];
             }
             // リアクション
@@ -1685,9 +1681,11 @@ namespace kakoi
 
                 if (null == _formWeb || _formWeb.IsDisposed)
                 {
-                    _formWeb = new FormWeb();
-                    _formWeb.Location = _formWebLocation;
-                    _formWeb.Size = _formWebSize;
+                    _formWeb = new FormWeb
+                    {
+                        Location = _formWebLocation,
+                        Size = _formWebSize
+                    };
                 }
                 if (!_formWeb.Visible)
                 {
@@ -1719,116 +1717,6 @@ namespace kakoi
                     _formWeb.Close();
                 }
                 Focus();
-            }
-        }
-        #endregion
-
-        #region avatar取得
-        private static async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
-        {
-            string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
-            using HttpClient httpClient = new();
-            httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
-            SKBitmap bitmap = new();
-            try
-            {
-                if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
-                {
-                    // SVGファイルの場合
-                    Debug.WriteLine("svg画像処理開始");
-                    // URLからSVGデータをダウンロード
-                    using var svgData = await httpClient.GetStreamAsync(avatarUrl);
-                    // SVGデータを読み込む
-                    using var svg = new SKSvg();
-                    svg.Load(svgData);
-                    if (null != svg.Picture)
-                    {
-                        bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
-                        using var canvas = new SKCanvas(bitmap);
-                        canvas.DrawPicture(svg.Picture);
-                        canvas.Flush();
-                    }
-                }
-                else
-                {
-                    // URLから画像データを取得
-                    var avatarBytes = await httpClient.GetByteArrayAsync(avatarUrl);
-                    // バイト配列をMemoryStreamに変換
-                    using MemoryStream ms = new(avatarBytes);
-                    // MemoryStreamから画像を読み込む
-                    bitmap = SKBitmap.Decode(ms);
-                }
-
-                if (null == bitmap)
-                {
-                    return;
-                }
-
-                // 中央から正方形に切り取る
-                int size = Math.Min(bitmap.Width, bitmap.Height);
-                int x = (bitmap.Width - size) / 2;
-                int y = (bitmap.Height - size) / 2;
-                using var croppedBitmap = new SKBitmap(size, size);
-                using (var canvas = new SKCanvas(croppedBitmap))
-                {
-                    canvas.DrawBitmap(bitmap, new SKRect(x, y, x + size, y + size), new SKRect(0, 0, size, size));
-                }
-
-                // リサイズ
-                using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
-                {
-                    if (null == resizedBitmap)
-                    {
-                        return;
-                    }
-
-                    // 円形に切り抜くためのマスクを作成
-                    size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
-                    using var maskBitmap = new SKBitmap(size, size);
-                    using var canvas = new SKCanvas(maskBitmap);
-                    var paint = new SKPaint
-                    {
-                        IsAntialias = true,
-                        Color = SKColors.Black
-                    };
-                    canvas.Clear(SKColors.Transparent);
-                    canvas.DrawCircle(size / 2, size / 2, size / 2, paint);
-
-                    // マスクを適用して新しいビットマップを作成
-                    using var resultBitmap = new SKBitmap(size, size);
-                    using var resultCanvas = new SKCanvas(resultBitmap);
-                    resultCanvas.Clear(SKColors.Transparent);
-                    resultCanvas.DrawBitmap(resizedBitmap, new SKRect(0, 0, size, size));
-                    paint = new SKPaint
-                    {
-                        IsAntialias = true,
-                        BlendMode = SKBlendMode.DstIn
-                    };
-                    resultCanvas.DrawBitmap(maskBitmap, 0, 0, paint);
-
-                    // 画像をPNG形式で保存
-                    using SKImage image = SKImage.FromBitmap(resultBitmap);
-                    using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-                    using FileStream fs = File.OpenWrite(picturePath);
-                    data.SaveTo(fs);
-                }
-
-                Debug.WriteLine("画像が保存されました。");
-            }
-            catch (TaskCanceledException ex)
-            {
-                Debug.WriteLine($"タイムアウトしました: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"エラーが発生しました: {ex.Message}");
-            }
-            finally
-            {
-                if (null != bitmap)
-                {
-                    bitmap.Dispose();
-                }
             }
         }
         #endregion
