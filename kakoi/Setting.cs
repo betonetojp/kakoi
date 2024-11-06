@@ -17,7 +17,7 @@ namespace kakoi
         {
             public Point Location { get; set; }
             public Size Size { get; set; } = new Size(400, 400);
-            public int NameColumnWidth { get; set; } = 64;
+            public int NameColumnWidth { get; set; } = 70;
 
             public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
