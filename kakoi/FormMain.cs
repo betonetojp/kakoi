@@ -239,7 +239,7 @@ namespace kakoi
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private async void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
             {
@@ -307,6 +307,32 @@ namespace kakoi
                                 Users[nostrEvent.PublicKey] = newUserData;
                                 Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
                                 Debug.WriteLine($"プロフィール更新: {newUserData.DisplayName} @{newUserData.Name}");
+
+                                string avatarFile = Path.Combine(_avatarPath, $"{nostrEvent.PublicKey}.png");
+                                if (_getAvatar && newUserData.Picture != null && newUserData.Picture.Length > 0)
+                                {
+                                    if (!File.Exists(avatarFile) && !_imeStatus.Compositing)
+                                    {
+                                        // アバター取得
+                                        var postBarFcuced = _formPostBar.ContainsFocus;
+                                        var formSettingFocusd = _formSetting.ContainsFocus;
+
+                                        await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+
+                                        if (postBarFcuced)
+                                        {
+                                            _formPostBar.Focus();
+                                        }
+                                        else if (formSettingFocusd)
+                                        {
+                                            _formSetting.Focus();
+                                        }
+                                        else
+                                        {
+                                            Focus();
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -417,7 +443,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                await PutAvatarAsync(user, nostrEvent.PublicKey);
+                                PutAvatar(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -491,7 +517,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                                 // avatar列にアバターを表示
-                                await PutAvatarAsync(user, nostrEvent.PublicKey);
+                                PutAvatar(user, nostrEvent.PublicKey);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
@@ -628,7 +654,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            await PutAvatarAsync(user, nostrEvent.PublicKey);
+                            PutAvatar(user, nostrEvent.PublicKey);
 
                             // リプライの時は背景色変更
                             if (isReply)
@@ -805,7 +831,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
 
                             // avatar列にアバターを表示
-                            await PutAvatarAsync(user, nostrEvent.PublicKey);
+                            PutAvatar(user, nostrEvent.PublicKey);
 
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
@@ -838,33 +864,11 @@ namespace kakoi
         #endregion
 
         #region avatar列にアバターを表示
-        private async Task PutAvatarAsync(User? user, string pubkey)
+        private void PutAvatar(User? user, string pubkey)
         {
             string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
             if (_getAvatar && user?.Picture != null && user.Picture.Length > 0)
             {
-                if (!_imeStatus.Compositing)
-                {
-                    // アバター取得
-                    var postBarFcuced = _formPostBar.ContainsFocus;
-                    var formSettingFocusd = _formSetting.ContainsFocus;
-
-                    await GetAvatarAsync(pubkey, user.Picture);
-
-                    if (postBarFcuced)
-                    {
-                        _formPostBar.Focus();
-                    }
-                    else if (formSettingFocusd)
-                    {
-                        _formSetting.Focus();
-                    }
-                    else
-                    {
-                        Focus();
-                    }
-                }
-
                 if (File.Exists(avatarFile))
                 {
                     using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
