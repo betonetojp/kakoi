@@ -28,8 +28,6 @@ namespace kakoi
             public string NokakoiKey { get; set; } = string.Empty;
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
-
-            public int WaitForProfile { get; set; } = 1000;
             public int AvatarSize { get; set; } = 32;
             public string GridColor { get; set; } = "#FF1493";
             public string ReactionColor { get; set; } = "#FFFFE0";
@@ -103,12 +101,6 @@ namespace kakoi
             get => _data.AddClient;
             set => _data.AddClient = value;
         }
-        public static int WaitForProfile
-        {
-            get => _data.WaitForProfile;
-            set => _data.WaitForProfile = value;
-        }
-
         public static int AvatarSize
         {
             get => _data.AvatarSize;

@@ -151,7 +151,7 @@ namespace kakoi
         /// プロフィール購読処理
         /// </summary>
         /// <param name="authors"></param>
-        public static async Task SubscribeProfilesAsync(string[] authors, bool wait)
+        public static async Task SubscribeProfilesAsync(string[] authors)
         {
             if (null == _clients)
             {
@@ -168,15 +168,6 @@ namespace kakoi
                         }
                     ]
                  );
-
-            // 待機
-            if (wait)
-            {
-                if (0 < Setting.WaitForProfile)
-                {
-                    await Task.Delay(Setting.WaitForProfile);
-                }
-            }
         }
         #endregion
 

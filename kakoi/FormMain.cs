@@ -311,6 +311,8 @@ namespace kakoi
                                 if (_getAvatar && newUserData.Picture != null && newUserData.Picture.Length > 0)
                                 {
                                     await GetAvatarAsync(nostrEvent.PublicKey, newUserData.Picture);
+                                    // avatar列にアバターを表示
+                                    await PutAvatarAsync(newUserData, nostrEvent.PublicKey);
                                 }
                             }
                         }
@@ -362,7 +364,7 @@ namespace kakoi
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
                                 // プロフィール購読
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                                 // ユーザー取得
                                 user = await GetUserAsync(nostrEvent.PublicKey);
@@ -402,7 +404,7 @@ namespace kakoi
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
                                 // プロフィール購読
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
+                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                                 // ユーザー取得
                                 user = await GetUserAsync(nostrEvent.PublicKey);
@@ -491,7 +493,7 @@ namespace kakoi
                             }
 
                             // プロフィール購読
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                             // ユーザー取得
                             user = await GetUserAsync(nostrEvent.PublicKey);
@@ -620,7 +622,7 @@ namespace kakoi
                             }
 
                             // プロフィール購読
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey], _getAvatar);
+                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
                             // リポスト元公開鍵取得
                             string originalPublicKey = string.Empty;
@@ -816,7 +818,6 @@ namespace kakoi
                     }
 
                     Debug.WriteLine($"画像保存: {GetUserName(publicKeyHex)}");
-
                 }
                 catch (TaskCanceledException ex)
                 {
