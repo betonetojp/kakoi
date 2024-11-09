@@ -1535,7 +1535,7 @@ namespace kakoi
             // Wキーで選択行を上に
             if (e.KeyCode == Keys.W)
             {
-                if (dataGridViewNotes.SelectedRows[0].Index > 0)
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index > 0)
                 {
                     dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index - 1].Selected = true;
                     dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.SelectedRows[0].Index];
@@ -1544,7 +1544,7 @@ namespace kakoi
             // Sキーで選択行を下に
             if (e.KeyCode == Keys.S)
             {
-                if (dataGridViewNotes.SelectedRows[0].Index < dataGridViewNotes.Rows.Count - 1)
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index < dataGridViewNotes.Rows.Count - 1)
                 {
                     dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index + 1].Selected = true;
                     dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.SelectedRows[0].Index];
@@ -1553,29 +1553,41 @@ namespace kakoi
             // Shift + Wキーで選択行を最上部に
             if (e.KeyCode == Keys.W && e.Shift)
             {
-                dataGridViewNotes.Rows[0].Selected = true;
-                dataGridViewNotes.CurrentCell = dataGridViewNotes["note", 0];
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index > 0)
+                {
+                    dataGridViewNotes.Rows[0].Selected = true;
+                    dataGridViewNotes.CurrentCell = dataGridViewNotes["note", 0];
+                }
             }
             // Shift + Sキーで選択行を最下部に
             if (e.KeyCode == Keys.S && e.Shift)
             {
-                dataGridViewNotes.Rows[^1].Selected = true; // インデックス演算子 [^i] で「後ろからi番目の要素」
-                dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.Rows.Count - 1];
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index < dataGridViewNotes.Rows.Count - 1)
+                {
+                    dataGridViewNotes.Rows[^1].Selected = true; // インデックス演算子 [^i] で「後ろからi番目の要素」
+                    dataGridViewNotes.CurrentCell = dataGridViewNotes["note", dataGridViewNotes.Rows.Count - 1];
+                }
             }
             // リアクション
             if (e.KeyCode == Keys.Right || e.KeyCode == Keys.F)
             {
-                // 画面外に出た時サイズ変更用カーソルを記憶しているのでデフォルトに戻す
-                Cursor.Current = Cursors.Default;
-                var ev = new DataGridViewCellEventArgs(3, dataGridViewNotes.SelectedRows[0].Index);
-                DataGridViewNotes_CellDoubleClick(sender, ev);
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index >= 0)
+                {
+                    // 画面外に出た時サイズ変更用カーソルを記憶しているのでデフォルトに戻す
+                    Cursor.Current = Cursors.Default;
+                    var ev = new DataGridViewCellEventArgs(3, dataGridViewNotes.SelectedRows[0].Index);
+                    DataGridViewNotes_CellDoubleClick(sender, ev);
+                }
             }
             // Webビュー表示
             if (e.KeyCode == Keys.Left || e.KeyCode == Keys.A)
             {
-                var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
-                var ev = new DataGridViewCellMouseEventArgs(0, dataGridViewNotes.SelectedRows[0].Index, 0, 0, mev);
-                DataGridViewNotes_CellMouseClick(sender, ev);
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index >= 0)
+                {
+                    var mev = new MouseEventArgs(MouseButtons.Right, 1, 0, 0, 0);
+                    var ev = new DataGridViewCellMouseEventArgs(0, dataGridViewNotes.SelectedRows[0].Index, 0, 0, mev);
+                    DataGridViewNotes_CellMouseClick(sender, ev);
+                }
             }
             // 数字キーで絵文字選択
             if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
@@ -1594,7 +1606,7 @@ namespace kakoi
             // Rキーで返信
             if (e.KeyCode == Keys.R)
             {
-                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index >= 0)
                 {
                     var rootEvent = new NostrEvent()
                     {
@@ -1613,7 +1625,7 @@ namespace kakoi
             // Qキーで引用
             if (e.KeyCode == Keys.Q)
             {
-                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index >= 0)
                 {
                     var rootEvent = new NostrEvent()
                     {
@@ -1646,7 +1658,7 @@ namespace kakoi
             // Bキーで選択行をリポスト
             if (e.KeyCode == Keys.B)
             {
-                if (dataGridViewNotes.SelectedRows[0].Index >= 0)
+                if (dataGridViewNotes.SelectedRows.Count > 0 && dataGridViewNotes.SelectedRows[0].Index >= 0)
                 {
                     var id = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["id"].Value;
                     var pubkey = (string)dataGridViewNotes.Rows[dataGridViewNotes.SelectedRows[0].Index].Cells["pubkey"].Value;
