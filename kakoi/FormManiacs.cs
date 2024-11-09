@@ -46,7 +46,7 @@ namespace kakoi
         {
             if (MainForm != null)
             {
-                Dictionary<string, User?> users = [];
+                var users = new Dictionary<string, User?>();
                 foreach (DataGridViewRow row in dataGridViewUsers.Rows)
                 {
                     var pubkey = (string)row.Cells["pubkey"].Value;

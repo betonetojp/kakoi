@@ -13,16 +13,18 @@
             {
                 return;
             }
+
+            var mainForm = (FormMain)Owner;
             if (FormWindowState.Normal != WindowState)
             {
                 // 最小化最大化状態の時、元の位置と大きさを保存
-                ((FormMain)Owner)._formWebLocation = RestoreBounds.Location;
-                ((FormMain)Owner)._formWebSize = RestoreBounds.Size;
+                mainForm._formWebLocation = RestoreBounds.Location;
+                mainForm._formWebSize = RestoreBounds.Size;
             }
             else
             {
-                ((FormMain)Owner)._formWebLocation = Location;
-                ((FormMain)Owner)._formWebSize = Size;
+                mainForm._formWebLocation = Location;
+                mainForm._formWebSize = Size;
             }
         }
 

@@ -18,7 +18,7 @@ namespace kakoi
         /// <summary>
         /// 接続リレー配列
         /// </summary>
-        private static Uri[] _relays = [];
+        private static Uri[] _relays = Array.Empty<Uri>();
 
         /// <summary>
         /// タイムライン購読ID
@@ -109,15 +109,16 @@ namespace kakoi
             }
 
             await _clients.CreateSubscription(
-                    _subscriptionId,
-                    [
-                        new NostrSubscriptionFilter()
+                _subscriptionId,
+                new[]
+                {
+                        new NostrSubscriptionFilter
                         {
-                            Kinds = [1,6,7,16],
+                            Kinds = new[] { 1, 6, 7, 16 },
                             Since = DateTimeOffset.Now - _timeSpan,
                         }
-                    ]
-                 );
+                }
+            );
         }
         #endregion
 
@@ -134,15 +135,16 @@ namespace kakoi
             }
 
             await _clients.CreateSubscription(
-                    _getFolloweesSubscriptionId,
-                    [
+                _getFolloweesSubscriptionId,
+                new[]
+                {
                         new NostrSubscriptionFilter
                         {
-                            Kinds = [3],
-                            Authors = [author]
+                            Kinds = new[] { 3 },
+                            Authors = new[] { author }
                         }
-                    ]
-                 );
+                }
+            );
         }
         #endregion
 
@@ -159,15 +161,16 @@ namespace kakoi
             }
 
             await _clients.CreateSubscription(
-                    _getProfilesSubscriptionId,
-                    [
+                _getProfilesSubscriptionId,
+                new[]
+                {
                         new NostrSubscriptionFilter
                         {
-                            Kinds = [0],
+                            Kinds = new[] { 0 },
                             Authors = authors
                         }
-                    ]
-                 );
+                }
+            );
         }
         #endregion
 

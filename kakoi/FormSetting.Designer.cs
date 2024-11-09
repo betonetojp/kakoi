@@ -175,7 +175,6 @@
             checkBoxShowOnlyFollowees.TabIndex = 4;
             checkBoxShowOnlyFollowees.Text = "Show only followees";
             checkBoxShowOnlyFollowees.UseVisualStyleBackColor = true;
-            checkBoxShowOnlyFollowees.CheckedChanged += checkBoxShowOnlyFollowees_CheckedChanged;
             // 
             // label3
             // 
