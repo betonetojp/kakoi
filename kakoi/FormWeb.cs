@@ -27,10 +27,5 @@
                 mainForm._formWebSize = Size;
             }
         }
-
-        //private void FormWeb_DoubleClick(object sender, EventArgs e)
-        //{
-        //    Opacity = 1.0;
-        //}
     }
 }

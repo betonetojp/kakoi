@@ -201,8 +201,8 @@ namespace kakoi
                     }
                     if (NostrAccess.Clients != null)
                     {
-                        NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived2;
-                        NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived;
+                        NostrAccess.Clients.EventsReceived += OnClientOnUsersInfoEventsReceived;
+                        NostrAccess.Clients.EventsReceived += OnClientOnTimeLineEventsReceived;
                     }
                 }
 
@@ -233,13 +233,13 @@ namespace kakoi
         }
         #endregion
 
-        #region イベント受信時処理2
+        #region ユーザー情報イベント受信時処理
         /// <summary>
-        /// イベント受信時処理2
+        /// ユーザー情報イベント受信時処理
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void OnClientOnEventsReceived2(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private async void OnClientOnUsersInfoEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             if (args.subscriptionId == NostrAccess.GetFolloweesSubscriptionId)
             {
@@ -323,13 +323,13 @@ namespace kakoi
         }
         #endregion
 
-        #region イベント受信時処理
+        #region タイムラインイベント受信時処理
         /// <summary>
-        /// イベント受信時処理
+        /// タイムラインイベント受信時処理
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private async void OnClientOnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+        private async void OnClientOnTimeLineEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
         {
             if (args.subscriptionId == NostrAccess.SubscriptionId)
             {
@@ -673,6 +673,7 @@ namespace kakoi
         }
         #endregion
 
+        #region グリッド行装飾
         private async Task EditRowAsync(NostrEvent nostrEvent, User user, string userName)
         {
             // avatar列のToolTipに表示名を設定
@@ -701,7 +702,9 @@ namespace kakoi
             // avatar列にアバターを表示
             await PutAvatarAsync(user, nostrEvent.PublicKey);
         }
+        #endregion
 
+        #region ユーザー取得
         private async Task<User?> GetUserAsync(string pubkey)
         {
             User? user = null;
@@ -721,6 +724,7 @@ namespace kakoi
             }
             return user;
         }
+        #endregion
 
         #region avatar取得
         private async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
@@ -1734,11 +1738,14 @@ namespace kakoi
         }
         #endregion
 
+        #region フォーム最初の表示時
         private void FormMain_Shown(object sender, EventArgs e)
         {
             dataGridViewNotes.Focus();
         }
+        #endregion
 
+        #region グローバルホットキー
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WM_HOTKEY && m.WParam.ToInt32() == HOTKEY_ID)
@@ -1747,5 +1754,6 @@ namespace kakoi
             }
             base.WndProc(ref m);
         }
+        #endregion
     }
 }
