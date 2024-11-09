@@ -385,7 +385,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize),
+                                new Bitmap(1, 1),
                                 $"{headMark} {userName}",
                                 $"Sent {content} to {likedName}.",
                                 nostrEvent.Id,
@@ -424,7 +424,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize),
+                                new Bitmap(1, 1),
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
@@ -523,7 +523,7 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
-                                new Bitmap(_avatarSize, _avatarSize),
+                                new Bitmap(1, 1),
                                 $"{headMark} {userName}",
                                 nostrEvent.Content,
                                 nostrEvent.Id,
@@ -649,7 +649,7 @@ namespace kakoi
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
-                            new Bitmap(_avatarSize, _avatarSize),
+                            new Bitmap(1, 1),
                             $"{headMark} {userName}",
                             $"reposted {originalUserName}'s post. [k:{nostrEvent.Kind}]",
                             nostrEvent.Id,
