@@ -34,7 +34,7 @@ namespace kakoi
         private void TrackBarOpacity_Scroll(object sender, EventArgs e)
         {
             labelOpacity.Text = $"{trackBarOpacity.Value}%";
-            if (null != Owner && null != PostBarForm)
+            if (Owner != null && PostBarForm != null)
             {
                 Owner.Opacity = trackBarOpacity.Value / 100.0;
                 PostBarForm.Opacity = Owner.Opacity;

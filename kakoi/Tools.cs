@@ -106,7 +106,7 @@ namespace kakoi
             {
                 var jsonContent = File.ReadAllText(_usersJsonPath);
                 var users = JsonSerializer.Deserialize<Dictionary<string, User?>>(jsonContent, GetOption());
-                if (null != users)
+                if (users != null)
                 {
                     return users;
                 }
@@ -134,10 +134,10 @@ namespace kakoi
             try
             {
                 var user = JsonSerializer.Deserialize<User>(contentJson, GetOption());
-                if (null != user)
+                if (user != null)
                 {
                     user.CreatedAt = createdAt;
-                    if (shouldMuteMostr && null != user.Nip05 && user.Nip05.Contains("mostr"))
+                    if (shouldMuteMostr && user.Nip05 != null && user.Nip05.Contains("mostr"))
                     {
                         user.Mute = true;
                     }
@@ -185,7 +185,7 @@ namespace kakoi
             {
                 var jsonContent = File.ReadAllText(_relaysJsonPath);
                 var relays = JsonSerializer.Deserialize<List<Relay>>(jsonContent, GetOption());
-                if (null != relays)
+                if (relays != null)
                 {
                     return relays;
                 }
@@ -208,7 +208,7 @@ namespace kakoi
             List<Uri> enabledRelays = [];
             foreach (var relay in relays)
             {
-                if (relay.Enabled && null != relay.Url)
+                if (relay.Enabled && relay.Url != null)
                 {
                     enabledRelays.Add(new Uri(relay.Url));
                 }
@@ -255,7 +255,7 @@ namespace kakoi
             {
                 var jsonContent = File.ReadAllText(_emojisJsonPath);
                 var emojis = JsonSerializer.Deserialize<List<Emoji>>(jsonContent, GetOption());
-                if (null != emojis)
+                if (emojis != null)
                 {
                     return emojis;
                 }
@@ -307,7 +307,7 @@ namespace kakoi
             {
                 var jsonContent = File.ReadAllText(_clientsJsonPath);
                 var clients = JsonSerializer.Deserialize<List<Client>>(jsonContent, GetOption());
-                if (null != clients)
+                if (clients != null)
                 {
                     return clients;
                 }

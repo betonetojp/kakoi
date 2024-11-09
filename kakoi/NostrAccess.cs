@@ -65,7 +65,7 @@ namespace kakoi
         /// <returns></returns>
         public static async Task<int> ConnectAsync()
         {
-            if (null == _clients)
+            if (_clients == null)
             {
                 _relays = Tools.GetEnabledRelays();
                 if (0 == _relays.Length)
@@ -103,7 +103,7 @@ namespace kakoi
         /// </summary>
         public static async Task SubscribeAsync()
         {
-            if (null == _clients)
+            if (_clients == null)
             {
                 return;
             }
@@ -128,7 +128,7 @@ namespace kakoi
         /// <param name="author"></param>
         public static async Task SubscribeFollowsAsync(string author)
         {
-            if (null == _clients)
+            if (_clients == null)
             {
                 return;
             }
@@ -153,7 +153,7 @@ namespace kakoi
         /// <param name="authors"></param>
         public static async Task SubscribeProfilesAsync(string[] authors)
         {
-            if (null == _clients)
+            if (_clients == null)
             {
                 return;
             }
@@ -177,7 +177,7 @@ namespace kakoi
         /// </summary>
         public static void CloseSubscriptions()
         {
-            if (null != _clients)
+            if (_clients != null)
             {
                 _ = _clients.CloseSubscription(_subscriptionId);
                 _ = _clients.CloseSubscription(_getFolloweesSubscriptionId);
@@ -192,7 +192,7 @@ namespace kakoi
         /// </summary>
         public static void DisconnectAndDispose()
         {
-            if (null != _clients)
+            if (_clients != null)
             {
                 _ = _clients.Disconnect();
                 _clients.Dispose();

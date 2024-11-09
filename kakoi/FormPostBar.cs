@@ -32,7 +32,7 @@ namespace kakoi
 
         private void ButtonPost_Click(object sender, EventArgs e)
         {
-            if (null != MainForm)
+            if (MainForm != null)
             {
                 //MainForm.textBoxPost.Text = textBoxPost.Text;
                 MainForm.ButtonPost_Click(RootEvent, IsQuote);
@@ -61,7 +61,7 @@ namespace kakoi
         {
             if (e.CloseReason == CloseReason.UserClosing)
             {
-                if (null != MainForm)
+                if (MainForm != null)
                 {
                     MainForm.checkBoxPostBar.Checked = false;
                     MainForm.dataGridViewNotes.Focus();
@@ -79,7 +79,7 @@ namespace kakoi
 
         private void FormPostBar_DoubleClick(object sender, EventArgs e)
         {
-            if (null != MainForm)
+            if (MainForm != null)
             {
                 if (FormWindowState.Minimized == MainForm.WindowState)
                 {
@@ -151,7 +151,7 @@ namespace kakoi
         private void FormPostBar_Activated(object sender, EventArgs e)
         {
             //var result = textBoxPost.Focus();
-            if (null != RootEvent && !IsQuote)
+            if (RootEvent != null && !IsQuote)
             {
                 textBoxPost.BackColor = Tools.HexToColor(Setting.ReplyColor);
                 buttonPost.BackColor = Tools.HexToColor(Setting.ReplyColor);

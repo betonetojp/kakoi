@@ -253,6 +253,7 @@ namespace NNostr.Client
         protected virtual async Task<WebSocket> Connect()
         {
             _statusListenerTokenSource?.Cancel();
+            _statusListenerTokenSource?.Dispose(); // ’Ç‰Á
             _statusListenerTokenSource = new CancellationTokenSource();
             _ = ListenForWebsocketChanges(_statusListenerTokenSource.Token);
             var r = new ClientWebSocket();

@@ -50,7 +50,7 @@ namespace kakoi
                 foreach (DataGridViewRow row in dataGridViewUsers.Rows)
                 {
                     var pubkey = (string)row.Cells["pubkey"].Value;
-                    if (null != pubkey)
+                    if (pubkey != null)
                     {
                         var user = new User
                         {

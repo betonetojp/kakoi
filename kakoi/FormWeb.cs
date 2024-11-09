@@ -9,7 +9,7 @@
 
         private void FormWeb_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (null == Owner)
+            if (Owner == null)
             {
                 return;
             }

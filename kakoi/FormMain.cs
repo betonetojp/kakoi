@@ -177,7 +177,7 @@ namespace kakoi
             try
             {
                 int connectCount;
-                if (null != NostrAccess.Clients)
+                if (NostrAccess.Clients != null)
                 {
                     connectCount = await NostrAccess.ConnectAsync();
                 }
@@ -199,7 +199,7 @@ namespace kakoi
                             toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
                             break;
                     }
-                    if (null != NostrAccess.Clients)
+                    if (NostrAccess.Clients != null)
                     {
                         NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived2;
                         NostrAccess.Clients.EventsReceived += OnClientOnEventsReceived;
@@ -261,7 +261,7 @@ namespace kakoi
                                 if (2 < tag.Data.Count)
                                 {
                                     Users.TryGetValue(tag.Data[0], out User? user);
-                                    if (null != user)
+                                    if (user != null)
                                     {
                                         user.PetName = tag.Data[2];
                                     }
@@ -283,10 +283,10 @@ namespace kakoi
                     }
 
                     // プロフィール
-                    if (0 == nostrEvent.Kind && null != nostrEvent.Content && null != nostrEvent.PublicKey)
+                    if (0 == nostrEvent.Kind && nostrEvent.Content != null && nostrEvent.PublicKey != null)
                     {
                         var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
-                        if (null != newUserData)
+                        if (newUserData != null)
                         {
                             DateTimeOffset? cratedAt = DateTimeOffset.MinValue;
                             if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
@@ -298,7 +298,7 @@ namespace kakoi
                                 // 既にミュートオフのMostrアカウントのミュートを解除
                                 newUserData.Mute = false;
                             }
-                            if (null == cratedAt || (cratedAt < newUserData.CreatedAt))
+                            if (cratedAt == null || (cratedAt < newUserData.CreatedAt))
                             {
                                 newUserData.LastActivity = DateTime.Now;
                                 newUserData.PetName = existingUserData?.PetName;
@@ -369,7 +369,7 @@ namespace kakoi
                                 // ユーザー取得
                                 user = await GetUserAsync(nostrEvent.PublicKey);
                                 // ユーザーが見つからない時は表示しない
-                                if (null == user)
+                                if (user == null)
                                 {
                                     continue;
                                 }
@@ -409,7 +409,7 @@ namespace kakoi
                                 // ユーザー取得
                                 user = await GetUserAsync(nostrEvent.PublicKey);
                                 // ユーザーが見つからない時は表示しない
-                                if (null == user)
+                                if (user == null)
                                 {
                                     continue;
                                 }
@@ -439,7 +439,7 @@ namespace kakoi
                                 await EditRowAsync(nostrEvent, user, userName);
 
                                 // SSPに送る
-                                if (_sendDSSTP && null != _ds)
+                                if (_sendDSSTP && _ds != null)
                                 {
                                     NIP19.NostrEventNote nostrEventNote = new()
                                     {
@@ -498,7 +498,7 @@ namespace kakoi
                             // ユーザー取得
                             user = await GetUserAsync(nostrEvent.PublicKey);
                             // ユーザーが見つからない時は表示しない
-                            if (null == user)
+                            if (user == null)
                             {
                                 continue;
                             }
@@ -542,7 +542,7 @@ namespace kakoi
                             await EditRowAsync(nostrEvent, user, userName);
 
                             // SSPに送る
-                            if (_sendDSSTP && null != _ds)
+                            if (_sendDSSTP && _ds != null)
                             {
                                 NIP19.NostrEventNote nostrEventNote = new()
                                 {
@@ -634,7 +634,7 @@ namespace kakoi
                             // ユーザー取得
                             user = await GetUserAsync(nostrEvent.PublicKey);
                             // ユーザーが見つからない時は表示しない
-                            if (null == user)
+                            if (user == null)
                             {
                                 continue;
                             }
@@ -730,10 +730,10 @@ namespace kakoi
                 var postBarFcuced = _formPostBar.ContainsFocus;
                 var formSettingFocusd = _formSetting.ContainsFocus;
 
-                string picturePath = Path.Combine(new FormMain()._avatarPath, $"{publicKeyHex}.png");
+                string picturePath = Path.Combine(_avatarPath, $"{publicKeyHex}.png");
                 using HttpClient httpClient = new();
                 httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
-                SKBitmap bitmap = new();
+                SKBitmap? bitmap = null;
                 try
                 {
                     if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
@@ -745,7 +745,7 @@ namespace kakoi
                         // SVGデータを読み込む
                         using var svg = new SKSvg();
                         svg.Load(svgData);
-                        if (null != svg.Picture)
+                        if (svg.Picture != null)
                         {
                             bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
                             using var canvas = new SKCanvas(bitmap);
@@ -763,7 +763,7 @@ namespace kakoi
                         bitmap = SKBitmap.Decode(ms);
                     }
 
-                    if (null == bitmap)
+                    if (bitmap == null)
                     {
                         return;
                     }
@@ -781,7 +781,7 @@ namespace kakoi
                     // リサイズ
                     using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
                     {
-                        if (null == resizedBitmap)
+                        if (resizedBitmap == null)
                         {
                             return;
                         }
@@ -881,7 +881,7 @@ namespace kakoi
         // Stopボタン
         private void ButtonStop_Click(object sender, EventArgs e)
         {
-            if (null == NostrAccess.Clients)
+            if (NostrAccess.Clients == null)
             {
                 return;
             }
@@ -959,13 +959,13 @@ namespace kakoi
         /// <returns></returns>
         private async Task PostAsync(NostrEvent? rootEvent = null, bool isQuote = false)
         {
-            if (null == NostrAccess.Clients)
+            if (NostrAccess.Clients == null)
             {
                 return;
             }
             // create tags
             List<NostrEventTag> tags = [];
-            if (null != rootEvent)
+            if (rootEvent != null)
             {
                 if (isQuote)
                 {
@@ -1015,7 +1015,7 @@ namespace kakoi
         #region リアクション処理
         private async Task ReactionAsync(string e, string p, int k, string? content, string? url = null)
         {
-            if (null == NostrAccess.Clients)
+            if (NostrAccess.Clients == null)
             {
                 return;
             }
@@ -1065,7 +1065,7 @@ namespace kakoi
         #region リポスト処理
         private async Task RepostAsync(string e, string p, int k)
         {
-            if (null == NostrAccess.Clients)
+            if (NostrAccess.Clients == null)
             {
                 return;
             }
@@ -1221,7 +1221,7 @@ namespace kakoi
             {
                 return true;
             }
-            if (_displayedEventIds.Count >= 128)
+            if (_displayedEventIds.Count >= 4096)
             {
                 _displayedEventIds.RemoveFirst();
             }
@@ -1309,11 +1309,11 @@ namespace kakoi
             // 情報があれば表示名を取得
             Users.TryGetValue(publicKeyHex, out User? user);
             string? userName = "???";
-            if (null != user)
+            if (user != null)
             {
                 userName = user.DisplayName;
                 // display_nameが無い場合は@nameとする
-                if (null == userName || string.Empty == userName)
+                if (userName == null || string.Empty == userName)
                 {
                     //userName = $"@{user.Name}";
                     userName = $"{user.Name}";
@@ -1343,7 +1343,7 @@ namespace kakoi
         {
             if (Users.TryGetValue(publicKeyHex, out User? user))
             {
-                if (null != user)
+                if (user != null)
                 {
                     return user.Mute;
                 }
@@ -1465,7 +1465,7 @@ namespace kakoi
         {
             if (e.Button == MouseButtons.Right)
             {
-                if (null == _formManiacs || _formManiacs.IsDisposed)
+                if (_formManiacs == null || _formManiacs.IsDisposed)
                 {
                     _formManiacs = new FormManiacs
                     {
@@ -1527,7 +1527,7 @@ namespace kakoi
             // Cキーで_formWebを閉じる
             if (e.KeyCode == Keys.C)
             {
-                if (null != _formWeb && !_formWeb.IsDisposed)
+                if (_formWeb != null && !_formWeb.IsDisposed)
                 {
                     _formWeb.Close();
                 }
@@ -1692,7 +1692,7 @@ namespace kakoi
                 dataGridViewNotes.Rows[e.RowIndex].Selected = true;
                 dataGridViewNotes.Rows[e.RowIndex].Cells["note"].Selected = true;
 
-                if (null == _formWeb || _formWeb.IsDisposed)
+                if (_formWeb == null || _formWeb.IsDisposed)
                 {
                     _formWeb = new FormWeb
                     {
