@@ -575,7 +575,7 @@ namespace kakoi
                             {
                                 if (settings.Reaction)
                                 {
-                                    _ = ReactionAsync(nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind, "+");
+                                    await ReactionAsync(nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind, "+");
                                 }
 
                                 if (settings.Open)
