@@ -288,10 +288,12 @@ namespace kakoi
         {
             List<Client> defaultClients = [
                 // オリジナルカラー
+                //new Client { Name = "nokakoi", ColorCode = "#E4007D" },
                 //new Client { Name = "kakoi", ColorCode = "#E4007D" },
                 //new Client { Name = "lumilumi", ColorCode = "#DC7724" },
                 //new Client { Name = "noStrudel", ColorCode = "#8EB61A" },
                 // 50%カラー
+                new Client { Name = "nokakoi", ColorCode = "#F280BE" },
                 new Client { Name = "kakoi", ColorCode = "#F280BE" },
                 new Client { Name = "lumilumi", ColorCode = "#EEBB92" },
                 new Client { Name = "noStrudel", ColorCode = "#C7DB8D" },
