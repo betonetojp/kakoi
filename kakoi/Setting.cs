@@ -25,6 +25,7 @@ namespace kakoi
             public bool GetAvatar { get; set; } = true;
             public bool ShowOnlyFollowees { get; set; } = false;
             public bool ShowOnlyJapanese { get; set; } = false;
+            public bool ShowRepostsOnlyFromFollowees { get; set; } = false;
             public string NokakoiKey { get; set; } = string.Empty;
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
@@ -85,6 +86,11 @@ namespace kakoi
         {
             get => _data.ShowOnlyJapanese;
             set => _data.ShowOnlyJapanese = value;
+        }
+        public static bool ShowRepostsOnlyFromFollowees
+        {
+            get => _data.ShowRepostsOnlyFromFollowees;
+            set => _data.ShowRepostsOnlyFromFollowees = value;
         }
         public static string NokakoiKey
         {

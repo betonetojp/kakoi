@@ -55,6 +55,7 @@ namespace kakoi
         private bool _getAvatar;
         private bool _showOnlyFollowees;
         private bool _showOnlyJapanese;
+        private bool _showRepostsOnlyFromFollowees;
         private string _nokakoiKey = string.Empty;
         private string _password = string.Empty;
         private bool _sendDSSTP = true;
@@ -135,6 +136,7 @@ namespace kakoi
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
+            _showRepostsOnlyFromFollowees = Setting.ShowRepostsOnlyFromFollowees;
             _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
             _addClient = Setting.AddClient;
@@ -611,7 +613,7 @@ namespace kakoi
                         if (6 == nostrEvent.Kind || 16 == nostrEvent.Kind)
                         {
                             // フォロイー限定表示オンでフォロイーじゃない時は表示しない
-                            if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
+                            if ((_showOnlyFollowees || _showRepostsOnlyFromFollowees) && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
@@ -1123,8 +1125,9 @@ namespace kakoi
             _formSetting.checkBoxTopMost.Checked = TopMost;
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
             _formSetting.checkBoxGetAvatar.Checked = _getAvatar;
-            _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
+            _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
+            _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked = _showRepostsOnlyFromFollowees;
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
             _formSetting.textBoxPassword.Text = _password;
             _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
@@ -1142,6 +1145,7 @@ namespace kakoi
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
+            _showRepostsOnlyFromFollowees = _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
             _password = _formSetting.textBoxPassword.Text;
             _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
@@ -1201,6 +1205,7 @@ namespace kakoi
             Setting.GetAvatar = _getAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
             Setting.ShowOnlyJapanese = _showOnlyJapanese;
+            Setting.ShowRepostsOnlyFromFollowees = _showRepostsOnlyFromFollowees;
             Setting.NokakoiKey = _nokakoiKey;
             Setting.SendDSSTP = _sendDSSTP;
             Setting.AddClient = _addClient;

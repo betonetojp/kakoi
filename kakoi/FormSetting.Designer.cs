@@ -45,6 +45,7 @@
             checkBoxSendDSSTP = new CheckBox();
             linkLabelVersion = new LinkLabel();
             checkBoxGetAvatar = new CheckBox();
+            checkBoxShowRepostsOnlyFromFollowees = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -53,24 +54,24 @@
             textBoxNokakoiKey.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxNokakoiKey.BorderStyle = BorderStyle.FixedSingle;
             textBoxNokakoiKey.ImeMode = ImeMode.Disable;
-            textBoxNokakoiKey.Location = new Point(88, 112);
+            textBoxNokakoiKey.Location = new Point(88, 137);
             textBoxNokakoiKey.MaxLength = 136;
             textBoxNokakoiKey.Name = "textBoxNokakoiKey";
             textBoxNokakoiKey.Size = new Size(184, 23);
-            textBoxNokakoiKey.TabIndex = 6;
+            textBoxNokakoiKey.TabIndex = 7;
             // 
             // textBoxPassword
             // 
             textBoxPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBoxPassword.BorderStyle = BorderStyle.FixedSingle;
             textBoxPassword.ImeMode = ImeMode.Disable;
-            textBoxPassword.Location = new Point(88, 141);
+            textBoxPassword.Location = new Point(88, 166);
             textBoxPassword.MaxLength = 256;
             textBoxPassword.Name = "textBoxPassword";
             textBoxPassword.PasswordChar = '*';
             textBoxPassword.PlaceholderText = "password";
             textBoxPassword.Size = new Size(184, 23);
-            textBoxPassword.TabIndex = 7;
+            textBoxPassword.TabIndex = 8;
             // 
             // trackBarOpacity
             // 
@@ -106,7 +107,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(12, 114);
+            label2.Location = new Point(12, 139);
             label2.Name = "label2";
             label2.Size = new Size(70, 15);
             label2.TabIndex = 0;
@@ -117,10 +118,10 @@
             checkBoxAddClient.AutoSize = true;
             checkBoxAddClient.Checked = true;
             checkBoxAddClient.CheckState = CheckState.Checked;
-            checkBoxAddClient.Location = new Point(172, 170);
+            checkBoxAddClient.Location = new Point(172, 195);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
-            checkBoxAddClient.TabIndex = 9;
+            checkBoxAddClient.TabIndex = 10;
             checkBoxAddClient.Text = "Add client tag";
             checkBoxAddClient.UseVisualStyleBackColor = true;
             // 
@@ -142,7 +143,7 @@
             linkLabelIcons8.Location = new Point(231, 237);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 11;
+            linkLabelIcons8.TabIndex = 12;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -179,7 +180,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 143);
+            label3.Location = new Point(12, 168);
             label3.Name = "label3";
             label3.Size = new Size(57, 15);
             label3.TabIndex = 0;
@@ -189,10 +190,10 @@
             // 
             checkBoxSendDSSTP.AutoSize = true;
             checkBoxSendDSSTP.ForeColor = SystemColors.ControlDark;
-            checkBoxSendDSSTP.Location = new Point(12, 170);
+            checkBoxSendDSSTP.Location = new Point(12, 195);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
-            checkBoxSendDSSTP.TabIndex = 8;
+            checkBoxSendDSSTP.TabIndex = 9;
             checkBoxSendDSSTP.Text = "Send DSSTP";
             checkBoxSendDSSTP.UseVisualStyleBackColor = true;
             // 
@@ -203,7 +204,7 @@
             linkLabelVersion.Location = new Point(12, 237);
             linkLabelVersion.Name = "linkLabelVersion";
             linkLabelVersion.Size = new Size(37, 15);
-            linkLabelVersion.TabIndex = 10;
+            linkLabelVersion.TabIndex = 11;
             linkLabelVersion.TabStop = true;
             linkLabelVersion.Text = "v0.4.8";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
@@ -218,6 +219,16 @@
             checkBoxGetAvatar.Text = "Get avatar";
             checkBoxGetAvatar.UseVisualStyleBackColor = true;
             // 
+            // checkBoxShowRepostsOnlyFromFollowees
+            // 
+            checkBoxShowRepostsOnlyFromFollowees.AutoSize = true;
+            checkBoxShowRepostsOnlyFromFollowees.Location = new Point(12, 112);
+            checkBoxShowRepostsOnlyFromFollowees.Name = "checkBoxShowRepostsOnlyFromFollowees";
+            checkBoxShowRepostsOnlyFromFollowees.Size = new Size(203, 19);
+            checkBoxShowRepostsOnlyFromFollowees.TabIndex = 6;
+            checkBoxShowRepostsOnlyFromFollowees.Text = "Show reposts only from followees";
+            checkBoxShowRepostsOnlyFromFollowees.UseVisualStyleBackColor = true;
+            // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -229,6 +240,7 @@
             Controls.Add(label3);
             Controls.Add(checkBoxShowOnlyFollowees);
             Controls.Add(labelOpacity);
+            Controls.Add(checkBoxShowRepostsOnlyFromFollowees);
             Controls.Add(checkBoxShowOnlyJapanese);
             Controls.Add(linkLabelIcons8);
             Controls.Add(label4);
@@ -276,5 +288,6 @@
         internal CheckBox checkBoxSendDSSTP;
         private LinkLabel linkLabelVersion;
         internal CheckBox checkBoxGetAvatar;
+        internal CheckBox checkBoxShowRepostsOnlyFromFollowees;
     }
 }
