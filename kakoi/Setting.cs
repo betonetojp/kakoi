@@ -34,6 +34,7 @@ namespace kakoi
             public string ReactionColor { get; set; } = "#FFFFE0";
             public string ReplyColor { get; set; } = "#E6E6FA";
             public string RepostColor { get; set; } = "#F0F8FF";
+            public string CWColor { get; set; } = "#C0C0C0";
             public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
 
             public Point PostBarLocation { get; set; }
@@ -131,6 +132,11 @@ namespace kakoi
         {
             get => _data.RepostColor;
             set => _data.RepostColor = value;
+        }
+        public static string CWColor
+        {
+            get => _data.CWColor;
+            set => _data.CWColor = value;
         }
         public static string WebViewUrl
         {

@@ -701,6 +701,25 @@ namespace kakoi
                 dataGridViewNotes.Rows[0].Cells["time"].Style.BackColor = clientColor;
             }
 
+            // content-warning
+            string[]? reason = null;
+            try
+            {
+                reason = nostrEvent.GetTaggedData("content-warning"); // reasonが無いと例外吐く
+            }
+            catch
+            {
+                reason = [""];
+            }
+            if (reason != null && 0 < reason.Length)
+            {
+                dataGridViewNotes.Rows[0].Cells["note"].Value = "CW: " + reason[0];
+                // ツールチップにcontentを設定
+                dataGridViewNotes.Rows[0].Cells["note"].ToolTipText = nostrEvent.Content;
+                // note列の背景色をCWColorに変更
+                dataGridViewNotes.Rows[0].Cells["note"].Style.BackColor = Tools.HexToColor(Setting.CWColor);
+            }
+
             // avatar列にアバターを表示
             await PutAvatarAsync(user, nostrEvent.PublicKey);
         }
