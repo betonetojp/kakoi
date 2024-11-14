@@ -9,6 +9,7 @@ using SSTPLib;
 using Svg.Skia;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace kakoi
 {
@@ -472,7 +473,24 @@ namespace kakoi
                         #region テキストノート
                         if (1 == nostrEvent.Kind)
                         {
-                            var lang = DetermineLanguage(content);
+                            string editedContent = content;
+                            // nostrEvent.Contentにnostr:npub1が含まれている場合、@ユーザー名を取得
+                            string mentionedUserName = string.Empty;
+                            Match match = Regex.Match(editedContent, @"nostr:(npub1\w+)");
+                            if (match.Success)
+                            {
+                                string npub = match.Groups[1].Value.ConvertToHex();
+                                // ユーザー名取得
+                                mentionedUserName = $"@{GetUserName(npub)}";
+                            }
+                            // nostr:npub1を@ユーザー名に置き換え
+                            editedContent = Regex.Replace(editedContent, @"nostr:(npub1\w+)", mentionedUserName);
+
+                            // nostrEvent.Contentにnostr:が含まれている場合、続く英数字を含めて（引用省略）に置き換える
+                            editedContent = Regex.Replace(editedContent, @"nostr:\w+", "(citations omitted)");
+
+                            // 言語判定
+                            var lang = DetermineLanguage(editedContent);
                             // 日本語限定表示オンで日本語じゃない時は表示しない
                             if (_showOnlyJapanese && "jpn" != lang)
                             {
@@ -527,7 +545,8 @@ namespace kakoi
                                 dto.ToLocalTime(),
                                 new Bitmap(1, 1),
                                 $"{headMark} {userName}",
-                                nostrEvent.Content,
+                                //nostrEvent.Content,
+                                editedContent,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey,
                                 nostrEvent.Kind
@@ -554,7 +573,7 @@ namespace kakoi
                                 var nevent = nostrEventNote.ToNIP19();
                                 SearchGhost();
 
-                                string msg = content;
+                                //string msg = content;
                                 Dictionary<string, string> SSTPHeader = new(_baseSSTPHeader)
                                 {
                                     { "Reference1", "1" }, // kind
@@ -564,7 +583,7 @@ namespace kakoi
                                     { "Reference5", user?.Picture ?? string.Empty }, // picture
                                     { "Reference6", nevent }, // nevent1...
                                     { "Reference7", nostrEvent.PublicKey.ConvertToNpub() }, // npub1...
-                                    { "Script", $"{speaker}{userName}\\n{msg}\\e" }
+                                    { "Script", $"{speaker}{userName}\\n{editedContent}\\e" }
                                 };
                                 string sstpmsg = _SSTPMethod + "\r\n" + String.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + kvp.Value.Replace("\n", "\\n"))) + "\r\n\r\n";
                                 string r = _ds.GetSSTPResponse(_ghostName, sstpmsg);
