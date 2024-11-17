@@ -359,7 +359,15 @@ namespace kakoi
         /// <returns>npub</returns>
         public static string GetNpub(this string nsec)
         {
-            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToNIP19();
+            try
+            {
+                return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToNIP19();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -369,7 +377,15 @@ namespace kakoi
         /// <returns>npub(HEX)</returns>
         public static string GetNpubHex(this string nsec)
         {
-            return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToHex();
+            try
+            {
+                return nsec.FromNIP19Nsec().CreateXOnlyPubKey().ToHex();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -379,7 +395,15 @@ namespace kakoi
         /// <returns>HEX</returns>
         public static string ConvertToHex(this string npub)
         {
-            return npub.FromNIP19Npub().ToHex();
+            try
+            {
+                return npub.FromNIP19Npub().ToHex();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -389,10 +413,18 @@ namespace kakoi
         /// <returns>npub</returns>
         public static string ConvertToNpub(this string hex)
         {
-            return ECXOnlyPubKey.Create(hex.FromHex()).ToNIP19();
+            try
+            {
+                return ECXOnlyPubKey.Create(hex.FromHex()).ToNIP19();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return string.Empty;
+            }
         }
         #endregion
 
-        
+
     }
 }
