@@ -22,6 +22,7 @@ namespace kakoi
         private const int WM_HOTKEY = 0x0312;
 
         private const string NpubPattern = @"nostr:(npub1\w+)";
+        private const string NprofilePattern = @"nostr:(nprofile1\w+)";
         private const string NostrPattern = @"nostr:(\w+)";
         private const string ImagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
         private const string UrlPattern = @"(https?:\/\/[^\s]+)";
@@ -479,18 +480,24 @@ namespace kakoi
                         if (1 == nostrEvent.Kind)
                         {
                             string editedContent = content;
-                            // nostrEvent.Contentにnostr:npub1が含まれている場合、@ユーザー名を取得
+
+                            /*
+                            // nostr:npub1またはnostr:nprofile1が含まれている場合、@ユーザー名を取得
                             string mentionedUserName = string.Empty;
-                            Match match = Regex.Match(editedContent, @"nostr:(npub1\w+)");
+                            Match match = Regex.Match(editedContent, @"nostr:(npub1\w+|nprofile1\w+)");
                             if (match.Success)
                             {
-                                string npub = match.Groups[1].Value.ConvertToHex();
+                                string npubOrNprofile = match.Groups[1].Value.ConvertToHex(); // これではnprofile1に対応できない
                                 // ユーザー名取得
-                                mentionedUserName = $"@{GetUserName(npub)}";
+                                mentionedUserName = $"@{GetUserName(npubOrNprofile)}";
                             }
-                            //string npubPattern = @"nostr:(npub1\w+)";
-                            // nostr:npub1を@ユーザー名に置き換え
+                            //
+                            // これでは全部先頭の名前になってしまう
+                            //
+                            // nostr:npub1またはnostr:nprofile1を@ユーザー名に置き換え
                             editedContent = Regex.Replace(editedContent, NpubPattern, mentionedUserName);
+                            editedContent = Regex.Replace(editedContent, NprofilePattern, mentionedUserName);
+                            */
 
                             //string nostrPattern = @"nostr:(\w+)";
                             // nostr:を含む場合、(citations omitted)に置き換え
@@ -553,12 +560,12 @@ namespace kakoi
 
                                 if (p != null && 0 < p.Length)
                                 {
-                                    mentionedUserName = string.Empty;
+                                    string mentionedUserNames = string.Empty;
                                     foreach (var u in p)
                                     {
-                                        mentionedUserName = $"{mentionedUserName}@{GetUserName(u)} ";
+                                        mentionedUserNames = $"{mentionedUserNames}@{GetUserName(u)} ";
                                     }
-                                    editedContent = $"[ {mentionedUserName}]\r\n{editedContent}";
+                                    editedContent = $"[ {mentionedUserNames}]\r\n{editedContent}";
                                 }
                             }
 
