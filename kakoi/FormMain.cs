@@ -21,6 +21,11 @@ namespace kakoi
         private const int MOD_SHIFT = 0x0004;
         private const int WM_HOTKEY = 0x0312;
 
+        private const string NpubPattern = @"nostr:(npub1\w+)";
+        private const string NostrPattern = @"nostr:(\w+)";
+        private const string ImagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
+        private const string UrlPattern = @"(https?:\/\/[^\s]+)";
+
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vk);
 
@@ -483,11 +488,21 @@ namespace kakoi
                                 // ユーザー名取得
                                 mentionedUserName = $"@{GetUserName(npub)}";
                             }
+                            //string npubPattern = @"nostr:(npub1\w+)";
                             // nostr:npub1を@ユーザー名に置き換え
-                            editedContent = Regex.Replace(editedContent, @"nostr:(npub1\w+)", mentionedUserName);
+                            editedContent = Regex.Replace(editedContent, NpubPattern, mentionedUserName);
 
-                            // nostrEvent.Contentにnostr:が含まれている場合、続く英数字を含めて（引用省略）に置き換える
-                            editedContent = Regex.Replace(editedContent, @"nostr:\w+", "(citations omitted)");
+                            //string nostrPattern = @"nostr:(\w+)";
+                            // nostr:を含む場合、(citations omitted)に置き換え
+                            editedContent = Regex.Replace(editedContent, NostrPattern, "[ 💬 ]");
+
+                            //string imagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
+                            // 画像URLを含む場合、(image)に置き換え
+                            editedContent = Regex.Replace(editedContent, ImagePattern, "[ 🖼️ ]", RegexOptions.IgnoreCase);
+
+                            //string urlPattern = @"(https?:\/\/[^\s]+)";
+                            // URLを含む場合、(url)に置き換え
+                            editedContent = Regex.Replace(editedContent, UrlPattern, "[ 🔗 ]", RegexOptions.IgnoreCase);
 
                             // 言語判定
                             var lang = DetermineLanguage(editedContent);
@@ -535,6 +550,16 @@ namespace kakoi
                             {
                                 isReply = true;
                                 //headMark = "<";
+
+                                if (p != null && 0 < p.Length)
+                                {
+                                    mentionedUserName = string.Empty;
+                                    foreach (var u in p)
+                                    {
+                                        mentionedUserName = $"{mentionedUserName}@{GetUserName(u)} ";
+                                    }
+                                    editedContent = $"[ {mentionedUserName}]\r\n{editedContent}";
+                                }
                             }
 
                             // グリッドに表示
@@ -672,7 +697,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(1, 1),
                             $"{headMark} {userName}",
-                            $"reposted {originalUserName}'s post. [k:{nostrEvent.Kind}]",
+                            $"reposted {originalUserName}'s post. [ k:{nostrEvent.Kind} ]",
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
@@ -699,6 +724,8 @@ namespace kakoi
         {
             // avatar列のToolTipに表示名を設定
             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
+            // note列のToolTipにcontentを設定
+            dataGridViewNotes.Rows[0].Cells["note"].ToolTipText = nostrEvent.Content;
 
             // avastar列の背景色をpubkeyColorに変更
             var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey[..6]); // [i..j] で「i番目からj番目の範囲」
@@ -733,8 +760,8 @@ namespace kakoi
             if (reason != null && 0 < reason.Length)
             {
                 dataGridViewNotes.Rows[0].Cells["note"].Value = "CW: " + reason[0];
-                // ツールチップにcontentを設定
-                dataGridViewNotes.Rows[0].Cells["note"].ToolTipText = nostrEvent.Content;
+                //// ツールチップにcontentを設定
+                //dataGridViewNotes.Rows[0].Cells["note"].ToolTipText = nostrEvent.Content;
                 // note列の背景色をCWColorに変更
                 dataGridViewNotes.Rows[0].Cells["note"].Style.BackColor = Tools.HexToColor(Setting.CWColor);
             }
