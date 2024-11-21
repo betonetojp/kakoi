@@ -397,7 +397,18 @@ namespace kakoi
         {
             try
             {
-                return npub.FromNIP19Npub().ToHex();
+                // npubが"npub"で始まるとき
+                if (npub.StartsWith("npub"))
+                {
+                    return npub.FromNIP19Npub().ToHex();
+                }
+                // npubが"nprofile"で始まるとき
+                else if (npub.StartsWith("nprofile"))
+                {
+                    // nprofileからPubkeyのHexを返す処理
+
+                }
+                return string.Empty;
             }
             catch (Exception ex)
             {
