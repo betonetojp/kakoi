@@ -389,24 +389,27 @@ namespace kakoi
         }
 
         /// <summary>
-        /// npubをHEXに変換する
+        /// npubまたはnprofileのpubkeyをHEXに変換する
         /// </summary>
-        /// <param name="npub">npub</param>
+        /// <param name="npubOrNprofile">npub</param>
         /// <returns>HEX</returns>
-        public static string ConvertToHex(this string npub)
+        public static string ConvertToHex(this string npubOrNprofile)
         {
             try
             {
                 // npubが"npub"で始まるとき
-                if (npub.StartsWith("npub"))
+                if (npubOrNprofile.StartsWith("npub"))
                 {
-                    return npub.FromNIP19Npub().ToHex();
+                    return npubOrNprofile.FromNIP19Npub().ToHex();
                 }
                 // npubが"nprofile"で始まるとき
-                else if (npub.StartsWith("nprofile"))
+                else if (npubOrNprofile.StartsWith("nprofile"))
                 {
-                    // nprofileからPubkeyのHexを返す処理
-
+                    var profile = (NIP19.NosteProfileNote?)npubOrNprofile.FromNIP19Note();
+                    if (profile != null)
+                    {
+                        return profile.PubKey;
+                    }
                 }
                 return string.Empty;
             }
