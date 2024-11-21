@@ -481,23 +481,21 @@ namespace kakoi
                         {
                             string editedContent = content;
 
-                            /*
+                            /**/
                             // nostr:npub1またはnostr:nprofile1が含まれている場合、@ユーザー名を取得
-                            string mentionedUserName = string.Empty;
-                            Match match = Regex.Match(editedContent, @"nostr:(npub1\w+|nprofile1\w+)");
-                            if (match.Success)
+                            MatchCollection matches = Regex.Matches(editedContent, @"nostr:(npub1\w+|nprofile1\w+)");
+                            foreach (Match match in matches)
                             {
-                                string npubOrNprofile = match.Groups[1].Value.ConvertToHex(); // これではnprofile1に対応できない
-                                // ユーザー名取得
-                                mentionedUserName = $"@{GetUserName(npubOrNprofile)}";
+                                if (match.Success)
+                                {
+                                    string npubOrNprofile = match.Groups[1].Value.ConvertToHex(); // これではnprofile1に対応できない
+                                    // ユーザー名取得
+                                    string mentionedUserName = $"@{GetUserName(npubOrNprofile)}";
+                                    // nostr:npub1またはnostr:nprofile1を@ユーザー名に置き換え
+                                    editedContent = editedContent.Replace(match.Value, mentionedUserName);
+                                }
                             }
-                            //
-                            // これでは全部先頭の名前になってしまう
-                            //
-                            // nostr:npub1またはnostr:nprofile1を@ユーザー名に置き換え
-                            editedContent = Regex.Replace(editedContent, NpubPattern, mentionedUserName);
-                            editedContent = Regex.Replace(editedContent, NprofilePattern, mentionedUserName);
-                            */
+                            /**/
 
                             //string nostrPattern = @"nostr:(\w+)";
                             // nostr:を含む場合、(citations omitted)に置き換え
