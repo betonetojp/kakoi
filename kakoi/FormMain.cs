@@ -21,8 +21,6 @@ namespace kakoi
         private const int MOD_SHIFT = 0x0004;
         private const int WM_HOTKEY = 0x0312;
 
-        private const string NpubPattern = @"nostr:(npub1\w+)";
-        private const string NprofilePattern = @"nostr:(nprofile1\w+)";
         private const string NostrPattern = @"nostr:(\w+)";
         private const string ImagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
         private const string UrlPattern = @"(https?:\/\/[^\s]+)";
@@ -481,33 +479,31 @@ namespace kakoi
                         {
                             string editedContent = content;
 
-                            /**/
                             // nostr:npub1またはnostr:nprofile1が含まれている場合、@ユーザー名を取得
                             MatchCollection matches = Regex.Matches(editedContent, @"nostr:(npub1\w+|nprofile1\w+)");
                             foreach (Match match in matches)
                             {
                                 if (match.Success)
                                 {
-                                    string npubOrNprofile = match.Groups[1].Value.ConvertToHex(); // これではnprofile1に対応できない
+                                    string npubOrNprofile = match.Groups[1].Value.ConvertToHex();
                                     // ユーザー名取得
                                     string mentionedUserName = $"@{GetUserName(npubOrNprofile)}";
                                     // nostr:npub1またはnostr:nprofile1を@ユーザー名に置き換え
                                     editedContent = editedContent.Replace(match.Value, mentionedUserName);
                                 }
                             }
-                            /**/
 
                             //string nostrPattern = @"nostr:(\w+)";
                             // nostr:を含む場合、(citations omitted)に置き換え
-                            editedContent = Regex.Replace(editedContent, NostrPattern, "[ 💬 ]");
+                            editedContent = Regex.Replace(editedContent, NostrPattern, "［💬］");
 
                             //string imagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
                             // 画像URLを含む場合、(image)に置き換え
-                            editedContent = Regex.Replace(editedContent, ImagePattern, "[ 🖼️ ]", RegexOptions.IgnoreCase);
+                            editedContent = Regex.Replace(editedContent, ImagePattern, "［🖼️］", RegexOptions.IgnoreCase);
 
                             //string urlPattern = @"(https?:\/\/[^\s]+)";
                             // URLを含む場合、(url)に置き換え
-                            editedContent = Regex.Replace(editedContent, UrlPattern, "[ 🔗 ]", RegexOptions.IgnoreCase);
+                            editedContent = Regex.Replace(editedContent, UrlPattern, "［🔗］", RegexOptions.IgnoreCase);
 
                             // 言語判定
                             var lang = DetermineLanguage(editedContent);
