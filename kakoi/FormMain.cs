@@ -557,9 +557,9 @@ namespace kakoi
                                     string mentionedUserNames = string.Empty;
                                     foreach (var u in p)
                                     {
-                                        mentionedUserNames = $"{mentionedUserNames}@{GetUserName(u)} ";
+                                        mentionedUserNames = $" {mentionedUserNames}@{GetUserName(u)}";
                                     }
-                                    editedContent = $"[ {mentionedUserNames}]\r\n{editedContent}";
+                                    editedContent = $"［🗣️{mentionedUserNames}］\r\n{editedContent}";
                                 }
                             }
 
@@ -698,7 +698,7 @@ namespace kakoi
                             dto.ToLocalTime(),
                             new Bitmap(1, 1),
                             $"{headMark} {userName}",
-                            $"reposted {originalUserName}'s post. [ k:{nostrEvent.Kind} ]",
+                            $"reposted {originalUserName}'s post.［k:{nostrEvent.Kind}］",
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
