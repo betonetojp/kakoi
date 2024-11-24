@@ -1246,6 +1246,8 @@ namespace kakoi
                 _npubHex = string.Empty;
                 _followeesHexs.Clear();
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
+                Text = "kakoi";
+                notifyIcon.Text = "kakoi";
 
                 // 秘密鍵と公開鍵取得
                 _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
@@ -1278,9 +1280,16 @@ namespace kakoi
                     // フォロイーを購読をする
                     await NostrAccess.SubscribeFollowsAsync(_npubHex);
 
-                    // ログインユーザー表示名取得
-                    var name = GetUserName(_npubHex);
-                    //_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
+                    //// ログインユーザー表示名取得
+                    //var name = GetUserName(_npubHex);
+                    ////_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
+                    
+                    var loginName = GetName(_npubHex);
+                    if (!loginName.IsNullOrEmpty())
+                    {
+                        Text = $"kakoi - @{loginName}";
+                        notifyIcon.Text = $"kakoi - @{loginName}";
+                    }
                 }
             }
             catch (Exception ex)
@@ -1394,6 +1403,28 @@ namespace kakoi
             {
                 return string.Empty;
             }
+        }
+        #endregion
+
+        #region ユーザー名を取得する
+        /// <summary>
+        /// ユーザー名を取得する
+        /// </summary>
+        /// <param name="publicKeyHex">公開鍵HEX</param>
+        /// <returns>ユーザー名</returns>
+        private string? GetName(string publicKeyHex)
+        {
+            // 情報があればユーザー名を取得
+            Users.TryGetValue(publicKeyHex, out User? user);
+            string? userName = "???";
+            if (user != null)
+            {
+                userName = user.Name;
+                // 取得日更新
+                user.LastActivity = DateTime.Now;
+                Tools.SaveUsers(Users);
+            }
+            return userName;
         }
         #endregion
 
