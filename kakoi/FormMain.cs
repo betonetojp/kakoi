@@ -59,6 +59,7 @@ namespace kakoi
 
         private bool _getAvatar;
         private bool _showOnlyFollowees;
+        private bool _minimizeToTray;
         private bool _showOnlyJapanese;
         private bool _showRepostsOnlyFromFollowees;
         private string _nokakoiKey = string.Empty;
@@ -91,6 +92,7 @@ namespace kakoi
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
 
         private readonly ImeStatus _imeStatus = new();
+        private bool _reallyClose = false;
         #endregion
 
         #region コンストラクタ
@@ -140,6 +142,8 @@ namespace kakoi
             _getAvatar = Setting.GetAvatar;
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
+            _minimizeToTray = Setting.MinimizeToTray;
+            notifyIcon.Visible = _minimizeToTray;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _showRepostsOnlyFromFollowees = Setting.ShowRepostsOnlyFromFollowees;
             _nokakoiKey = Setting.NokakoiKey;
@@ -557,7 +561,7 @@ namespace kakoi
                                     string mentionedUserNames = string.Empty;
                                     foreach (var u in p)
                                     {
-                                        mentionedUserNames = $" {mentionedUserNames}@{GetUserName(u)}";
+                                        mentionedUserNames = $"{mentionedUserNames} @{GetUserName(u)}";
                                     }
                                     editedContent = $"［🗣️{mentionedUserNames}］\r\n{editedContent}";
                                 }
@@ -1192,6 +1196,7 @@ namespace kakoi
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
             _formSetting.checkBoxGetAvatar.Checked = _getAvatar;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
+            _formSetting.checkBoxMinimizeToTray.Checked = _minimizeToTray;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked = _showRepostsOnlyFromFollowees;
             _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
@@ -1210,6 +1215,8 @@ namespace kakoi
             _getAvatar = _formSetting.checkBoxGetAvatar.Checked;
             //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
+            _minimizeToTray = _formSetting.checkBoxMinimizeToTray.Checked;
+            notifyIcon.Visible = _minimizeToTray;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _showRepostsOnlyFromFollowees = _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked;
             _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
@@ -1270,6 +1277,7 @@ namespace kakoi
             Setting.Opacity = Opacity;
             Setting.GetAvatar = _getAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
+            Setting.MinimizeToTray = _minimizeToTray;
             Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.ShowRepostsOnlyFromFollowees = _showRepostsOnlyFromFollowees;
             Setting.NokakoiKey = _nokakoiKey;
@@ -1431,42 +1439,52 @@ namespace kakoi
         // 閉じる
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // ホットキーの登録を解除
-            UnregisterHotKey(this.Handle, HOTKEY_ID);
-
-            NostrAccess.CloseSubscriptions();
-            NostrAccess.DisconnectAndDispose();
-
-            if (FormWindowState.Normal != WindowState)
+            if (_minimizeToTray && !_reallyClose && e.CloseReason == CloseReason.UserClosing)
             {
-                // 最小化最大化状態の時、元の位置と大きさを保存
-                Setting.Location = RestoreBounds.Location;
-                Setting.Size = RestoreBounds.Size;
+                // 閉じるボタンが押されたときは最小化
+                e.Cancel = true;
+                WindowState = FormWindowState.Minimized;
+                Hide(); // フォームを非表示にします（タスクトレイに格納）
             }
             else
             {
-                Setting.Location = Location;
-                Setting.Size = Size;
-            }
-            Setting.PostBarLocation = _formPostBar.Location;
-            Setting.PostBarSize = _formPostBar.Size;
-            if (FormWindowState.Normal != _formWeb.WindowState)
-            {
-                // 最小化最大化状態の時、元の位置と大きさを保存
-                Setting.WebViewLocation = _formWeb.RestoreBounds.Location;
-                Setting.WebViewSize = _formWeb.RestoreBounds.Size;
-            }
-            else
-            {
-                Setting.WebViewLocation = _formWeb.Location;
-                Setting.WebViewSize = _formWeb.Size;
-            }
-            Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
-            Setting.Save(_configPath);
-            Tools.SaveUsers(Users);
+                // ホットキーの登録を解除
+                UnregisterHotKey(this.Handle, HOTKEY_ID);
 
-            _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
-            Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
+                NostrAccess.CloseSubscriptions();
+                NostrAccess.DisconnectAndDispose();
+
+                if (FormWindowState.Normal != WindowState)
+                {
+                    // 最小化最大化状態の時、元の位置と大きさを保存
+                    Setting.Location = RestoreBounds.Location;
+                    Setting.Size = RestoreBounds.Size;
+                }
+                else
+                {
+                    Setting.Location = Location;
+                    Setting.Size = Size;
+                }
+                Setting.PostBarLocation = _formPostBar.Location;
+                Setting.PostBarSize = _formPostBar.Size;
+                if (FormWindowState.Normal != _formWeb.WindowState)
+                {
+                    // 最小化最大化状態の時、元の位置と大きさを保存
+                    Setting.WebViewLocation = _formWeb.RestoreBounds.Location;
+                    Setting.WebViewSize = _formWeb.RestoreBounds.Size;
+                }
+                else
+                {
+                    Setting.WebViewLocation = _formWeb.Location;
+                    Setting.WebViewSize = _formWeb.Size;
+                }
+                Setting.NameColumnWidth = dataGridViewNotes.Columns["name"].Width;
+                Setting.Save(_configPath);
+                Tools.SaveUsers(Users);
+
+                _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
+                Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
+            }
         }
         #endregion
 
@@ -1825,6 +1843,53 @@ namespace kakoi
             }
             base.WndProc(ref m);
         }
+
         #endregion
+
+        private void NotifyIcon_Click(object sender, EventArgs e)
+        {
+            // 右クリック時は抜ける
+            if (e is MouseEventArgs me && me.Button == MouseButtons.Right)
+            {
+                return;
+            }
+
+            if (WindowState == FormWindowState.Minimized)
+            {
+                Show();
+                WindowState = FormWindowState.Normal;
+            }
+            else if (WindowState == FormWindowState.Normal)
+            {
+                WindowState = FormWindowState.Minimized;
+            }
+        }
+
+        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // 設定画面がすでに開かれている場合は抜ける
+            if (_formSetting.Visible)
+            {
+                return;
+            }
+            Show();
+            WindowState = FormWindowState.Normal;
+            ButtonSetting_Click(sender, e);
+        }
+
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _reallyClose = true;
+            Close();
+        }
+
+        private void FormMain_SizeChanged(object sender, EventArgs e)
+        {
+            // 最小化時はタスクトレイに格納
+            if (_minimizeToTray && WindowState == FormWindowState.Minimized)
+            {
+                Hide();
+            }
+        }
     }
 }

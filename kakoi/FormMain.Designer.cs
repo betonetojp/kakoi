@@ -53,8 +53,14 @@
             id = new DataGridViewTextBoxColumn();
             pubkey = new DataGridViewTextBoxColumn();
             kind = new DataGridViewTextBoxColumn();
+            notifyIcon = new NotifyIcon(components);
+            contextMenuStrip = new ContextMenuStrip(components);
+            settingToolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem1 = new ToolStripSeparator();
+            quitToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)emojiBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewNotes).BeginInit();
+            contextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
             // buttonStart
@@ -265,6 +271,39 @@
             kind.SortMode = DataGridViewColumnSortMode.NotSortable;
             kind.Visible = false;
             // 
+            // notifyIcon
+            // 
+            notifyIcon.ContextMenuStrip = contextMenuStrip;
+            notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
+            notifyIcon.Text = "kakoi";
+            notifyIcon.Visible = true;
+            notifyIcon.Click += NotifyIcon_Click;
+            // 
+            // contextMenuStrip
+            // 
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { settingToolStripMenuItem, toolStripMenuItem1, quitToolStripMenuItem });
+            contextMenuStrip.Name = "contextMenuStrip";
+            contextMenuStrip.Size = new Size(112, 54);
+            // 
+            // settingToolStripMenuItem
+            // 
+            settingToolStripMenuItem.Name = "settingToolStripMenuItem";
+            settingToolStripMenuItem.Size = new Size(111, 22);
+            settingToolStripMenuItem.Text = "Setting";
+            settingToolStripMenuItem.Click += settingToolStripMenuItem_Click;
+            // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(108, 6);
+            // 
+            // quitToolStripMenuItem
+            // 
+            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            quitToolStripMenuItem.Size = new Size(111, 22);
+            quitToolStripMenuItem.Text = "Quit";
+            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -289,11 +328,13 @@
             FormClosing += FormMain_FormClosing;
             Load += FormMain_Load;
             Shown += FormMain_Shown;
+            SizeChanged += FormMain_SizeChanged;
             KeyDown += FormMain_KeyDown;
             MouseClick += FormMain_MouseClick;
             MouseDoubleClick += FormMain_MouseDoubleClick;
             ((System.ComponentModel.ISupportInitialize)emojiBindingSource).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewNotes).EndInit();
+            contextMenuStrip.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -316,5 +357,10 @@
         private DataGridViewTextBoxColumn id;
         private DataGridViewTextBoxColumn pubkey;
         private DataGridViewTextBoxColumn kind;
+        private NotifyIcon notifyIcon;
+        private ContextMenuStrip contextMenuStrip;
+        private ToolStripMenuItem settingToolStripMenuItem;
+        private ToolStripSeparator toolStripMenuItem1;
+        private ToolStripMenuItem quitToolStripMenuItem;
     }
 }

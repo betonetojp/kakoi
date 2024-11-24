@@ -21,14 +21,15 @@ namespace kakoi
 
             public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
-            
             public bool GetAvatar { get; set; } = true;
             public bool ShowOnlyFollowees { get; set; } = false;
+            public bool MinimizeToTray { get; set; } = false;
             public bool ShowOnlyJapanese { get; set; } = false;
             public bool ShowRepostsOnlyFromFollowees { get; set; } = false;
             public string NokakoiKey { get; set; } = string.Empty;
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
+
             public int AvatarSize { get; set; } = 32;
             public string GridColor { get; set; } = "#FF1493";
             public string ReactionColor { get; set; } = "#FFFFE0";
@@ -83,6 +84,11 @@ namespace kakoi
             get => _data.ShowOnlyFollowees;
             set => _data.ShowOnlyFollowees = value;
         }
+        public static bool MinimizeToTray
+        {
+            get => _data.MinimizeToTray;
+            set => _data.MinimizeToTray = value;
+        }
         public static bool ShowOnlyJapanese
         {
             get => _data.ShowOnlyJapanese;
@@ -108,6 +114,7 @@ namespace kakoi
             get => _data.AddClient;
             set => _data.AddClient = value;
         }
+
         public static int AvatarSize
         {
             get => _data.AvatarSize;
