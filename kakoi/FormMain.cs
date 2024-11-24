@@ -113,7 +113,7 @@ namespace kakoi
             if (!createdNew)
             {
                 // 既に起動している場合はメッセージを表示して終了
-                MessageBox.Show("This application is already running.", "kakoi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Already running.", "kakoi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 Environment.Exit(0);
             }
 
@@ -1283,7 +1283,7 @@ namespace kakoi
                     //// ログインユーザー表示名取得
                     //var name = GetUserName(_npubHex);
                     ////_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
-                    
+
                     var loginName = GetName(_npubHex);
                     if (!loginName.IsNullOrEmpty())
                     {
