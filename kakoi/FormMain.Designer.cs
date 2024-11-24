@@ -290,7 +290,7 @@
             settingToolStripMenuItem.Name = "settingToolStripMenuItem";
             settingToolStripMenuItem.Size = new Size(111, 22);
             settingToolStripMenuItem.Text = "Setting";
-            settingToolStripMenuItem.Click += settingToolStripMenuItem_Click;
+            settingToolStripMenuItem.Click += SettingToolStripMenuItem_Click;
             // 
             // toolStripMenuItem1
             // 
@@ -302,7 +302,7 @@
             quitToolStripMenuItem.Name = "quitToolStripMenuItem";
             quitToolStripMenuItem.Size = new Size(111, 22);
             quitToolStripMenuItem.Text = "Quit";
-            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
+            quitToolStripMenuItem.Click += QuitToolStripMenuItem_Click;
             // 
             // FormMain
             // 

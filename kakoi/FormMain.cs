@@ -93,6 +93,7 @@ namespace kakoi
 
         private readonly ImeStatus _imeStatus = new();
         private bool _reallyClose = false;
+        private static Mutex? _mutex;
         #endregion
 
         #region コンストラクタ
@@ -100,6 +101,21 @@ namespace kakoi
         public FormMain()
         {
             InitializeComponent();
+
+            // アプリケーションの実行パスを取得
+            string exePath = Application.ExecutablePath;
+            string mutexName = $"kakoiMutex_{exePath.Replace("\\", "_")}";
+
+            // 二重起動を防ぐためのミューテックスを作成
+            bool createdNew;
+            _mutex = new Mutex(true, mutexName, out createdNew);
+
+            if (!createdNew)
+            {
+                // 既に起動している場合はメッセージを表示して終了
+                MessageBox.Show("This application is already running.", "kakoi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Environment.Exit(0);
+            }
 
             // ボタンの画像をDPIに合わせて表示
             float scale = CreateGraphics().DpiX / 96f;
@@ -1843,7 +1859,6 @@ namespace kakoi
             }
             base.WndProc(ref m);
         }
-
         #endregion
 
         private void NotifyIcon_Click(object sender, EventArgs e)
@@ -1854,6 +1869,7 @@ namespace kakoi
                 return;
             }
 
+            // 最小化時は通常表示に戻す
             if (WindowState == FormWindowState.Minimized)
             {
                 Show();
@@ -1865,7 +1881,7 @@ namespace kakoi
             }
         }
 
-        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SettingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // 設定画面がすでに開かれている場合は抜ける
             if (_formSetting.Visible)
@@ -1877,7 +1893,7 @@ namespace kakoi
             ButtonSetting_Click(sender, e);
         }
 
-        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void QuitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _reallyClose = true;
             Close();
