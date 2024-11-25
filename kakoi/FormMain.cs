@@ -1416,7 +1416,7 @@ namespace kakoi
         {
             // 情報があればユーザー名を取得
             Users.TryGetValue(publicKeyHex, out User? user);
-            string? userName = "???";
+            string? userName = string.Empty;
             if (user != null)
             {
                 userName = user.Name;
