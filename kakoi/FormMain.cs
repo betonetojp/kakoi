@@ -1657,6 +1657,8 @@ namespace kakoi
                 var url = emoji.Url;
 
                 _ = ReactionAsync(id, pubkey, kind, content, url);
+                // comboBoxEmojiの選択を先頭に戻す
+                comboBoxEmoji.SelectedIndex = 0;
             }
         }
         #endregion
