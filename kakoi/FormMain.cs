@@ -507,7 +507,7 @@ namespace kakoi
                                 {
                                     string npubOrNprofile = match.Groups[1].Value.ConvertToHex();
                                     // ユーザー名取得
-                                    string mentionedUserName = $"@{GetUserName(npubOrNprofile)}";
+                                    string mentionedUserName = $"［👤{GetUserName(npubOrNprofile)}］";
                                     // nostr:npub1またはnostr:nprofile1を@ユーザー名に置き換え
                                     editedContent = editedContent.Replace(match.Value, mentionedUserName);
                                 }
@@ -515,7 +515,7 @@ namespace kakoi
 
                             //string nostrPattern = @"nostr:(\w+)";
                             // nostr:を含む場合、(citations omitted)に置き換え
-                            editedContent = Regex.Replace(editedContent, NostrPattern, "［💬］");
+                            editedContent = Regex.Replace(editedContent, NostrPattern, "［📒］");
 
                             //string imagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
                             // 画像URLを含む場合、(image)に置き換え
@@ -577,9 +577,9 @@ namespace kakoi
                                     string mentionedUserNames = string.Empty;
                                     foreach (var u in p)
                                     {
-                                        mentionedUserNames = $"{mentionedUserNames} @{GetUserName(u)}";
+                                        mentionedUserNames = $"{mentionedUserNames} {GetUserName(u)}";
                                     }
-                                    editedContent = $"［🗣️{mentionedUserNames}］\r\n{editedContent}";
+                                    editedContent = $"［💬{mentionedUserNames}］\r\n{editedContent}";
                                 }
                             }
 
