@@ -1552,7 +1552,14 @@ namespace kakoi
         private void CheckBoxPostBar_CheckedChanged(object sender, EventArgs e)
         {
             _formPostBar.Visible = checkBoxPostBar.Checked;
-            _formPostBar.textBoxPost.Focus();
+            if (_formPostBar.Visible)
+            {
+                _formPostBar.textBoxPost.Focus();
+            }
+            else
+            {
+                dataGridViewNotes.Focus();
+            }
         }
         #endregion
 
@@ -1630,6 +1637,7 @@ namespace kakoi
                 ButtonStart_Click(sender, e);
             }
             _formRelayList.Dispose();
+            dataGridViewNotes.Focus();
         }
         #endregion
 
