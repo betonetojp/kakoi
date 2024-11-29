@@ -156,9 +156,9 @@
             checkBoxShowOnlyJapanese.ForeColor = SystemColors.ControlDark;
             checkBoxShowOnlyJapanese.Location = new Point(12, 197);
             checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
-            checkBoxShowOnlyJapanese.Size = new Size(162, 19);
+            checkBoxShowOnlyJapanese.Size = new Size(269, 19);
             checkBoxShowOnlyJapanese.TabIndex = 10;
-            checkBoxShowOnlyJapanese.Text = "Show only Japanese posts";
+            checkBoxShowOnlyJapanese.Text = "Show only Japanese posts from non-followees";
             checkBoxShowOnlyJapanese.UseVisualStyleBackColor = true;
             // 
             // labelOpacity

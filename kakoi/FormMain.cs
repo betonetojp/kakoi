@@ -527,8 +527,8 @@ namespace kakoi
 
                             // 言語判定
                             var lang = DetermineLanguage(editedContent);
-                            // 日本語限定表示オンで日本語じゃない時は表示しない
-                            if (_showOnlyJapanese && "jpn" != lang)
+                            // 日本語限定表示オンで日本語じゃなくてフォロイーじゃない時は表示しない
+                            if (_showOnlyJapanese && "jpn" != lang && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
