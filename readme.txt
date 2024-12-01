@@ -44,18 +44,7 @@ https://chi.usamimi.info/Program/Application/BouyomiChan/
 「伺か」(SSP)用ゴースト「nostalk」のNostrイベント通知(Nostr/0.4)に対応しアバター画像を送信できます。
 https://github.com/nikolat/nostalk
 
-投稿機能を使うには、設定画面でnokakoiキーとパスワードの入力が必要です。
-nokakoiキーはnokakoienc.exeで作成します。
-
-
-◆ nokakoienc.exe
-
-Nostr秘密鍵（nsec1...）と自分で決めたパスワードからnokakoiキー（nokakoi:...）を作成するアプリケーションです。
-
-nokakoiキーはNostr秘密鍵をパスワードを使ってローカルで暗号化したものです。
-nokakoi/kakoi独自仕様なので多少は安全ですが、Nostr秘密鍵を完全に含むものなので公開は控えてください。
-nokakoiキーとパスワードが漏れると、他者によるnokakoi/kakoiでの投稿が可能となってしまいます。
-パスワード変更して新しいnokakoiキーを作成したとしても、以前のnokakoiキーとパスワードの組み合わせは有効のままです。
+投稿機能を使うには、設定画面でNostr秘密鍵（nsec1...）の入力が必要です。
 
 
 ◆ 更新履歴
