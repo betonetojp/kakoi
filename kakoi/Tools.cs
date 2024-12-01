@@ -390,6 +390,25 @@ namespace kakoi
         }
 
         /// <summary>
+        /// nsecからnsec(HEX)を取得する
+        /// </summary>
+        /// <param name="nsec"></param>
+        /// <returns>nsec(HEX)</returns>
+        public static string GetNsecHex(this string nsec)
+        {
+            try
+            {
+                return nsec.FromNIP19Nsec().ToHex();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
+
+        /// <summary>
         /// npubまたはnprofileのpubkeyをHEXに変換する
         /// </summary>
         /// <param name="npubOrNprofile">npub</param>
@@ -452,7 +471,7 @@ namespace kakoi
             cred.Save();
         }
 
-        public static string GetPassword(string target)
+        public static string LoadPassword(string target)
         {
             using var cred = new Credential();
             cred.Target = target;
