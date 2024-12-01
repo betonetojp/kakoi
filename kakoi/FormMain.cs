@@ -7,6 +7,7 @@ using NTextCat.Commons;
 using SkiaSharp;
 using SSTPLib;
 using Svg.Skia;
+using System.Configuration;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -42,7 +43,7 @@ namespace kakoi
         internal Size _formWebSize = new();
 
         private string _nsec = string.Empty;
-        private string _npubHex = string.Empty;
+        private string? _npubHex = string.Empty;
 
         /// <summary>
         /// フォロイー公開鍵のハッシュセット
@@ -246,6 +247,14 @@ namespace kakoi
                 {
                     // フォロイーを購読をする
                     await NostrAccess.SubscribeFollowsAsync(_npubHex);
+
+                    // ログインユーザー名取得
+                    var loginName = GetName(_npubHex);
+                    if (!loginName.IsNullOrEmpty())
+                    {
+                        Text = $"kakoi - @{loginName}";
+                        notifyIcon.Text = $"kakoi - @{loginName}";
+                    }
                 }
 
                 dataGridViewNotes.Rows.Clear();
@@ -1280,16 +1289,16 @@ namespace kakoi
                     // フォロイーを購読をする
                     await NostrAccess.SubscribeFollowsAsync(_npubHex);
 
-                    //// ログインユーザー表示名取得
-                    //var name = GetUserName(_npubHex);
-                    ////_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
-
+                    // ログインユーザー名取得
                     var loginName = GetName(_npubHex);
                     if (!loginName.IsNullOrEmpty())
                     {
                         Text = $"kakoi - @{loginName}";
                         notifyIcon.Text = $"kakoi - @{loginName}";
                     }
+
+                    SavePubkey(_npubHex);
+                    SaveUserPassword(_npubHex, _password);
                 }
             }
             catch (Exception ex)
@@ -1544,6 +1553,22 @@ namespace kakoi
 
             _formPostBar.ShowDialog();
             ButtonStart_Click(sender, e);
+
+            try
+            {
+                _npubHex = LoadPubkey();
+                _password = GetUserPassword(_npubHex);
+                _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
+                _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
+                _formSetting.textBoxPassword.Text = _password;
+
+                ButtonStart_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                labelRelays.Text = "Decryption failed.";
+            }
         }
         #endregion
 
@@ -1888,6 +1913,72 @@ namespace kakoi
         private void FormMain_Shown(object sender, EventArgs e)
         {
             dataGridViewNotes.Focus();
+        }
+        #endregion
+
+        #region パスワード管理
+        private static void SavePubkey(string pubkey)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings.Remove("pubkey");
+            config.AppSettings.Settings.Add("pubkey", pubkey);
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private static string? LoadPubkey()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            return config.AppSettings.Settings["pubkey"]?.Value;
+        }
+
+        private static void SaveUserPassword(string pubkey, string password)
+        {
+            // 前回のトークンを削除
+            DeletePreviousTarget(pubkey);
+
+            // 新しいtargetを生成して保存
+            string target = Guid.NewGuid().ToString();
+            Tools.SavePassword("kakoi_" + target, pubkey, password);
+            SaveTargetForUser(pubkey, target);
+        }
+
+        private static void SaveTargetForUser(string pubkey, string target)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings.Remove(pubkey + "_target");
+            config.AppSettings.Settings.Add(pubkey + "_target", target);
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private static void DeletePreviousTarget(string pubkey)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var previousTarget = config.AppSettings.Settings[pubkey + "_target"]?.Value;
+            if (!string.IsNullOrEmpty(previousTarget))
+            {
+                Tools.DeletePassword("kakoi_" + previousTarget);
+                config.AppSettings.Settings.Remove(pubkey + "_target");
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+            }
+        }
+
+        private static string GetUserPassword(string? pubkey)
+        {
+            string? target = GetTargetForUser(pubkey);
+            if (target != null)
+            {
+                return Tools.GetPassword("kakoi_" + target);
+            }
+            return string.Empty;
+        }
+
+        private static string? GetTargetForUser(string? pubkey)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            return config.AppSettings.Settings[pubkey + "_target"]?.Value;
         }
         #endregion
 

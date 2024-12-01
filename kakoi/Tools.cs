@@ -1,4 +1,5 @@
-﻿using NBitcoin.Secp256k1;
+﻿using CredentialManagement;
+using NBitcoin.Secp256k1;
 using NNostr.Client;
 using NNostr.Client.JsonConverters;
 using NNostr.Client.Protocols;
@@ -439,6 +440,31 @@ namespace kakoi
         }
         #endregion
 
+        #region Windows資格情報管理
+        public static void SavePassword(string target, string username, string password)
+        {
+            using var cred = new Credential();
+            cred.Target = target;
+            cred.Username = username;
+            cred.Password = password;
+            cred.Type = CredentialType.Generic;
+            cred.PersistanceType = PersistanceType.LocalComputer;
+            cred.Save();
+        }
 
+        public static string GetPassword(string target)
+        {
+            using var cred = new Credential();
+            cred.Target = target;
+            cred.Load();
+            return cred.Password;
+        }
+
+        public static void DeletePassword(string target)
+        {
+            var cred = new Credential { Target = target };
+            cred.Delete();
+        }
+        #endregion
     }
 }
