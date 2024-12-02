@@ -1549,6 +1549,11 @@ namespace kakoi
                 _npubHex = LoadPubkey();
                 _nsec = LoadNsec();
                 _formSetting.textBoxNsec.Text = _nsec;
+                _formSetting.textBoxNpub.Text = _nsec.GetNpub();
+                if (!_formSetting.textBoxNpub.Text.IsNullOrEmpty())
+                {
+                    _formSetting.textBoxNsec.Enabled = false;
+                }
 
                 ButtonStart_Click(sender, e);
             }

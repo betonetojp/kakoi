@@ -47,6 +47,7 @@
             checkBoxMinimizeToTray = new CheckBox();
             label2 = new Label();
             textBoxNpub = new TextBox();
+            buttonLogOut = new Button();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -60,7 +61,7 @@
             textBoxNsec.Name = "textBoxNsec";
             textBoxNsec.PasswordChar = '*';
             textBoxNsec.PlaceholderText = "nsec1...";
-            textBoxNsec.Size = new Size(230, 23);
+            textBoxNsec.Size = new Size(157, 23);
             textBoxNsec.TabIndex = 10;
             textBoxNsec.Leave += TextBoxNsec_Leave;
             // 
@@ -126,7 +127,7 @@
             linkLabelIcons8.Location = new Point(271, 277);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 13;
+            linkLabelIcons8.TabIndex = 14;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -187,10 +188,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 277);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(65, 15);
-            linkLabelVersion.TabIndex = 12;
+            linkLabelVersion.Size = new Size(71, 15);
+            linkLabelVersion.TabIndex = 13;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.6.0-beta";
+            linkLabelVersion.Text = "v0.6.0-beta2";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
@@ -242,13 +243,25 @@
             textBoxNpub.PlaceholderText = "npub1...";
             textBoxNpub.ReadOnly = true;
             textBoxNpub.Size = new Size(230, 23);
-            textBoxNpub.TabIndex = 11;
+            textBoxNpub.TabIndex = 12;
+            // 
+            // buttonLogOut
+            // 
+            buttonLogOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonLogOut.Location = new Point(245, 212);
+            buttonLogOut.Name = "buttonLogOut";
+            buttonLogOut.Size = new Size(69, 23);
+            buttonLogOut.TabIndex = 11;
+            buttonLogOut.Text = "Log out";
+            buttonLogOut.UseVisualStyleBackColor = true;
+            buttonLogOut.Click += ButtonLogOut_Click;
             // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(324, 301);
+            Controls.Add(buttonLogOut);
             Controls.Add(textBoxNpub);
             Controls.Add(label2);
             Controls.Add(checkBoxMinimizeToTray);
@@ -271,7 +284,7 @@
             KeyPreview = true;
             MaximizeBox = false;
             MinimizeBox = false;
-            MinimumSize = new Size(320, 320);
+            MinimumSize = new Size(340, 340);
             Name = "FormSetting";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Show;
@@ -305,5 +318,6 @@
         internal CheckBox checkBoxMinimizeToTray;
         private Label label2;
         internal TextBox textBoxNpub;
+        private Button buttonLogOut;
     }
 }
