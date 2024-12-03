@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetting));
             textBoxNsec = new TextBox();
             trackBarOpacity = new TrackBar();
@@ -48,6 +49,7 @@
             label2 = new Label();
             textBoxNpub = new TextBox();
             buttonLogOut = new Button();
+            toolTipLogOut = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -61,7 +63,7 @@
             textBoxNsec.Name = "textBoxNsec";
             textBoxNsec.PasswordChar = '*';
             textBoxNsec.PlaceholderText = "nsec1...";
-            textBoxNsec.Size = new Size(157, 23);
+            textBoxNsec.Size = new Size(201, 23);
             textBoxNsec.TabIndex = 10;
             textBoxNsec.Leave += TextBoxNsec_Leave;
             // 
@@ -188,10 +190,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 277);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(71, 15);
+            linkLabelVersion.Size = new Size(37, 15);
             linkLabelVersion.TabIndex = 13;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.6.0-beta2";
+            linkLabelVersion.Text = "v0.6.0";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
@@ -248,11 +250,12 @@
             // buttonLogOut
             // 
             buttonLogOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonLogOut.Location = new Point(245, 212);
+            buttonLogOut.Image = Properties.Resources.icons8_log_out_16;
+            buttonLogOut.Location = new Point(289, 212);
             buttonLogOut.Name = "buttonLogOut";
-            buttonLogOut.Size = new Size(69, 23);
+            buttonLogOut.Size = new Size(23, 23);
             buttonLogOut.TabIndex = 11;
-            buttonLogOut.Text = "Log out";
+            toolTipLogOut.SetToolTip(buttonLogOut, "Log out");
             buttonLogOut.UseVisualStyleBackColor = true;
             buttonLogOut.Click += ButtonLogOut_Click;
             // 
@@ -319,5 +322,6 @@
         private Label label2;
         internal TextBox textBoxNpub;
         private Button buttonLogOut;
+        private ToolTip toolTipLogOut;
     }
 }

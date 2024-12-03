@@ -9,6 +9,19 @@ namespace kakoi
         public FormSetting()
         {
             InitializeComponent();
+
+            // ボタンの画像をDPIに合わせて表示
+            using var graphics = CreateGraphics();
+            float scale = graphics.DpiX / 96f;
+            int size = (int)(16 * scale);
+            if (scale < 2.0f)
+            {
+                buttonLogOut.Image = new Bitmap(Properties.Resources.icons8_log_out_16, size, size);
+            }
+            else
+            {
+                buttonLogOut.Image = new Bitmap(Properties.Resources.icons8_log_out_32, size, size);
+            }
         }
 
         private void FormSetting_Load(object sender, EventArgs e)
