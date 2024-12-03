@@ -29,12 +29,10 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetting));
-            textBoxNokakoiKey = new TextBox();
-            textBoxPassword = new TextBox();
+            textBoxNsec = new TextBox();
             trackBarOpacity = new TrackBar();
             checkBoxTopMost = new CheckBox();
             label1 = new Label();
-            label2 = new Label();
             checkBoxAddClient = new CheckBox();
             label4 = new Label();
             linkLabelIcons8 = new LinkLabel();
@@ -47,36 +45,29 @@
             checkBoxGetAvatar = new CheckBox();
             checkBoxShowRepostsOnlyFromFollowees = new CheckBox();
             checkBoxMinimizeToTray = new CheckBox();
+            label2 = new Label();
+            textBoxNpub = new TextBox();
+            buttonLogOut = new Button();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
-            // textBoxNokakoiKey
+            // textBoxNsec
             // 
-            textBoxNokakoiKey.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxNokakoiKey.BorderStyle = BorderStyle.FixedSingle;
-            textBoxNokakoiKey.ImeMode = ImeMode.Disable;
-            textBoxNokakoiKey.Location = new Point(88, 114);
-            textBoxNokakoiKey.MaxLength = 136;
-            textBoxNokakoiKey.Name = "textBoxNokakoiKey";
-            textBoxNokakoiKey.Size = new Size(204, 23);
-            textBoxNokakoiKey.TabIndex = 6;
-            // 
-            // textBoxPassword
-            // 
-            textBoxPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            textBoxPassword.BorderStyle = BorderStyle.FixedSingle;
-            textBoxPassword.ImeMode = ImeMode.Disable;
-            textBoxPassword.Location = new Point(88, 143);
-            textBoxPassword.MaxLength = 256;
-            textBoxPassword.Name = "textBoxPassword";
-            textBoxPassword.PasswordChar = '*';
-            textBoxPassword.PlaceholderText = "password";
-            textBoxPassword.Size = new Size(204, 23);
-            textBoxPassword.TabIndex = 7;
+            textBoxNsec.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            textBoxNsec.BorderStyle = BorderStyle.FixedSingle;
+            textBoxNsec.ImeMode = ImeMode.Disable;
+            textBoxNsec.Location = new Point(82, 212);
+            textBoxNsec.MaxLength = 256;
+            textBoxNsec.Name = "textBoxNsec";
+            textBoxNsec.PasswordChar = '*';
+            textBoxNsec.PlaceholderText = "nsec1...";
+            textBoxNsec.Size = new Size(157, 23);
+            textBoxNsec.TabIndex = 10;
+            textBoxNsec.Leave += TextBoxNsec_Leave;
             // 
             // trackBarOpacity
             // 
-            trackBarOpacity.Location = new Point(172, 31);
+            trackBarOpacity.Location = new Point(192, 31);
             trackBarOpacity.Maximum = 100;
             trackBarOpacity.Minimum = 20;
             trackBarOpacity.Name = "trackBarOpacity";
@@ -99,28 +90,19 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(172, 13);
+            label1.Location = new Point(192, 12);
             label1.Name = "label1";
             label1.Size = new Size(48, 15);
             label1.TabIndex = 0;
             label1.Text = "Opacity";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(12, 116);
-            label2.Name = "label2";
-            label2.Size = new Size(70, 15);
-            label2.TabIndex = 0;
-            label2.Text = "nokakoi key";
             // 
             // checkBoxAddClient
             // 
             checkBoxAddClient.AutoSize = true;
             checkBoxAddClient.Checked = true;
             checkBoxAddClient.CheckState = CheckState.Checked;
-            checkBoxAddClient.ForeColor = SystemColors.ControlDark;
-            checkBoxAddClient.Location = new Point(192, 172);
+            checkBoxAddClient.ForeColor = SystemColors.ControlText;
+            checkBoxAddClient.Location = new Point(12, 187);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
             checkBoxAddClient.TabIndex = 9;
@@ -132,7 +114,7 @@
             label4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label4.AutoSize = true;
             label4.ForeColor = SystemColors.GrayText;
-            label4.Location = new Point(119, 257);
+            label4.Location = new Point(139, 277);
             label4.Name = "label4";
             label4.Size = new Size(126, 15);
             label4.TabIndex = 0;
@@ -142,10 +124,10 @@
             // 
             linkLabelIcons8.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelIcons8.AutoSize = true;
-            linkLabelIcons8.Location = new Point(251, 257);
+            linkLabelIcons8.Location = new Point(271, 277);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 13;
+            linkLabelIcons8.TabIndex = 14;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -153,17 +135,17 @@
             // checkBoxShowOnlyJapanese
             // 
             checkBoxShowOnlyJapanese.AutoSize = true;
-            checkBoxShowOnlyJapanese.ForeColor = SystemColors.ControlDark;
-            checkBoxShowOnlyJapanese.Location = new Point(12, 197);
+            checkBoxShowOnlyJapanese.ForeColor = SystemColors.ControlText;
+            checkBoxShowOnlyJapanese.Location = new Point(12, 112);
             checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
             checkBoxShowOnlyJapanese.Size = new Size(269, 19);
-            checkBoxShowOnlyJapanese.TabIndex = 10;
+            checkBoxShowOnlyJapanese.TabIndex = 6;
             checkBoxShowOnlyJapanese.Text = "Show only Japanese posts from non-followees";
             checkBoxShowOnlyJapanese.UseVisualStyleBackColor = true;
             // 
             // labelOpacity
             // 
-            labelOpacity.Location = new Point(251, 13);
+            labelOpacity.Location = new Point(271, 13);
             labelOpacity.Name = "labelOpacity";
             labelOpacity.Size = new Size(41, 15);
             labelOpacity.TabIndex = 0;
@@ -183,17 +165,17 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 145);
+            label3.Location = new Point(12, 214);
             label3.Name = "label3";
-            label3.Size = new Size(57, 15);
+            label3.Size = new Size(64, 15);
             label3.TabIndex = 0;
-            label3.Text = "password";
+            label3.Text = "Private key";
             // 
             // checkBoxSendDSSTP
             // 
             checkBoxSendDSSTP.AutoSize = true;
-            checkBoxSendDSSTP.ForeColor = SystemColors.ControlDark;
-            checkBoxSendDSSTP.Location = new Point(12, 172);
+            checkBoxSendDSSTP.ForeColor = SystemColors.ControlText;
+            checkBoxSendDSSTP.Location = new Point(12, 162);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
             checkBoxSendDSSTP.TabIndex = 8;
@@ -204,12 +186,12 @@
             // 
             linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelVersion.AutoSize = true;
-            linkLabelVersion.Location = new Point(12, 257);
+            linkLabelVersion.Location = new Point(12, 277);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(37, 15);
-            linkLabelVersion.TabIndex = 12;
+            linkLabelVersion.Size = new Size(71, 15);
+            linkLabelVersion.TabIndex = 13;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.5.3";
+            linkLabelVersion.Text = "v0.6.0-beta2";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
@@ -225,29 +207,63 @@
             // checkBoxShowRepostsOnlyFromFollowees
             // 
             checkBoxShowRepostsOnlyFromFollowees.AutoSize = true;
-            checkBoxShowRepostsOnlyFromFollowees.ForeColor = SystemColors.ControlDark;
-            checkBoxShowRepostsOnlyFromFollowees.Location = new Point(12, 222);
+            checkBoxShowRepostsOnlyFromFollowees.ForeColor = SystemColors.ControlText;
+            checkBoxShowRepostsOnlyFromFollowees.Location = new Point(12, 87);
             checkBoxShowRepostsOnlyFromFollowees.Name = "checkBoxShowRepostsOnlyFromFollowees";
             checkBoxShowRepostsOnlyFromFollowees.Size = new Size(203, 19);
-            checkBoxShowRepostsOnlyFromFollowees.TabIndex = 11;
+            checkBoxShowRepostsOnlyFromFollowees.TabIndex = 5;
             checkBoxShowRepostsOnlyFromFollowees.Text = "Show reposts only from followees";
             checkBoxShowRepostsOnlyFromFollowees.UseVisualStyleBackColor = true;
             // 
             // checkBoxMinimizeToTray
             // 
             checkBoxMinimizeToTray.AutoSize = true;
-            checkBoxMinimizeToTray.Location = new Point(12, 87);
+            checkBoxMinimizeToTray.Location = new Point(12, 137);
             checkBoxMinimizeToTray.Name = "checkBoxMinimizeToTray";
             checkBoxMinimizeToTray.Size = new Size(150, 19);
-            checkBoxMinimizeToTray.TabIndex = 5;
+            checkBoxMinimizeToTray.TabIndex = 7;
             checkBoxMinimizeToTray.Text = "Minimize to system tray";
             checkBoxMinimizeToTray.UseVisualStyleBackColor = true;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(12, 244);
+            label2.Name = "label2";
+            label2.Size = new Size(61, 15);
+            label2.TabIndex = 15;
+            label2.Text = "Public key";
+            // 
+            // textBoxNpub
+            // 
+            textBoxNpub.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            textBoxNpub.BorderStyle = BorderStyle.FixedSingle;
+            textBoxNpub.Location = new Point(82, 241);
+            textBoxNpub.Name = "textBoxNpub";
+            textBoxNpub.PlaceholderText = "npub1...";
+            textBoxNpub.ReadOnly = true;
+            textBoxNpub.Size = new Size(230, 23);
+            textBoxNpub.TabIndex = 12;
+            // 
+            // buttonLogOut
+            // 
+            buttonLogOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonLogOut.Location = new Point(245, 212);
+            buttonLogOut.Name = "buttonLogOut";
+            buttonLogOut.Size = new Size(69, 23);
+            buttonLogOut.TabIndex = 11;
+            buttonLogOut.Text = "Log out";
+            buttonLogOut.UseVisualStyleBackColor = true;
+            buttonLogOut.Click += ButtonLogOut_Click;
             // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(304, 281);
+            ClientSize = new Size(324, 301);
+            Controls.Add(buttonLogOut);
+            Controls.Add(textBoxNpub);
+            Controls.Add(label2);
             Controls.Add(checkBoxMinimizeToTray);
             Controls.Add(checkBoxGetAvatar);
             Controls.Add(linkLabelVersion);
@@ -260,17 +276,15 @@
             Controls.Add(linkLabelIcons8);
             Controls.Add(label4);
             Controls.Add(checkBoxAddClient);
-            Controls.Add(label2);
             Controls.Add(label1);
             Controls.Add(checkBoxTopMost);
             Controls.Add(trackBarOpacity);
-            Controls.Add(textBoxPassword);
-            Controls.Add(textBoxNokakoiKey);
+            Controls.Add(textBoxNsec);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
             MaximizeBox = false;
             MinimizeBox = false;
-            MinimumSize = new Size(320, 320);
+            MinimumSize = new Size(340, 340);
             Name = "FormSetting";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Show;
@@ -286,13 +300,10 @@
         }
 
         #endregion
-
-        internal TextBox textBoxNokakoiKey;
-        internal TextBox textBoxPassword;
+        internal TextBox textBoxNsec;
         internal TrackBar trackBarOpacity;
         internal CheckBox checkBoxTopMost;
         private Label label1;
-        private Label label2;
         internal CheckBox checkBoxAddClient;
         private Label label4;
         private LinkLabel linkLabelIcons8;
@@ -305,5 +316,8 @@
         internal CheckBox checkBoxGetAvatar;
         internal CheckBox checkBoxShowRepostsOnlyFromFollowees;
         internal CheckBox checkBoxMinimizeToTray;
+        private Label label2;
+        internal TextBox textBoxNpub;
+        private Button buttonLogOut;
     }
 }

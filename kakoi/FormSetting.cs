@@ -1,4 +1,4 @@
-﻿using nokakoiCrypt;
+﻿using NTextCat.Commons;
 using System.Diagnostics;
 
 namespace kakoi
@@ -6,11 +6,9 @@ namespace kakoi
     public partial class FormSetting : Form
     {
         internal FormPostBar? PostBarForm { get; set; }
-        //internal FormWeb? WebForm { get; set; }
         public FormSetting()
         {
             InitializeComponent();
-            textBoxNokakoiKey.PlaceholderText = NokakoiCrypt.NokakoiTag + " . . .";
         }
 
         private void FormSetting_Load(object sender, EventArgs e)
@@ -20,7 +18,7 @@ namespace kakoi
 
         private void FormSetting_Shown(object sender, EventArgs e)
         {
-            textBoxPassword.Focus();
+            checkBoxTopMost.Focus();
         }
 
         private void FormSetting_KeyDown(object sender, KeyEventArgs e)
@@ -61,6 +59,22 @@ namespace kakoi
                 UseShellExecute = true
             };
             Process.Start(app);
+        }
+
+        private void TextBoxNsec_Leave(object sender, EventArgs e)
+        {
+            textBoxNpub.Text = textBoxNsec.Text.GetNpub();
+            if (!textBoxNpub.Text.IsNullOrEmpty())
+            {
+                textBoxNsec.Enabled = false;
+            }
+        }
+
+        private void ButtonLogOut_Click(object sender, EventArgs e)
+        {
+            textBoxNsec.Enabled = true;
+            textBoxNsec.Text = string.Empty;
+            textBoxNpub.Text = string.Empty;
         }
     }
 }

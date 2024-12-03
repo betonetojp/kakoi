@@ -23,10 +23,9 @@ namespace kakoi
             public double Opacity { get; set; } = 1.00;
             public bool GetAvatar { get; set; } = true;
             public bool ShowOnlyFollowees { get; set; } = false;
-            public bool MinimizeToTray { get; set; } = false;
-            public bool ShowOnlyJapanese { get; set; } = false;
             public bool ShowRepostsOnlyFromFollowees { get; set; } = false;
-            public string NokakoiKey { get; set; } = string.Empty;
+            public bool ShowOnlyJapanese { get; set; } = false;
+            public bool MinimizeToTray { get; set; } = false;
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
 
@@ -84,25 +83,20 @@ namespace kakoi
             get => _data.ShowOnlyFollowees;
             set => _data.ShowOnlyFollowees = value;
         }
-        public static bool MinimizeToTray
+        public static bool ShowRepostsOnlyFromFollowees
         {
-            get => _data.MinimizeToTray;
-            set => _data.MinimizeToTray = value;
+            get => _data.ShowRepostsOnlyFromFollowees;
+            set => _data.ShowRepostsOnlyFromFollowees = value;
         }
         public static bool ShowOnlyJapanese
         {
             get => _data.ShowOnlyJapanese;
             set => _data.ShowOnlyJapanese = value;
         }
-        public static bool ShowRepostsOnlyFromFollowees
+        public static bool MinimizeToTray
         {
-            get => _data.ShowRepostsOnlyFromFollowees;
-            set => _data.ShowRepostsOnlyFromFollowees = value;
-        }
-        public static string NokakoiKey
-        {
-            get => _data.NokakoiKey;
-            set => _data.NokakoiKey = value;
+            get => _data.MinimizeToTray;
+            set => _data.MinimizeToTray = value;
         }
         public static bool SendDSSTP
         {

@@ -1,12 +1,12 @@
 ﻿using kakoi.Properties;
 using NNostr.Client;
 using NNostr.Client.Protocols;
-using nokakoiCrypt;
 using NTextCat;
 using NTextCat.Commons;
 using SkiaSharp;
 using SSTPLib;
 using Svg.Skia;
+using System.Configuration;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -62,8 +62,6 @@ namespace kakoi
         private bool _minimizeToTray;
         private bool _showOnlyJapanese;
         private bool _showRepostsOnlyFromFollowees;
-        private string _nokakoiKey = string.Empty;
-        private string _password = string.Empty;
         private bool _sendDSSTP = true;
         private bool _addClient;
         private static int _avatarSize = 32;
@@ -156,13 +154,11 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _getAvatar = Setting.GetAvatar;
-            //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _minimizeToTray = Setting.MinimizeToTray;
             notifyIcon.Visible = _minimizeToTray;
             _showOnlyJapanese = Setting.ShowOnlyJapanese;
             _showRepostsOnlyFromFollowees = Setting.ShowRepostsOnlyFromFollowees;
-            _nokakoiKey = Setting.NokakoiKey;
             _sendDSSTP = Setting.SendDSSTP;
             _addClient = Setting.AddClient;
             _avatarSize = Setting.AvatarSize;
@@ -246,6 +242,14 @@ namespace kakoi
                 {
                     // フォロイーを購読をする
                     await NostrAccess.SubscribeFollowsAsync(_npubHex);
+
+                    // ログインユーザー名取得
+                    var loginName = GetName(_npubHex);
+                    if (!loginName.IsNullOrEmpty())
+                    {
+                        Text = $"kakoi - @{loginName}";
+                        notifyIcon.Text = $"kakoi - @{loginName}";
+                    }
                 }
 
                 dataGridViewNotes.Rows.Clear();
@@ -1006,7 +1010,7 @@ namespace kakoi
         // Postボタン
         internal void ButtonPost_Click(NostrEvent? rootEvent, bool isQuote)
         {
-            if (0 == _formSetting.textBoxNokakoiKey.TextLength || 0 == _formSetting.textBoxPassword.TextLength)
+            if (0 == _formSetting.textBoxNsec.TextLength)
             {
                 _formPostBar.textBoxPost.PlaceholderText = "Please set nokakoi key and password.";
                 return;
@@ -1215,10 +1219,10 @@ namespace kakoi
             _formSetting.checkBoxMinimizeToTray.Checked = _minimizeToTray;
             _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
             _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked = _showRepostsOnlyFromFollowees;
-            _formSetting.textBoxNokakoiKey.Text = _nokakoiKey;
-            _formSetting.textBoxPassword.Text = _password;
             _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
             _formSetting.checkBoxAddClient.Checked = _addClient;
+            _formSetting.textBoxNsec.Text = _nsec;
+            _formSetting.textBoxNpub.Text = _nsec.GetNpub();
 
             // 開く
             _formSetting.ShowDialog(this);
@@ -1229,20 +1233,17 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _getAvatar = _formSetting.checkBoxGetAvatar.Checked;
-            //dataGridViewNotes.Columns["avatar"].Visible = _showAvatar;
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _minimizeToTray = _formSetting.checkBoxMinimizeToTray.Checked;
             notifyIcon.Visible = _minimizeToTray;
             _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
             _showRepostsOnlyFromFollowees = _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked;
-            _nokakoiKey = _formSetting.textBoxNokakoiKey.Text;
-            _password = _formSetting.textBoxPassword.Text;
+            _nsec = _formSetting.textBoxNsec.Text;
             _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
             _addClient = _formSetting.checkBoxAddClient.Checked;
             try
             {
                 // 別アカウントログイン失敗に備えてクリアしておく
-                _nsec = string.Empty;
                 _npubHex = string.Empty;
                 _followeesHexs.Clear();
                 _formPostBar.textBoxPost.PlaceholderText = "kakoi";
@@ -1250,7 +1251,6 @@ namespace kakoi
                 notifyIcon.Text = "kakoi";
 
                 // 秘密鍵と公開鍵取得
-                _nsec = NokakoiCrypt.DecryptNokakoiKey(_nokakoiKey, _password);
                 _npubHex = _nsec.GetNpubHex();
 
                 // ログイン済みの時
@@ -1280,10 +1280,7 @@ namespace kakoi
                     // フォロイーを購読をする
                     await NostrAccess.SubscribeFollowsAsync(_npubHex);
 
-                    //// ログインユーザー表示名取得
-                    //var name = GetUserName(_npubHex);
-                    ////_formPostBar.textBoxPost.PlaceholderText = $"Post as {name}";
-
+                    // ログインユーザー名取得
                     var loginName = GetName(_npubHex);
                     if (!loginName.IsNullOrEmpty())
                     {
@@ -1297,6 +1294,9 @@ namespace kakoi
                 Debug.WriteLine(ex.Message);
                 labelRelays.Text = "Decryption failed.";
             }
+            // nsecを保存
+            SavePubkey(_npubHex);
+            SaveNsec(_npubHex, _nsec);
 
             Setting.TopMost = TopMost;
             Setting.Opacity = Opacity;
@@ -1305,7 +1305,6 @@ namespace kakoi
             Setting.MinimizeToTray = _minimizeToTray;
             Setting.ShowOnlyJapanese = _showOnlyJapanese;
             Setting.ShowRepostsOnlyFromFollowees = _showRepostsOnlyFromFollowees;
-            Setting.NokakoiKey = _nokakoiKey;
             Setting.SendDSSTP = _sendDSSTP;
             Setting.AddClient = _addClient;
 
@@ -1544,6 +1543,25 @@ namespace kakoi
 
             _formPostBar.ShowDialog();
             ButtonStart_Click(sender, e);
+
+            try
+            {
+                _npubHex = LoadPubkey();
+                _nsec = LoadNsec();
+                _formSetting.textBoxNsec.Text = _nsec;
+                _formSetting.textBoxNpub.Text = _nsec.GetNpub();
+                if (!_formSetting.textBoxNpub.Text.IsNullOrEmpty())
+                {
+                    _formSetting.textBoxNsec.Enabled = false;
+                }
+
+                ButtonStart_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                labelRelays.Text = "Decryption failed.";
+            }
         }
         #endregion
 
@@ -1888,6 +1906,72 @@ namespace kakoi
         private void FormMain_Shown(object sender, EventArgs e)
         {
             dataGridViewNotes.Focus();
+        }
+        #endregion
+
+        #region パスワード管理
+        private static void SavePubkey(string pubkey)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings.Remove("pubkey");
+            config.AppSettings.Settings.Add("pubkey", pubkey);
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private static string LoadPubkey()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            return config.AppSettings.Settings["pubkey"]?.Value ?? string.Empty;
+        }
+
+        private static void SaveNsec(string pubkey, string nsec)
+        {
+            // 前回のトークンを削除
+            DeletePreviousTarget();
+
+            // 新しいtargetを生成して保存
+            string target = Guid.NewGuid().ToString();
+            Tools.SavePassword("kakoi_" + target, pubkey, nsec);
+            SaveTarget(pubkey, target);
+        }
+
+        private static void SaveTarget(string pubkey, string target)
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings.Remove("target");
+            config.AppSettings.Settings.Add("target", target);
+            config.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection("appSettings");
+        }
+
+        private static void DeletePreviousTarget()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var previousTarget = config.AppSettings.Settings["target"]?.Value;
+            if (!previousTarget.IsNullOrEmpty())
+            {
+                Tools.DeletePassword("kakoi_" + previousTarget);
+                config.AppSettings.Settings.Remove("target");
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("appSettings");
+            }
+        }
+
+        private static string LoadNsec()
+        {
+            string target = LoadTarget();
+            if (!target.IsNullOrEmpty())
+            {
+                return Tools.LoadPassword("kakoi_" + target);
+            }
+            return string.Empty;
+        }
+
+        private static string LoadTarget()
+        {
+            var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            return config.AppSettings.Settings["target"]?.Value ?? string.Empty;
         }
         #endregion
 
