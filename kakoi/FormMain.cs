@@ -1885,12 +1885,20 @@ namespace kakoi
                 NIP19.NostrEventNote nostrEventNote = new()
                 {
                     EventId = id,
-                    Relays = [string.Empty],
+                    //Relays = [string.Empty],
+                    Relays = [],
                 };
                 var nevent = nostrEventNote.ToNIP19();
                 try
                 {
                     _formWeb.webView2.Source = new Uri(Setting.WebViewUrl + nevent);
+
+                    //var app = new ProcessStartInfo
+                    //{
+                    //    FileName = Setting.WebViewUrl + nevent,
+                    //    UseShellExecute = true
+                    //};
+                    //Process.Start(app);
                 }
                 catch (Exception ex)
                 {
