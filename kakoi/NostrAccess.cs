@@ -23,7 +23,7 @@ namespace kakoi
         /// <summary>
         /// 接続状態リスト
         /// </summary>
-        private static List<string> _relayStatusList = new();
+        private static List<string> _relayStatusList = [];
 
         /// <summary>
         /// タイムライン購読ID
