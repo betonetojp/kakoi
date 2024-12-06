@@ -1,4 +1,5 @@
 ﻿using NNostr.Client;
+using System.Diagnostics;
 using System.Net.WebSockets;
 
 namespace kakoi
@@ -19,6 +20,10 @@ namespace kakoi
         /// 接続リレー配列
         /// </summary>
         private static Uri[] _relays = [];
+        /// <summary>
+        /// 接続状態リスト
+        /// </summary>
+        private static List<string> _relayStatusList = new();
 
         /// <summary>
         /// タイムライン購読ID
@@ -43,6 +48,10 @@ namespace kakoi
         /// 接続リレー配列
         /// </summary>
         public static Uri[] Relays { get => _relays; set => _relays = value; }
+        /// <summary>
+        /// 接続状態リスト
+        /// </summary>
+        public static List<string> RelayStatusList => _relayStatusList;
 
         /// <summary>
         /// タイムライン購読ID
@@ -75,7 +84,19 @@ namespace kakoi
 
                 _clients = new CompositeNostrClient(_relays);
 
-                await _clients.Connect();
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                try
+                {
+                    await _clients.Connect(cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine("接続がタイムアウトしました。");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"接続中にエラーが発生しました: {ex.Message}");
+                }
             }
             else
             {
@@ -90,9 +111,40 @@ namespace kakoi
                 }
                 if (hasClosed)
                 {
-                    await _clients.Connect();
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                    try
+                    {
+                        await _clients.Connect(cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Debug.WriteLine("再接続がタイムアウトしました。");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"再接続中にエラーが発生しました: {ex.Message}");
+                    }
                 }
             }
+
+            // 接続状態を確認し、失敗したリレーを記録
+            _relayStatusList.Clear();
+            foreach (var relay in _relays)
+            {
+                if (_clients.States.TryGetValue(relay, out var state))
+                {
+                    if (state != WebSocketState.Open)
+                    {
+                        Debug.WriteLine($"リレー {relay} に接続できませんでした。状態: {state}");
+                        _relayStatusList.Add($"❌ {relay}");
+                    }
+                    else
+                    {
+                        _relayStatusList.Add(relay.ToString());
+                    }
+                }
+            }
+
             return _clients.States.Count;
         }
         #endregion
