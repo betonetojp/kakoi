@@ -1266,17 +1266,13 @@ namespace kakoi
                     {
                         case 0:
                             labelRelays.Text = "No relay enabled.";
-                            break;
+                            return;
                         case 1:
                             labelRelays.Text = $"{connectCount} relay";
                             break;
                         default:
                             labelRelays.Text = $"{connectCount} relays";
                             break;
-                    }
-                    if (0 == connectCount)
-                    {
-                        return;
                     }
 
                     // フォロイーを購読をする
