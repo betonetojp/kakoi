@@ -1259,19 +1259,19 @@ namespace kakoi
                 if (!_npubHex.IsNullOrEmpty())
                 {
                     int connectCount = await NostrAccess.ConnectAsync();
+
+                    toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.RelayStatusList));
+
                     switch (connectCount)
                     {
                         case 0:
                             labelRelays.Text = "No relay enabled.";
-                            toolTipRelays.SetToolTip(labelRelays, string.Empty);
                             break;
                         case 1:
                             labelRelays.Text = $"{connectCount} relay";
-                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
                             break;
                         default:
                             labelRelays.Text = $"{connectCount} relays";
-                            toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.Relays.Select(r => r.ToString())));
                             break;
                     }
                     if (0 == connectCount)
@@ -1544,7 +1544,6 @@ namespace kakoi
             RegisterHotKey(this.Handle, HOTKEY_ID, MOD_CONTROL | MOD_SHIFT, (int)Keys.A);
 
             _formPostBar.ShowDialog();
-            ButtonStart_Click(sender, e);
 
             try
             {
