@@ -9,6 +9,7 @@ using Svg.Skia;
 using System.Configuration;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace kakoi
@@ -40,6 +41,7 @@ namespace kakoi
         private FormWeb _formWeb = new();
         internal Point _formWebLocation = new();
         internal Size _formWebSize = new();
+        private FormAI _formAI = new();
 
         private string _nsec = string.Empty;
         private string _npubHex = string.Empty;
@@ -105,8 +107,7 @@ namespace kakoi
             string mutexName = $"kakoiMutex_{exePath.Replace("\\", "_")}";
 
             // 二重起動を防ぐためのミューテックスを作成
-            bool createdNew;
-            _mutex = new Mutex(true, mutexName, out createdNew);
+            _mutex = new Mutex(true, mutexName, out bool createdNew);
 
             if (!createdNew)
             {
@@ -184,6 +185,7 @@ namespace kakoi
             _formSetting.PostBarForm = _formPostBar;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
+            _formAI.MainForm = this;
 
             // avatarフォルダを作成
             if (!Directory.Exists(_avatarPath))
@@ -877,7 +879,7 @@ namespace kakoi
                     }
 
                     // リサイズ
-                    using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), SKFilterQuality.High))
+                    using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), new SKSamplingOptions(SKFilterMode.Linear)))
                     {
                         if (resizedBitmap == null)
                         {
@@ -1602,6 +1604,19 @@ namespace kakoi
             {
                 dataGridViewNotes.Columns["name"].Visible = !dataGridViewNotes.Columns["name"].Visible;
             }
+            // F5キーでFormAIを表示
+            if (e.KeyCode == Keys.F5)
+            {
+                if (_formAI == null || _formAI.IsDisposed)
+                {
+                    _formAI = new FormAI();
+                    _formAI.MainForm = this;
+                }
+                if (!_formAI.Visible)
+                {
+                    _formAI.Show(this);
+                }
+            }
 
             if (e.KeyCode == Keys.Escape)
             {
@@ -1938,10 +1953,10 @@ namespace kakoi
             // 新しいtargetを生成して保存
             string target = Guid.NewGuid().ToString();
             Tools.SavePassword("kakoi_" + target, pubkey, nsec);
-            SaveTarget(pubkey, target);
+            SaveTarget(target);
         }
 
-        private static void SaveTarget(string pubkey, string target)
+        private static void SaveTarget(string target)
         {
             var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings.Remove("target");
@@ -1991,6 +2006,7 @@ namespace kakoi
         }
         #endregion
 
+        #region タスクトレイ最小化
         private void NotifyIcon_Click(object sender, EventArgs e)
         {
             // 右クリック時は抜ける
@@ -2036,6 +2052,31 @@ namespace kakoi
             {
                 Hide();
             }
+        }
+        #endregion
+
+        public string GetNotesContent()
+        {
+            var notes = new StringBuilder();
+            int count = 0;
+            try
+            {
+                foreach (DataGridViewRow row in dataGridViewNotes.Rows)
+                {
+                    if (count >= _formAI.numericUpDownNumberOfPosts.Value) break;
+                    notes.Append(row.Cells["time"].Value?.ToString() + "\r\n");
+                    notes.Append(row.Cells["name"].Value?.ToString()?.Substring(2) + "\r\n");
+                    notes.Append(row.Cells["note"].Value?.ToString() + "\r\n\r\n");
+                    notes.AppendLine();
+                    count++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            return notes.ToString();
         }
     }
 }
