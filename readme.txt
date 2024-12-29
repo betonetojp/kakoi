@@ -49,7 +49,7 @@ https://github.com/nikolat/nostalk
 
 ◆ 更新履歴
 
-2024/12/30 v0.6.2.ai
+2024/12/30 v0.6.2-ai
 Geminiによるタイムラインまとめ画面を追加しました。
 ※F5キーで表示できます。
 API Keyを入力して利用できます。
