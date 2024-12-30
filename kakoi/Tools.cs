@@ -56,12 +56,20 @@ namespace kakoi
         public string? ColorCode { get; set; }
     }
 
+    public class AISettings
+    {
+        public int NumberOfPosts { get; set; }
+        public string Prompt { get; set; } = string.Empty;
+        public string PromptForEveryMessage { get; set; } = string.Empty;
+    }
+
     public static class Tools
     {
         private static readonly string _usersJsonPath = Path.Combine(Application.StartupPath, "users.json");
         private static readonly string _relaysJsonPath = Path.Combine(Application.StartupPath, "relays.json");
         private static readonly string _emojisJsonPath = Path.Combine(Application.StartupPath, "emojis.json");
         private static readonly string _clientsJsonPath = Path.Combine(Application.StartupPath, "clients.json");
+        private static readonly string _aiJsonPath = Path.Combine(Application.StartupPath, "AI.json");
 
         private static JsonSerializerOptions GetOption()
         {
@@ -324,6 +332,67 @@ namespace kakoi
             {
                 Debug.WriteLine(e.Message);
                 return [];
+            }
+        }
+        #endregion
+
+        #region AI
+        public static void SaveAISettings(AISettings settings)
+        {
+            try
+            {
+                var jsonContent = JsonSerializer.Serialize(settings, GetOption());
+                File.WriteAllText(_aiJsonPath, jsonContent);
+            }
+            catch (JsonException e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+        }
+
+        public static AISettings LoadAISettings()
+        {
+            AISettings defaultSettings = new AISettings();
+            defaultSettings.NumberOfPosts = 1000;
+            defaultSettings.Prompt =
+            "口調は「みたいですよ」「ですね」みたいな感じで発言してください。\r\n" +
+            "マークダウン記法は使わないでください。\r\n" +
+            "HTMLは使わないでください。\r\n" +
+            "！記号はなるべく使わないでください。\r\n" +
+            "ツイッターではないので、ツイートではなく投稿と表現してください。\r\n" +
+            "まず、「みなさんこんなことを」「あくまでもうわさですけど」「今の話題は」のどれかに続けて" +
+            "【タイムライン】の要約を5件以内で箇条書きで紹介してください。\r\n" +
+            "-箇条書きには『・』を使用してください。" +
+            "最後に、「印象的なのは」「目を惹いたのは」「興味深いのは」のどれかに続けて" +
+            "一番面白かった投稿に皮肉やユーモアを交えた感想を添えて紹介してください。\r\n" +
+            "-投稿者の名前も織り込んでください。\r\n" +
+            "投稿内の［💬 人名］は投稿者から人名へのリプライを表しています。\r\n" +
+            "投稿内の［👤人名］は投稿者から人名へのメンションを表しています。\r\n" +
+            "投稿内の［🗒️］は引用リポストを表しています。\r\n" +
+            "投稿内の［🖼️］は画像リンクを表しています。\r\n" +
+            "投稿内の［🔗］はURLリンクを表しています。\r\n" +
+            "【タイムライン】が与えられた時は、毎回このように要約してください。\r\n";
+            defaultSettings.PromptForEveryMessage =
+            "全体で140文字以内にしてください。\r\n" +
+            "【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n" +
+            "以下、【タイムライン】\r\n\r\n";
+
+            // AI.jsonを読み込み
+            if (!File.Exists(_aiJsonPath))
+            {
+                SaveAISettings(defaultSettings);
+                return defaultSettings;
+            }
+            try
+            {
+                var jsonContent = File.ReadAllText(_aiJsonPath);
+                var settings = JsonSerializer.Deserialize<AISettings>(jsonContent);
+                return settings ?? new AISettings();
+            }
+            catch (JsonException e)
+            {
+                Debug.WriteLine(e.Message);
+                return new AISettings();
             }
         }
         #endregion

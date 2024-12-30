@@ -13,40 +13,16 @@ namespace kakoi
         private ChatSession? _chat;
         private bool _isInitialized = false;
 
-        private readonly string _prompt =
-            "口調は「みたいですよ」「ですね」みたいな感じで発言してください。\r\n" +
-            "マークダウン記法は使わないでください。\r\n" +
-            "HTMLは使わないでください。\r\n" +
-            "！記号はなるべく使わないでください。\r\n" +
-            "ツイッターではないので、ツイートではなく投稿と表現してください。\r\n" +
-            "まず、「みなさんこんなことを」「あくまでもうわさですけど」「今の話題は」のどれかに続けて" +
-            "【タイムライン】の要約を5件以内で箇条書きで紹介してください。\r\n" +
-            "-箇条書きには『・』を使用してください。" +
-            "最後に、「印象的なのは」「目を惹いたのは」「興味深いのは」のどれかに続けて" +
-            "一番面白かった投稿に皮肉やユーモアを交えた感想を添えて紹介してください。\r\n" +
-            "-投稿者の名前も織り込んでください。\r\n" +
-            "投稿内の［💬 人名］は投稿者から人名へのリプライを表しています。\r\n" +
-            "投稿内の［👤人名］は投稿者から人名へのメンションを表しています。\r\n" +
-            "投稿内の［🗒️］は引用リポストを表しています。\r\n" +
-            "投稿内の［🖼️］は画像リンクを表しています。\r\n" +
-            "投稿内の［🔗］はURLリンクを表しています。\r\n" +
-            "【タイムライン】が与えられた時は、毎回このように要約してください。\r\n";
-
-        // 毎回のプロンプト
-        private readonly string _promptForEveryMessage =
-            "全体で140文字以内にしてください。\r\n" +
-            "【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n" +
-            "以下、【タイムライン】\r\n\r\n";
-
         public FormAI()
         {
             InitializeComponent();
             LoadApiKey();
+            LoadAISettings();
         }
 
         private async void ButtonSummarize_Click(object sender, EventArgs e)
         {
-            if (!_isInitialized )
+            if (!_isInitialized)
             {
                 if (MainForm != null)
                 {
@@ -67,7 +43,6 @@ namespace kakoi
             textBoxAnswer.Text = string.Empty;
 
             var apiKey = textBoxApiKey.Text;
-            SaveApiKey(apiKey);
 
             if (MainForm != null)
             {
@@ -107,7 +82,6 @@ namespace kakoi
             textBoxAnswer.Text = string.Empty;
 
             var apiKey = textBoxApiKey.Text;
-            SaveApiKey(apiKey);
 
             InitializeModel(apiKey);
 
@@ -185,6 +159,25 @@ namespace kakoi
             }
         }
 
+        private void SaveAISettings()
+        {
+            var settings = new AISettings
+            {
+                NumberOfPosts = (int)numericUpDownNumberOfPosts.Value,
+                Prompt = textBoxPrompt.Text,
+                PromptForEveryMessage = textBoxPromptForEveryMessage.Text
+            };
+            Tools.SaveAISettings(settings);
+        }
+
+        private void LoadAISettings()
+        {
+            var settings = Tools.LoadAISettings();
+            numericUpDownNumberOfPosts.Value = settings.NumberOfPosts;
+            textBoxPrompt.Text = settings.Prompt;
+            textBoxPromptForEveryMessage.Text = settings.PromptForEveryMessage;
+        }
+
         private void CheckBoxInitialized_CheckedChanged(object sender, EventArgs e)
         {
             _isInitialized = checkBoxInitialized.Checked;
@@ -199,6 +192,12 @@ namespace kakoi
                 UseShellExecute = true
             };
             Process.Start(app);
+        }
+
+        private void FormAI_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveApiKey(textBoxApiKey.Text);
+            SaveAISettings();
         }
     }
 }

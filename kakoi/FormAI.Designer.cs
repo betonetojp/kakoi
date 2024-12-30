@@ -72,6 +72,7 @@
             textBoxAnswer.Location = new Point(402, 41);
             textBoxAnswer.Multiline = true;
             textBoxAnswer.Name = "textBoxAnswer";
+            textBoxAnswer.ScrollBars = ScrollBars.Vertical;
             textBoxAnswer.Size = new Size(370, 484);
             textBoxAnswer.TabIndex = 8;
             // 
@@ -122,7 +123,7 @@
             // numericUpDownNumberOfPosts
             // 
             numericUpDownNumberOfPosts.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            numericUpDownNumberOfPosts.Location = new Point(543, 12);
+            numericUpDownNumberOfPosts.Location = new Point(523, 12);
             numericUpDownNumberOfPosts.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numericUpDownNumberOfPosts.Name = "numericUpDownNumberOfPosts";
             numericUpDownNumberOfPosts.Size = new Size(46, 23);
@@ -136,9 +137,9 @@
             label2.AutoSize = true;
             label2.Location = new Point(402, 16);
             label2.Name = "label2";
-            label2.Size = new Size(135, 15);
+            label2.Size = new Size(115, 15);
             label2.TabIndex = 0;
-            label2.Text = "Number of posts to read";
+            label2.Text = "Max of posts to read";
             // 
             // textBoxPrompt
             // 
@@ -147,6 +148,7 @@
             textBoxPrompt.Location = new Point(12, 85);
             textBoxPrompt.Multiline = true;
             textBoxPrompt.Name = "textBoxPrompt";
+            textBoxPrompt.ScrollBars = ScrollBars.Vertical;
             textBoxPrompt.Size = new Size(370, 363);
             textBoxPrompt.TabIndex = 6;
             textBoxPrompt.Text = resources.GetString("textBoxPrompt.Text");
@@ -158,6 +160,7 @@
             textBoxPromptForEveryMessage.Location = new Point(12, 469);
             textBoxPromptForEveryMessage.Multiline = true;
             textBoxPromptForEveryMessage.Name = "textBoxPromptForEveryMessage";
+            textBoxPromptForEveryMessage.ScrollBars = ScrollBars.Vertical;
             textBoxPromptForEveryMessage.Size = new Size(370, 85);
             textBoxPromptForEveryMessage.TabIndex = 7;
             textBoxPromptForEveryMessage.Text = "全体で140文字以内にしてください。\r\n【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n以下、【タイムライン】\r\n\r\n";
@@ -215,6 +218,7 @@
             MinimumSize = new Size(800, 400);
             Name = "FormAI";
             Text = "Gemini Test";
+            FormClosing += FormAI_FormClosing;
             ((System.ComponentModel.ISupportInitialize)numericUpDownNumberOfPosts).EndInit();
             ResumeLayout(false);
             PerformLayout();
