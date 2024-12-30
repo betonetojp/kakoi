@@ -190,10 +190,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 277);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(51, 15);
+            linkLabelVersion.Size = new Size(57, 15);
             linkLabelVersion.TabIndex = 13;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.6.2-ai";
+            linkLabelVersion.Text = "v0.6.2-ai2";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
