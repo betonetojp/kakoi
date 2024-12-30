@@ -128,7 +128,7 @@
             numericUpDownNumberOfPosts.Size = new Size(46, 23);
             numericUpDownNumberOfPosts.TabIndex = 2;
             numericUpDownNumberOfPosts.TextAlign = HorizontalAlignment.Right;
-            numericUpDownNumberOfPosts.Value = new decimal(new int[] { 50, 0, 0, 0 });
+            numericUpDownNumberOfPosts.Value = new decimal(new int[] { 1000, 0, 0, 0 });
             // 
             // label2
             // 
@@ -160,7 +160,7 @@
             textBoxPromptForEveryMessage.Name = "textBoxPromptForEveryMessage";
             textBoxPromptForEveryMessage.Size = new Size(370, 85);
             textBoxPromptForEveryMessage.TabIndex = 7;
-            textBoxPromptForEveryMessage.Text = "全体で140文字以内にしてください。\r\n以下、【タイムライン】\r\n\r\n";
+            textBoxPromptForEveryMessage.Text = "全体で140文字以内にしてください。\r\n【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n以下、【タイムライン】\r\n\r\n";
             // 
             // label3
             // 

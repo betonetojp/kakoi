@@ -94,6 +94,11 @@ namespace kakoi
         private readonly ImeStatus _imeStatus = new();
         private bool _reallyClose = false;
         private static Mutex? _mutex;
+
+        // 前回の最新created_at
+        internal DateTimeOffset LastCreatedAt = DateTimeOffset.MinValue;
+        // 最新のcreated_at
+        internal DateTimeOffset LatestCreatedAt = DateTimeOffset.MinValue;
         #endregion
 
         #region コンストラクタ
@@ -209,7 +214,7 @@ namespace kakoi
                 else
                 {
                     connectCount = await NostrAccess.ConnectAsync();
-                    
+
                     if (NostrAccess.Clients != null)
                     {
                         NostrAccess.Clients.EventsReceived += OnClientOnUsersInfoEventsReceived;
@@ -2061,15 +2066,36 @@ namespace kakoi
             int count = 0;
             try
             {
+                Debug.Print($"_lastCreatedAt: {LastCreatedAt}");
                 foreach (DataGridViewRow row in dataGridViewNotes.Rows)
                 {
-                    if (count >= _formAI.numericUpDownNumberOfPosts.Value) break;
+                    // timeが_lastCreatedAtの時は抜ける
+                    if (DateTimeOffset.TryParse(row.Cells["time"].Value?.ToString(), out DateTimeOffset createdAt) && createdAt == LastCreatedAt)
+                    {
+                        Debug.Print($"_lastCreatedAt: {LastCreatedAt}");
+                        break;
+                    }
+                    // 一番上の行のtimeをDateTimeOffsetに変換して_latestCreatedAtに保存
+                    if (count == 0)
+                    {
+                        if (DateTimeOffset.TryParse(row.Cells["time"].Value?.ToString(), out DateTimeOffset latestCreatedAt))
+                        {
+                            LatestCreatedAt = latestCreatedAt;
+                        }
+                    }
+                    // 指定件数で抜ける
+                    if (count >= _formAI.numericUpDownNumberOfPosts.Value)
+                    {
+                        break;
+                    }
                     notes.Append(row.Cells["time"].Value?.ToString() + "\r\n");
                     notes.Append(row.Cells["name"].Value?.ToString()?.Substring(2) + "\r\n");
                     notes.Append(row.Cells["note"].Value?.ToString() + "\r\n\r\n");
                     notes.AppendLine();
                     count++;
                 }
+                LastCreatedAt = LatestCreatedAt;
+                Debug.Print($"_latestCreatedAt: {LatestCreatedAt} count: {count}");
             }
             catch (Exception ex)
             {

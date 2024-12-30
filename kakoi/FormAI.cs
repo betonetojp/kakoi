@@ -35,6 +35,7 @@ namespace kakoi
         // 毎回のプロンプト
         private readonly string _promptForEveryMessage =
             "全体で140文字以内にしてください。\r\n" +
+            "【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n" +
             "以下、【タイムライン】\r\n\r\n";
 
         public FormAI()
@@ -45,6 +46,14 @@ namespace kakoi
 
         private async void ButtonSummarize_Click(object sender, EventArgs e)
         {
+            if (!_isInitialized )
+            {
+                if (MainForm != null)
+                {
+                    MainForm.LastCreatedAt = DateTimeOffset.MinValue;
+                    MainForm.LatestCreatedAt = DateTimeOffset.MinValue;
+                }
+            }
             await SummarizeNotesAsync();
         }
 
