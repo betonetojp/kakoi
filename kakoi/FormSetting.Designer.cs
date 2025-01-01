@@ -193,7 +193,7 @@
             linkLabelVersion.Size = new Size(57, 15);
             linkLabelVersion.TabIndex = 13;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.6.2-ai2";
+            linkLabelVersion.Text = "v0.6.2-ai3";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar

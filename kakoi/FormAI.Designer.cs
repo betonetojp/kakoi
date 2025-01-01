@@ -73,7 +73,7 @@
             textBoxAnswer.Multiline = true;
             textBoxAnswer.Name = "textBoxAnswer";
             textBoxAnswer.ScrollBars = ScrollBars.Vertical;
-            textBoxAnswer.Size = new Size(370, 484);
+            textBoxAnswer.Size = new Size(370, 284);
             textBoxAnswer.TabIndex = 8;
             // 
             // buttonSummarize
@@ -91,7 +91,7 @@
             // 
             textBoxChat.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             textBoxChat.BorderStyle = BorderStyle.FixedSingle;
-            textBoxChat.Location = new Point(402, 531);
+            textBoxChat.Location = new Point(402, 331);
             textBoxChat.Name = "textBoxChat";
             textBoxChat.Size = new Size(289, 23);
             textBoxChat.TabIndex = 9;
@@ -100,7 +100,7 @@
             // buttonChat
             // 
             buttonChat.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonChat.Location = new Point(697, 531);
+            buttonChat.Location = new Point(697, 331);
             buttonChat.Name = "buttonChat";
             buttonChat.Size = new Size(75, 23);
             buttonChat.TabIndex = 10;
@@ -149,7 +149,7 @@
             textBoxPrompt.Multiline = true;
             textBoxPrompt.Name = "textBoxPrompt";
             textBoxPrompt.ScrollBars = ScrollBars.Vertical;
-            textBoxPrompt.Size = new Size(370, 363);
+            textBoxPrompt.Size = new Size(370, 163);
             textBoxPrompt.TabIndex = 6;
             textBoxPrompt.Text = resources.GetString("textBoxPrompt.Text");
             // 
@@ -157,7 +157,7 @@
             // 
             textBoxPromptForEveryMessage.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBoxPromptForEveryMessage.BorderStyle = BorderStyle.FixedSingle;
-            textBoxPromptForEveryMessage.Location = new Point(12, 469);
+            textBoxPromptForEveryMessage.Location = new Point(12, 269);
             textBoxPromptForEveryMessage.Multiline = true;
             textBoxPromptForEveryMessage.Name = "textBoxPromptForEveryMessage";
             textBoxPromptForEveryMessage.ScrollBars = ScrollBars.Vertical;
@@ -178,7 +178,7 @@
             // 
             label4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label4.AutoSize = true;
-            label4.Location = new Point(12, 451);
+            label4.Location = new Point(12, 251);
             label4.Name = "label4";
             label4.Size = new Size(165, 15);
             label4.TabIndex = 0;
@@ -199,7 +199,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(784, 561);
+            ClientSize = new Size(784, 361);
             Controls.Add(linkLabelGetApiKey);
             Controls.Add(label4);
             Controls.Add(label3);
@@ -217,6 +217,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(800, 400);
             Name = "FormAI";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Gemini Test";
             FormClosing += FormAI_FormClosing;
             ((System.ComponentModel.ISupportInitialize)numericUpDownNumberOfPosts).EndInit();
