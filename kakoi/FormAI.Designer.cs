@@ -112,11 +112,11 @@
             // 
             checkBoxInitialized.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkBoxInitialized.AutoSize = true;
-            checkBoxInitialized.Location = new Point(612, 15);
+            checkBoxInitialized.Location = new Point(615, 15);
             checkBoxInitialized.Name = "checkBoxInitialized";
-            checkBoxInitialized.Size = new Size(79, 19);
+            checkBoxInitialized.Size = new Size(76, 19);
             checkBoxInitialized.TabIndex = 3;
-            checkBoxInitialized.Text = "Initialazed";
+            checkBoxInitialized.Text = "Initialized";
             checkBoxInitialized.UseVisualStyleBackColor = true;
             checkBoxInitialized.CheckedChanged += CheckBoxInitialized_CheckedChanged;
             // 

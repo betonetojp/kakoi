@@ -113,6 +113,7 @@ namespace kakoi
         private void InitializeModel(string apiKey)
         {
             _model ??= new GenerativeModel(apiKey, "gemini-1.5-flash");
+            //_model ??= new GenerativeModel(apiKey, "gemini-2.0-flash-exp");
         }
 
         private void DisplayResult(string? result)
