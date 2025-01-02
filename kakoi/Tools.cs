@@ -59,6 +59,7 @@ namespace kakoi
     public class AISettings
     {
         public int NumberOfPosts { get; set; }
+        public string Model { get; set; } = string.Empty;
         public string Prompt { get; set; } = string.Empty;
         public string PromptForEveryMessage { get; set; } = string.Empty;
     }
@@ -354,6 +355,7 @@ namespace kakoi
         {
             AISettings defaultSettings = new AISettings();
             defaultSettings.NumberOfPosts = 1000;
+            defaultSettings.Model = "gemini-1.5-flashgemini-1.5-flash";
             defaultSettings.Prompt =
             "口調は「みたいですよ」「ですね」みたいな感じで発言してください。\r\n" +
             "マークダウン記法は使わないでください。\r\n" +
@@ -362,7 +364,7 @@ namespace kakoi
             "ツイッターではないので、ツイートではなく投稿と表現してください。\r\n" +
             "まず、「みなさんこんなことを」「あくまでもうわさですけど」「今の話題は」のどれかに続けて" +
             "【タイムライン】の要約を5件以内で箇条書きで紹介してください。\r\n" +
-            "-箇条書きには『・』を使用してください。" +
+            "-箇条書きには『・』を使用してください。\r\n" +
             "最後に、「印象的なのは」「目を惹いたのは」「興味深いのは」のどれかに続けて" +
             "一番面白かった投稿に皮肉やユーモアを交えた感想を添えて紹介してください。\r\n" +
             "-投稿者の名前も織り込んでください。\r\n" +

@@ -49,6 +49,9 @@ https://github.com/nikolat/nostalk
 
 ◆ 更新履歴
 
+2025/01/03 v0.6.2-ai4
+Geminiのモデルを指定できるようにしました。
+
 2025/01/01 v0.6.2-ai3
 kind:7イベントをAIに送らないようにしました。
 

@@ -43,6 +43,8 @@
             label3 = new Label();
             label4 = new Label();
             linkLabelGetApiKey = new LinkLabel();
+            textBoxModel = new TextBox();
+            label5 = new Label();
             ((System.ComponentModel.ISupportInitialize)numericUpDownNumberOfPosts).BeginInit();
             SuspendLayout();
             // 
@@ -62,8 +64,8 @@
             textBoxApiKey.Location = new Point(12, 34);
             textBoxApiKey.Name = "textBoxApiKey";
             textBoxApiKey.PasswordChar = '*';
-            textBoxApiKey.Size = new Size(370, 23);
-            textBoxApiKey.TabIndex = 5;
+            textBoxApiKey.Size = new Size(222, 23);
+            textBoxApiKey.TabIndex = 2;
             // 
             // textBoxAnswer
             // 
@@ -74,7 +76,7 @@
             textBoxAnswer.Name = "textBoxAnswer";
             textBoxAnswer.ScrollBars = ScrollBars.Vertical;
             textBoxAnswer.Size = new Size(370, 284);
-            textBoxAnswer.TabIndex = 8;
+            textBoxAnswer.TabIndex = 9;
             // 
             // buttonSummarize
             // 
@@ -82,7 +84,7 @@
             buttonSummarize.Location = new Point(697, 12);
             buttonSummarize.Name = "buttonSummarize";
             buttonSummarize.Size = new Size(75, 23);
-            buttonSummarize.TabIndex = 4;
+            buttonSummarize.TabIndex = 8;
             buttonSummarize.Text = "Summarize";
             buttonSummarize.UseVisualStyleBackColor = true;
             buttonSummarize.Click += ButtonSummarize_Click;
@@ -94,7 +96,7 @@
             textBoxChat.Location = new Point(402, 331);
             textBoxChat.Name = "textBoxChat";
             textBoxChat.Size = new Size(289, 23);
-            textBoxChat.TabIndex = 9;
+            textBoxChat.TabIndex = 10;
             textBoxChat.KeyDown += TextBoxChat_KeyDown;
             // 
             // buttonChat
@@ -103,7 +105,7 @@
             buttonChat.Location = new Point(697, 331);
             buttonChat.Name = "buttonChat";
             buttonChat.Size = new Size(75, 23);
-            buttonChat.TabIndex = 10;
+            buttonChat.TabIndex = 11;
             buttonChat.Text = "Chat";
             buttonChat.UseVisualStyleBackColor = true;
             buttonChat.Click += ButtonChat_Click;
@@ -115,7 +117,7 @@
             checkBoxInitialized.Location = new Point(615, 15);
             checkBoxInitialized.Name = "checkBoxInitialized";
             checkBoxInitialized.Size = new Size(76, 19);
-            checkBoxInitialized.TabIndex = 3;
+            checkBoxInitialized.TabIndex = 7;
             checkBoxInitialized.Text = "Initialized";
             checkBoxInitialized.UseVisualStyleBackColor = true;
             checkBoxInitialized.CheckedChanged += CheckBoxInitialized_CheckedChanged;
@@ -127,7 +129,7 @@
             numericUpDownNumberOfPosts.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numericUpDownNumberOfPosts.Name = "numericUpDownNumberOfPosts";
             numericUpDownNumberOfPosts.Size = new Size(46, 23);
-            numericUpDownNumberOfPosts.TabIndex = 2;
+            numericUpDownNumberOfPosts.TabIndex = 6;
             numericUpDownNumberOfPosts.TextAlign = HorizontalAlignment.Right;
             numericUpDownNumberOfPosts.Value = new decimal(new int[] { 1000, 0, 0, 0 });
             // 
@@ -145,12 +147,12 @@
             // 
             textBoxPrompt.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             textBoxPrompt.BorderStyle = BorderStyle.FixedSingle;
-            textBoxPrompt.Location = new Point(12, 85);
+            textBoxPrompt.Location = new Point(12, 78);
             textBoxPrompt.Multiline = true;
             textBoxPrompt.Name = "textBoxPrompt";
             textBoxPrompt.ScrollBars = ScrollBars.Vertical;
-            textBoxPrompt.Size = new Size(370, 163);
-            textBoxPrompt.TabIndex = 6;
+            textBoxPrompt.Size = new Size(370, 170);
+            textBoxPrompt.TabIndex = 4;
             textBoxPrompt.Text = resources.GetString("textBoxPrompt.Text");
             // 
             // textBoxPromptForEveryMessage
@@ -162,13 +164,13 @@
             textBoxPromptForEveryMessage.Name = "textBoxPromptForEveryMessage";
             textBoxPromptForEveryMessage.ScrollBars = ScrollBars.Vertical;
             textBoxPromptForEveryMessage.Size = new Size(370, 85);
-            textBoxPromptForEveryMessage.TabIndex = 7;
+            textBoxPromptForEveryMessage.TabIndex = 5;
             textBoxPromptForEveryMessage.Text = "全体で140文字以内にしてください。\r\n【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n以下、【タイムライン】\r\n\r\n";
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 67);
+            label3.Location = new Point(12, 60);
             label3.Name = "label3";
             label3.Size = new Size(78, 15);
             label3.TabIndex = 0;
@@ -195,11 +197,30 @@
             linkLabelGetApiKey.Text = "Get API Key";
             linkLabelGetApiKey.LinkClicked += LinkLabelGetApiKey_LinkClicked;
             // 
+            // textBoxModel
+            // 
+            textBoxModel.BorderStyle = BorderStyle.FixedSingle;
+            textBoxModel.Location = new Point(240, 34);
+            textBoxModel.Name = "textBoxModel";
+            textBoxModel.Size = new Size(142, 23);
+            textBoxModel.TabIndex = 3;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(240, 16);
+            label5.Name = "label5";
+            label5.Size = new Size(41, 15);
+            label5.TabIndex = 0;
+            label5.Text = "Model";
+            // 
             // FormAI
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 361);
+            Controls.Add(label5);
+            Controls.Add(textBoxModel);
             Controls.Add(linkLabelGetApiKey);
             Controls.Add(label4);
             Controls.Add(label3);
@@ -242,5 +263,7 @@
         private Label label4;
         internal NumericUpDown numericUpDownNumberOfPosts;
         private LinkLabel linkLabelGetApiKey;
+        private TextBox textBoxModel;
+        private Label label5;
     }
 }

@@ -18,6 +18,11 @@ namespace kakoi
             InitializeComponent();
             LoadApiKey();
             LoadAISettings();
+            // textBoxModelが空の時はデフォルト値を設定
+            if (string.IsNullOrEmpty(textBoxModel.Text))
+            {
+                textBoxModel.Text = "gemini-1.5-flash";
+            }
         }
 
         private async void ButtonSummarize_Click(object sender, EventArgs e)
@@ -54,7 +59,6 @@ namespace kakoi
                     _chat = _model?.StartChat(new StartChatParams());
                     _isInitialized = true;
                     checkBoxInitialized.Checked = _isInitialized;
-                    //notesContent = _prompt + _promptForEveryMessage + notesContent;
                     notesContent = textBoxPrompt.Text + textBoxPromptForEveryMessage.Text + notesContent;
                 }
 
@@ -63,7 +67,6 @@ namespace kakoi
                     string? result = null;
                     try
                     {
-                        //result = await _chat.SendMessageAsync(_promptForEveryMessage + notesContent);
                         result = await _chat.SendMessageAsync(textBoxPromptForEveryMessage.Text + notesContent);
                     }
                     catch (Exception ex)
@@ -82,7 +85,6 @@ namespace kakoi
             textBoxAnswer.Text = string.Empty;
 
             var apiKey = textBoxApiKey.Text;
-
             InitializeModel(apiKey);
 
             if (!_isInitialized)
@@ -112,7 +114,7 @@ namespace kakoi
 
         private void InitializeModel(string apiKey)
         {
-            _model ??= new GenerativeModel(apiKey, "gemini-1.5-flash");
+            _model ??= new GenerativeModel(apiKey, textBoxModel.Text);
             //_model ??= new GenerativeModel(apiKey, "gemini-2.0-flash-exp");
         }
 
@@ -165,6 +167,7 @@ namespace kakoi
             var settings = new AISettings
             {
                 NumberOfPosts = (int)numericUpDownNumberOfPosts.Value,
+                Model = textBoxModel.Text,
                 Prompt = textBoxPrompt.Text,
                 PromptForEveryMessage = textBoxPromptForEveryMessage.Text
             };
@@ -175,6 +178,7 @@ namespace kakoi
         {
             var settings = Tools.LoadAISettings();
             numericUpDownNumberOfPosts.Value = settings.NumberOfPosts;
+            textBoxModel.Text = settings.Model;
             textBoxPrompt.Text = settings.Prompt;
             textBoxPromptForEveryMessage.Text = settings.PromptForEveryMessage;
         }
