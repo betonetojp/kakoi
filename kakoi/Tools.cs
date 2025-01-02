@@ -355,7 +355,7 @@ namespace kakoi
         {
             AISettings defaultSettings = new AISettings();
             defaultSettings.NumberOfPosts = 1000;
-            defaultSettings.Model = "gemini-1.5-flashgemini-1.5-flash";
+            defaultSettings.Model = "gemini-1.5-flash";
             defaultSettings.Prompt =
             "口調は「みたいですよ」「ですね」みたいな感じで発言してください。\r\n" +
             "マークダウン記法は使わないでください。\r\n" +
