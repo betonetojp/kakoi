@@ -228,13 +228,19 @@ clientタグ修正
 ◆ 利用NuGetパッケージ
 
 NTextCat
-https://github.com/ivanakcheurov/ntextcat
+https://www.nuget.org/packages/NTextCat
 
 SkiaSharp
-https://github.com/mono/SkiaSharp
+https://www.nuget.org/packages/SkiaSharp
 
 Svg.Skia
-https://github.com/wieslawsoltes/Svg.Skia
+https://www.nuget.org/packages/Svg.Skia
+
+CredentialManagement
+https://www.nuget.org/packages/CredentialManagement
+
+Google_GenerativeAI
+https://www.nuget.org/packages/Google_GenerativeAI
 
 ◆ Nostrクライアントライブラリ
 
