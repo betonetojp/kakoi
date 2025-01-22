@@ -83,7 +83,7 @@
             // 
             // trackBarOpacity
             // 
-            trackBarOpacity.Location = new Point(192, 31);
+            trackBarOpacity.Location = new Point(212, 31);
             trackBarOpacity.Maximum = 100;
             trackBarOpacity.Minimum = 20;
             trackBarOpacity.Name = "trackBarOpacity";
@@ -106,7 +106,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(192, 12);
+            label1.Location = new Point(212, 13);
             label1.Name = "label1";
             label1.Size = new Size(48, 15);
             label1.TabIndex = 0;
@@ -161,7 +161,7 @@
             // 
             // labelOpacity
             // 
-            labelOpacity.Location = new Point(271, 13);
+            labelOpacity.Location = new Point(291, 13);
             labelOpacity.Name = "labelOpacity";
             labelOpacity.Size = new Size(41, 15);
             labelOpacity.TabIndex = 0;
@@ -204,10 +204,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 297);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(57, 15);
+            linkLabelVersion.Size = new Size(37, 15);
             linkLabelVersion.TabIndex = 27;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.6.2-ai4";
+            linkLabelVersion.Text = "v0.7.0";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
