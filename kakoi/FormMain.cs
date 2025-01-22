@@ -62,7 +62,21 @@ namespace kakoi
         private bool _getAvatar;
         private bool _showOnlyFollowees;
         private bool _minimizeToTray;
-        private bool _showOnlyJapanese;
+        private bool _showOnlySelectedLanguage;
+        private bool _showDAN;
+        private bool _showDEU;
+        private bool _showENG;
+        private bool _showFRA;
+        private bool _showITA;
+        private bool _showJPN;
+        private bool _showKOR;
+        private bool _showNLD;
+        private bool _showNOR;
+        private bool _showPOR;
+        private bool _showRUS;
+        private bool _showSPA;
+        private bool _showSWE;
+        private bool _showZHO;
         private bool _showRepostsOnlyFromFollowees;
         private bool _sendDSSTP = true;
         private bool _addClient;
@@ -163,7 +177,21 @@ namespace kakoi
             _showOnlyFollowees = Setting.ShowOnlyFollowees;
             _minimizeToTray = Setting.MinimizeToTray;
             notifyIcon.Visible = _minimizeToTray;
-            _showOnlyJapanese = Setting.ShowOnlyJapanese;
+            _showOnlySelectedLanguage = Setting.ShowOnlySelectedLanguage;
+            _showDAN = Setting.ShowDAN;
+            _showDEU = Setting.ShowDEU;
+            _showENG = Setting.ShowENG;
+            _showFRA = Setting.ShowFRA;
+            _showITA = Setting.ShowITA;
+            _showJPN = Setting.ShowJPN;
+            _showKOR = Setting.ShowKOR;
+            _showNLD = Setting.ShowNLD;
+            _showNOR = Setting.ShowNOR;
+            _showPOR = Setting.ShowPOR;
+            _showRUS = Setting.ShowRUS;
+            _showSPA = Setting.ShowSPA;
+            _showSWE = Setting.ShowSWE;
+            _showZHO = Setting.ShowZHO;
             _showRepostsOnlyFromFollowees = Setting.ShowRepostsOnlyFromFollowees;
             _sendDSSTP = Setting.SendDSSTP;
             _addClient = Setting.AddClient;
@@ -540,10 +568,31 @@ namespace kakoi
 
                             // 言語判定
                             var lang = DetermineLanguage(editedContent);
-                            // 日本語限定表示オンで日本語じゃなくてフォロイーじゃない時は表示しない
-                            if (_showOnlyJapanese && "jpn" != lang && !_followeesHexs.Contains(nostrEvent.PublicKey))
+                            // 言語限定表示オンでフォロイーじゃない時は表示しない
+                            if (_showOnlySelectedLanguage && !_followeesHexs.Contains(nostrEvent.PublicKey))
                             {
-                                continue;
+                                if (_showDAN && "dan" == lang ||
+                                    _showDEU && "deu" == lang ||
+                                    _showENG && "eng" == lang ||
+                                    _showFRA && "fra" == lang ||
+                                    _showITA && "ita" == lang ||
+                                    _showJPN && "jpn" == lang ||
+                                    _showKOR && "kor" == lang ||
+                                    _showNLD && "nld" == lang ||
+                                    _showNOR && "nor" == lang ||
+                                    _showPOR && "por" == lang ||
+                                    _showRUS && "rus" == lang ||
+                                    _showSPA && "spa" == lang ||
+                                    _showSWE && "swe" == lang ||
+                                    _showZHO && "zho" == lang)
+                                {
+                                    // 何もしない
+                                }
+                                else
+                                {
+                                    // 表示しない
+                                    continue;
+                                }
                             }
                             // フォロイー限定表示オンでフォロイーじゃない時は表示しない
                             if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
@@ -1226,7 +1275,21 @@ namespace kakoi
             _formSetting.checkBoxGetAvatar.Checked = _getAvatar;
             _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
             _formSetting.checkBoxMinimizeToTray.Checked = _minimizeToTray;
-            _formSetting.checkBoxShowOnlyJapanese.Checked = _showOnlyJapanese;
+            _formSetting.checkBoxShowOnlySelectedLanguage.Checked = _showOnlySelectedLanguage;
+            _formSetting.checkBoxDAN.Checked = _showDAN;
+            _formSetting.checkBoxDEU.Checked = _showDEU;
+            _formSetting.checkBoxENG.Checked = _showENG;
+            _formSetting.checkBoxFRA.Checked = _showFRA;
+            _formSetting.checkBoxITA.Checked = _showITA;
+            _formSetting.checkBoxJPN.Checked = _showJPN;
+            _formSetting.checkBoxKOR.Checked = _showKOR;
+            _formSetting.checkBoxNLD.Checked = _showNLD;
+            _formSetting.checkBoxNOR.Checked = _showNOR;
+            _formSetting.checkBoxPOR.Checked = _showPOR;
+            _formSetting.checkBoxRUS.Checked = _showRUS;
+            _formSetting.checkBoxSPA.Checked = _showSPA;
+            _formSetting.checkBoxSWE.Checked = _showSWE;
+            _formSetting.checkBoxZHO.Checked = _showZHO;
             _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked = _showRepostsOnlyFromFollowees;
             _formSetting.checkBoxSendDSSTP.Checked = _sendDSSTP;
             _formSetting.checkBoxAddClient.Checked = _addClient;
@@ -1245,7 +1308,21 @@ namespace kakoi
             _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
             _minimizeToTray = _formSetting.checkBoxMinimizeToTray.Checked;
             notifyIcon.Visible = _minimizeToTray;
-            _showOnlyJapanese = _formSetting.checkBoxShowOnlyJapanese.Checked;
+            _showOnlySelectedLanguage = _formSetting.checkBoxShowOnlySelectedLanguage.Checked;
+            _showDAN = _formSetting.checkBoxDAN.Checked;
+            _showDEU = _formSetting.checkBoxDEU.Checked;
+            _showENG = _formSetting.checkBoxENG.Checked;
+            _showFRA = _formSetting.checkBoxFRA.Checked;
+            _showITA = _formSetting.checkBoxITA.Checked;
+            _showJPN = _formSetting.checkBoxJPN.Checked;
+            _showKOR = _formSetting.checkBoxKOR.Checked;
+            _showNLD = _formSetting.checkBoxNLD.Checked;
+            _showNOR = _formSetting.checkBoxNOR.Checked;
+            _showPOR = _formSetting.checkBoxPOR.Checked;
+            _showRUS = _formSetting.checkBoxRUS.Checked;
+            _showSPA = _formSetting.checkBoxSPA.Checked;
+            _showSWE = _formSetting.checkBoxSWE.Checked;
+            _showZHO = _formSetting.checkBoxZHO.Checked;
             _showRepostsOnlyFromFollowees = _formSetting.checkBoxShowRepostsOnlyFromFollowees.Checked;
             _nsec = _formSetting.textBoxNsec.Text;
             _sendDSSTP = _formSetting.checkBoxSendDSSTP.Checked;
@@ -1308,7 +1385,21 @@ namespace kakoi
             Setting.GetAvatar = _getAvatar;
             Setting.ShowOnlyFollowees = _showOnlyFollowees;
             Setting.MinimizeToTray = _minimizeToTray;
-            Setting.ShowOnlyJapanese = _showOnlyJapanese;
+            Setting.ShowOnlySelectedLanguage = _showOnlySelectedLanguage;
+            Setting.ShowDAN = _showDAN;
+            Setting.ShowDEU = _showDEU;
+            Setting.ShowENG = _showENG;
+            Setting.ShowFRA = _showFRA;
+            Setting.ShowITA = _showITA;
+            Setting.ShowJPN = _showJPN;
+            Setting.ShowKOR = _showKOR;
+            Setting.ShowNLD = _showNLD;
+            Setting.ShowNOR = _showNOR;
+            Setting.ShowPOR = _showPOR;
+            Setting.ShowRUS = _showRUS;
+            Setting.ShowSPA = _showSPA;
+            Setting.ShowSWE = _showSWE;
+            Setting.ShowZHO = _showZHO;
             Setting.ShowRepostsOnlyFromFollowees = _showRepostsOnlyFromFollowees;
             Setting.SendDSSTP = _sendDSSTP;
             Setting.AddClient = _addClient;

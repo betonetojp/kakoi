@@ -37,7 +37,7 @@
             checkBoxAddClient = new CheckBox();
             label4 = new Label();
             linkLabelIcons8 = new LinkLabel();
-            checkBoxShowOnlyJapanese = new CheckBox();
+            checkBoxShowOnlySelectedLanguage = new CheckBox();
             labelOpacity = new Label();
             checkBoxShowOnlyFollowees = new CheckBox();
             label3 = new Label();
@@ -50,6 +50,20 @@
             textBoxNpub = new TextBox();
             buttonLogOut = new Button();
             toolTipLogOut = new ToolTip(components);
+            checkBoxDAN = new CheckBox();
+            checkBoxDEU = new CheckBox();
+            checkBoxENG = new CheckBox();
+            checkBoxFRA = new CheckBox();
+            checkBoxITA = new CheckBox();
+            checkBoxJPN = new CheckBox();
+            checkBoxKOR = new CheckBox();
+            checkBoxNLD = new CheckBox();
+            checkBoxNOR = new CheckBox();
+            checkBoxPOR = new CheckBox();
+            checkBoxRUS = new CheckBox();
+            checkBoxSPA = new CheckBox();
+            checkBoxSWE = new CheckBox();
+            checkBoxZHO = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -63,8 +77,8 @@
             textBoxNsec.Name = "textBoxNsec";
             textBoxNsec.PasswordChar = '*';
             textBoxNsec.PlaceholderText = "nsec1...";
-            textBoxNsec.Size = new Size(201, 23);
-            textBoxNsec.TabIndex = 10;
+            textBoxNsec.Size = new Size(221, 23);
+            textBoxNsec.TabIndex = 21;
             textBoxNsec.Leave += TextBoxNsec_Leave;
             // 
             // trackBarOpacity
@@ -104,10 +118,10 @@
             checkBoxAddClient.Checked = true;
             checkBoxAddClient.CheckState = CheckState.Checked;
             checkBoxAddClient.ForeColor = SystemColors.ControlText;
-            checkBoxAddClient.Location = new Point(12, 187);
+            checkBoxAddClient.Location = new Point(97, 270);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
-            checkBoxAddClient.TabIndex = 9;
+            checkBoxAddClient.TabIndex = 25;
             checkBoxAddClient.Text = "Add client tag";
             checkBoxAddClient.UseVisualStyleBackColor = true;
             // 
@@ -116,7 +130,7 @@
             label4.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             label4.AutoSize = true;
             label4.ForeColor = SystemColors.GrayText;
-            label4.Location = new Point(139, 277);
+            label4.Location = new Point(139, 297);
             label4.Name = "label4";
             label4.Size = new Size(126, 15);
             label4.TabIndex = 0;
@@ -126,24 +140,24 @@
             // 
             linkLabelIcons8.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelIcons8.AutoSize = true;
-            linkLabelIcons8.Location = new Point(271, 277);
+            linkLabelIcons8.Location = new Point(271, 297);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 14;
+            linkLabelIcons8.TabIndex = 28;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
             // 
-            // checkBoxShowOnlyJapanese
+            // checkBoxShowOnlySelectedLanguage
             // 
-            checkBoxShowOnlyJapanese.AutoSize = true;
-            checkBoxShowOnlyJapanese.ForeColor = SystemColors.ControlText;
-            checkBoxShowOnlyJapanese.Location = new Point(12, 112);
-            checkBoxShowOnlyJapanese.Name = "checkBoxShowOnlyJapanese";
-            checkBoxShowOnlyJapanese.Size = new Size(269, 19);
-            checkBoxShowOnlyJapanese.TabIndex = 6;
-            checkBoxShowOnlyJapanese.Text = "Show only Japanese posts from non-followees";
-            checkBoxShowOnlyJapanese.UseVisualStyleBackColor = true;
+            checkBoxShowOnlySelectedLanguage.AutoSize = true;
+            checkBoxShowOnlySelectedLanguage.ForeColor = SystemColors.ControlText;
+            checkBoxShowOnlySelectedLanguage.Location = new Point(12, 112);
+            checkBoxShowOnlySelectedLanguage.Name = "checkBoxShowOnlySelectedLanguage";
+            checkBoxShowOnlySelectedLanguage.Size = new Size(286, 19);
+            checkBoxShowOnlySelectedLanguage.TabIndex = 6;
+            checkBoxShowOnlySelectedLanguage.Text = "Show only selected language from non-followees";
+            checkBoxShowOnlySelectedLanguage.UseVisualStyleBackColor = true;
             // 
             // labelOpacity
             // 
@@ -177,10 +191,10 @@
             // 
             checkBoxSendDSSTP.AutoSize = true;
             checkBoxSendDSSTP.ForeColor = SystemColors.ControlText;
-            checkBoxSendDSSTP.Location = new Point(12, 162);
+            checkBoxSendDSSTP.Location = new Point(203, 270);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
-            checkBoxSendDSSTP.TabIndex = 8;
+            checkBoxSendDSSTP.TabIndex = 26;
             checkBoxSendDSSTP.Text = "Send DSSTP";
             checkBoxSendDSSTP.UseVisualStyleBackColor = true;
             // 
@@ -188,10 +202,10 @@
             // 
             linkLabelVersion.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             linkLabelVersion.AutoSize = true;
-            linkLabelVersion.Location = new Point(12, 277);
+            linkLabelVersion.Location = new Point(12, 297);
             linkLabelVersion.Name = "linkLabelVersion";
             linkLabelVersion.Size = new Size(57, 15);
-            linkLabelVersion.TabIndex = 13;
+            linkLabelVersion.TabIndex = 27;
             linkLabelVersion.TabStop = true;
             linkLabelVersion.Text = "v0.6.2-ai4";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
@@ -199,10 +213,12 @@
             // checkBoxGetAvatar
             // 
             checkBoxGetAvatar.AutoSize = true;
-            checkBoxGetAvatar.Location = new Point(12, 37);
+            checkBoxGetAvatar.Checked = true;
+            checkBoxGetAvatar.CheckState = CheckState.Checked;
+            checkBoxGetAvatar.Location = new Point(12, 270);
             checkBoxGetAvatar.Name = "checkBoxGetAvatar";
             checkBoxGetAvatar.Size = new Size(79, 19);
-            checkBoxGetAvatar.TabIndex = 3;
+            checkBoxGetAvatar.TabIndex = 24;
             checkBoxGetAvatar.Text = "Get avatar";
             checkBoxGetAvatar.UseVisualStyleBackColor = true;
             // 
@@ -220,17 +236,17 @@
             // checkBoxMinimizeToTray
             // 
             checkBoxMinimizeToTray.AutoSize = true;
-            checkBoxMinimizeToTray.Location = new Point(12, 137);
+            checkBoxMinimizeToTray.Location = new Point(12, 37);
             checkBoxMinimizeToTray.Name = "checkBoxMinimizeToTray";
             checkBoxMinimizeToTray.Size = new Size(150, 19);
-            checkBoxMinimizeToTray.TabIndex = 7;
+            checkBoxMinimizeToTray.TabIndex = 3;
             checkBoxMinimizeToTray.Text = "Minimize to system tray";
             checkBoxMinimizeToTray.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(12, 244);
+            label2.Location = new Point(12, 243);
             label2.Name = "label2";
             label2.Size = new Size(61, 15);
             label2.TabIndex = 15;
@@ -244,26 +260,180 @@
             textBoxNpub.Name = "textBoxNpub";
             textBoxNpub.PlaceholderText = "npub1...";
             textBoxNpub.ReadOnly = true;
-            textBoxNpub.Size = new Size(230, 23);
-            textBoxNpub.TabIndex = 12;
+            textBoxNpub.Size = new Size(250, 23);
+            textBoxNpub.TabIndex = 23;
             // 
             // buttonLogOut
             // 
             buttonLogOut.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             buttonLogOut.Image = Properties.Resources.icons8_log_out_16;
-            buttonLogOut.Location = new Point(289, 212);
+            buttonLogOut.Location = new Point(309, 212);
             buttonLogOut.Name = "buttonLogOut";
             buttonLogOut.Size = new Size(23, 23);
-            buttonLogOut.TabIndex = 11;
+            buttonLogOut.TabIndex = 22;
             toolTipLogOut.SetToolTip(buttonLogOut, "Log out");
             buttonLogOut.UseVisualStyleBackColor = true;
             buttonLogOut.Click += ButtonLogOut_Click;
+            // 
+            // checkBoxDAN
+            // 
+            checkBoxDAN.AutoSize = true;
+            checkBoxDAN.Location = new Point(32, 137);
+            checkBoxDAN.Name = "checkBoxDAN";
+            checkBoxDAN.Size = new Size(51, 19);
+            checkBoxDAN.TabIndex = 7;
+            checkBoxDAN.Text = "DAN";
+            checkBoxDAN.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxDEU
+            // 
+            checkBoxDEU.AutoSize = true;
+            checkBoxDEU.Location = new Point(92, 137);
+            checkBoxDEU.Name = "checkBoxDEU";
+            checkBoxDEU.Size = new Size(48, 19);
+            checkBoxDEU.TabIndex = 8;
+            checkBoxDEU.Text = "DEU";
+            checkBoxDEU.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxENG
+            // 
+            checkBoxENG.AutoSize = true;
+            checkBoxENG.Location = new Point(152, 137);
+            checkBoxENG.Name = "checkBoxENG";
+            checkBoxENG.Size = new Size(49, 19);
+            checkBoxENG.TabIndex = 9;
+            checkBoxENG.Text = "ENG";
+            checkBoxENG.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxFRA
+            // 
+            checkBoxFRA.AutoSize = true;
+            checkBoxFRA.Location = new Point(212, 137);
+            checkBoxFRA.Name = "checkBoxFRA";
+            checkBoxFRA.Size = new Size(47, 19);
+            checkBoxFRA.TabIndex = 10;
+            checkBoxFRA.Text = "FRA";
+            checkBoxFRA.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxITA
+            // 
+            checkBoxITA.AutoSize = true;
+            checkBoxITA.Location = new Point(272, 137);
+            checkBoxITA.Name = "checkBoxITA";
+            checkBoxITA.Size = new Size(43, 19);
+            checkBoxITA.TabIndex = 11;
+            checkBoxITA.Text = "ITA";
+            checkBoxITA.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxJPN
+            // 
+            checkBoxJPN.AutoSize = true;
+            checkBoxJPN.Location = new Point(32, 162);
+            checkBoxJPN.Name = "checkBoxJPN";
+            checkBoxJPN.Size = new Size(46, 19);
+            checkBoxJPN.TabIndex = 12;
+            checkBoxJPN.Text = "JPN";
+            checkBoxJPN.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxKOR
+            // 
+            checkBoxKOR.AutoSize = true;
+            checkBoxKOR.Location = new Point(92, 162);
+            checkBoxKOR.Name = "checkBoxKOR";
+            checkBoxKOR.Size = new Size(49, 19);
+            checkBoxKOR.TabIndex = 13;
+            checkBoxKOR.Text = "KOR";
+            checkBoxKOR.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxNLD
+            // 
+            checkBoxNLD.AutoSize = true;
+            checkBoxNLD.Location = new Point(152, 162);
+            checkBoxNLD.Name = "checkBoxNLD";
+            checkBoxNLD.Size = new Size(49, 19);
+            checkBoxNLD.TabIndex = 14;
+            checkBoxNLD.Text = "NLD";
+            checkBoxNLD.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxNOR
+            // 
+            checkBoxNOR.AutoSize = true;
+            checkBoxNOR.Location = new Point(212, 162);
+            checkBoxNOR.Name = "checkBoxNOR";
+            checkBoxNOR.Size = new Size(51, 19);
+            checkBoxNOR.TabIndex = 15;
+            checkBoxNOR.Text = "NOR";
+            checkBoxNOR.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxPOR
+            // 
+            checkBoxPOR.AutoSize = true;
+            checkBoxPOR.Location = new Point(272, 162);
+            checkBoxPOR.Name = "checkBoxPOR";
+            checkBoxPOR.Size = new Size(49, 19);
+            checkBoxPOR.TabIndex = 16;
+            checkBoxPOR.Text = "POR";
+            checkBoxPOR.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxRUS
+            // 
+            checkBoxRUS.AutoSize = true;
+            checkBoxRUS.Location = new Point(32, 187);
+            checkBoxRUS.Name = "checkBoxRUS";
+            checkBoxRUS.Size = new Size(47, 19);
+            checkBoxRUS.TabIndex = 17;
+            checkBoxRUS.Text = "RUS";
+            checkBoxRUS.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxSPA
+            // 
+            checkBoxSPA.AutoSize = true;
+            checkBoxSPA.Location = new Point(92, 187);
+            checkBoxSPA.Name = "checkBoxSPA";
+            checkBoxSPA.Size = new Size(47, 19);
+            checkBoxSPA.TabIndex = 18;
+            checkBoxSPA.Text = "SPA";
+            checkBoxSPA.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxSWE
+            // 
+            checkBoxSWE.AutoSize = true;
+            checkBoxSWE.Location = new Point(152, 187);
+            checkBoxSWE.Name = "checkBoxSWE";
+            checkBoxSWE.Size = new Size(49, 19);
+            checkBoxSWE.TabIndex = 19;
+            checkBoxSWE.Text = "SWE";
+            checkBoxSWE.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxZHO
+            // 
+            checkBoxZHO.AutoSize = true;
+            checkBoxZHO.Location = new Point(212, 187);
+            checkBoxZHO.Name = "checkBoxZHO";
+            checkBoxZHO.Size = new Size(51, 19);
+            checkBoxZHO.TabIndex = 20;
+            checkBoxZHO.Text = "ZHO";
+            checkBoxZHO.UseVisualStyleBackColor = true;
             // 
             // FormSetting
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(324, 301);
+            ClientSize = new Size(344, 321);
+            Controls.Add(checkBoxZHO);
+            Controls.Add(checkBoxSWE);
+            Controls.Add(checkBoxSPA);
+            Controls.Add(checkBoxRUS);
+            Controls.Add(checkBoxPOR);
+            Controls.Add(checkBoxNOR);
+            Controls.Add(checkBoxNLD);
+            Controls.Add(checkBoxKOR);
+            Controls.Add(checkBoxJPN);
+            Controls.Add(checkBoxITA);
+            Controls.Add(checkBoxFRA);
+            Controls.Add(checkBoxENG);
+            Controls.Add(checkBoxDEU);
+            Controls.Add(checkBoxDAN);
             Controls.Add(buttonLogOut);
             Controls.Add(textBoxNpub);
             Controls.Add(label2);
@@ -275,7 +445,7 @@
             Controls.Add(checkBoxShowOnlyFollowees);
             Controls.Add(labelOpacity);
             Controls.Add(checkBoxShowRepostsOnlyFromFollowees);
-            Controls.Add(checkBoxShowOnlyJapanese);
+            Controls.Add(checkBoxShowOnlySelectedLanguage);
             Controls.Add(linkLabelIcons8);
             Controls.Add(label4);
             Controls.Add(checkBoxAddClient);
@@ -287,7 +457,7 @@
             KeyPreview = true;
             MaximizeBox = false;
             MinimizeBox = false;
-            MinimumSize = new Size(340, 340);
+            MinimumSize = new Size(360, 360);
             Name = "FormSetting";
             ShowInTaskbar = false;
             SizeGripStyle = SizeGripStyle.Show;
@@ -310,7 +480,7 @@
         internal CheckBox checkBoxAddClient;
         private Label label4;
         private LinkLabel linkLabelIcons8;
-        internal CheckBox checkBoxShowOnlyJapanese;
+        internal CheckBox checkBoxShowOnlySelectedLanguage;
         private Label labelOpacity;
         internal CheckBox checkBoxShowOnlyFollowees;
         private Label label3;
@@ -323,5 +493,19 @@
         internal TextBox textBoxNpub;
         private Button buttonLogOut;
         private ToolTip toolTipLogOut;
+        internal CheckBox checkBoxDAN;
+        internal CheckBox checkBoxDEU;
+        internal CheckBox checkBoxENG;
+        internal CheckBox checkBoxFRA;
+        internal CheckBox checkBoxITA;
+        internal CheckBox checkBoxJPN;
+        internal CheckBox checkBoxKOR;
+        internal CheckBox checkBoxNLD;
+        internal CheckBox checkBoxNOR;
+        internal CheckBox checkBoxPOR;
+        internal CheckBox checkBoxRUS;
+        internal CheckBox checkBoxSPA;
+        internal CheckBox checkBoxSWE;
+        internal CheckBox checkBoxZHO;
     }
 }

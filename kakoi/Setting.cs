@@ -24,7 +24,21 @@ namespace kakoi
             public bool GetAvatar { get; set; } = true;
             public bool ShowOnlyFollowees { get; set; } = false;
             public bool ShowRepostsOnlyFromFollowees { get; set; } = false;
-            public bool ShowOnlyJapanese { get; set; } = false;
+            public bool ShowOnlySelectedLanguage { get; set; } = false;
+            public bool ShowDAN { get; set; } = false;
+            public bool ShowDEU { get; set; } = false;
+            public bool ShowENG { get; set; } = false;
+            public bool ShowFRA { get; set; } = false;
+            public bool ShowITA { get; set; } = false;
+            public bool ShowJPN { get; set; } = false;
+            public bool ShowKOR { get; set; } = false;
+            public bool ShowNLD { get; set; } = false;
+            public bool ShowNOR { get; set; } = false;
+            public bool ShowPOR { get; set; } = false;
+            public bool ShowRUS { get; set; } = false;
+            public bool ShowSPA { get; set; } = false;
+            public bool ShowSWE { get; set; } = false;
+            public bool ShowZHO { get; set; } = false;
             public bool MinimizeToTray { get; set; } = false;
             public bool SendDSSTP { get; set; } = false;
             public bool AddClient { get; set; } = true;
@@ -88,10 +102,80 @@ namespace kakoi
             get => _data.ShowRepostsOnlyFromFollowees;
             set => _data.ShowRepostsOnlyFromFollowees = value;
         }
-        public static bool ShowOnlyJapanese
+        public static bool ShowOnlySelectedLanguage
         {
-            get => _data.ShowOnlyJapanese;
-            set => _data.ShowOnlyJapanese = value;
+            get => _data.ShowOnlySelectedLanguage;
+            set => _data.ShowOnlySelectedLanguage = value;
+        }
+        public static bool ShowDAN
+        {
+            get => _data.ShowDAN;
+            set => _data.ShowDAN = value;
+        }
+        public static bool ShowDEU
+        {
+            get => _data.ShowDEU;
+            set => _data.ShowDEU = value;
+        }
+        public static bool ShowENG
+        {
+            get => _data.ShowENG;
+            set => _data.ShowENG = value;
+        }
+        public static bool ShowFRA
+        {
+            get => _data.ShowFRA;
+            set => _data.ShowFRA = value;
+        }
+        public static bool ShowITA
+        {
+            get => _data.ShowITA;
+            set => _data.ShowITA = value;
+        }
+        public static bool ShowJPN
+        {
+            get => _data.ShowJPN;
+            set => _data.ShowJPN = value;
+        }
+        public static bool ShowKOR
+        {
+            get => _data.ShowKOR;
+            set => _data.ShowKOR = value;
+        }
+        public static bool ShowNLD
+        {
+            get => _data.ShowNLD;
+            set => _data.ShowNLD = value;
+        }
+        public static bool ShowNOR
+        {
+            get => _data.ShowNOR;
+            set => _data.ShowNOR = value;
+        }
+        public static bool ShowPOR
+        {
+            get => _data.ShowPOR;
+            set => _data.ShowPOR = value;
+        }
+        public static bool ShowRUS
+        {
+            get => _data.ShowRUS;
+            set => _data.ShowRUS = value;
+        }
+        public static bool ShowSPA
+        {
+            get => _data.ShowSPA;
+            set => _data.ShowSPA = value;
+        }
+        public static bool ShowSWE
+        {
+            get => _data.ShowSWE;
+            set => _data.ShowSWE = value;
+        }
+        public static bool ShowZHO
+        {
+            get => _data.ShowZHO;
+            set => _data.ShowZHO = value;
         }
         public static bool MinimizeToTray
         {
