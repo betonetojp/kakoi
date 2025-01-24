@@ -30,7 +30,7 @@ namespace kakoi
         private List<string> _keywords = [];
         private bool _shouldShowBalloon = true;
         private bool _shouldOpenFile = false;
-        private string _fileName = "https://lumilumi.vercel.app/";
+        private string _fileName = "https://lumilumi.app/";
         private bool _muteMostr = false;
         private bool _reaction = false;
 
