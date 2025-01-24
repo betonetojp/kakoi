@@ -49,7 +49,7 @@ namespace kakoi
             public string ReplyColor { get; set; } = "#E6E6FA";
             public string RepostColor { get; set; } = "#F0F8FF";
             public string CWColor { get; set; } = "#C0C0C0";
-            public string WebViewUrl { get; set; } = "https://lumilumi.vercel.app/";
+            public string WebViewUrl { get; set; } = "https://lumilumi.app/";
 
             public Point PostBarLocation { get; set; }
             public Size PostBarSize { get; set; } = new Size(400, 120);

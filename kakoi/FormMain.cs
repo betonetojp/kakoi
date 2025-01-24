@@ -1070,7 +1070,7 @@ namespace kakoi
         {
             if (0 == _formSetting.textBoxNsec.TextLength)
             {
-                _formPostBar.textBoxPost.PlaceholderText = "Please set nokakoi key and password.";
+                _formPostBar.textBoxPost.PlaceholderText = "Please set nsec.";
                 return;
             }
             if (0 == _formPostBar.textBoxPost.TextLength)
