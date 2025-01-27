@@ -241,6 +241,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Gemini Test";
             FormClosing += FormAI_FormClosing;
+            KeyDown += FormAI_KeyDown;
             ((System.ComponentModel.ISupportInitialize)numericUpDownNumberOfPosts).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -250,9 +251,7 @@
 
         private Label label1;
         private TextBox textBoxApiKey;
-        private TextBox textBoxAnswer;
         private Button buttonSummarize;
-        private TextBox textBoxChat;
         private Button buttonChat;
         private CheckBox checkBoxInitialized;
         private NumericUpDown numericUpDown1;
@@ -265,5 +264,7 @@
         private LinkLabel linkLabelGetApiKey;
         private TextBox textBoxModel;
         private Label label5;
+        internal TextBox textBoxAnswer;
+        internal TextBox textBoxChat;
     }
 }

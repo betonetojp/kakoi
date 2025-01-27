@@ -11,7 +11,7 @@ namespace kakoi
         private const string ApiKeyTarget = "kakoi_ApiKey";
         private GenerativeModel? _model;
         private ChatSession? _chat;
-        private bool _isInitialized = false;
+        internal bool IsInitialized = false;
 
         public FormAI()
         {
@@ -27,7 +27,7 @@ namespace kakoi
 
         private async void ButtonSummarize_Click(object sender, EventArgs e)
         {
-            if (!_isInitialized)
+            if (!IsInitialized)
             {
                 if (MainForm != null)
                 {
@@ -54,11 +54,11 @@ namespace kakoi
                 var notesContent = MainForm.GetNotesContent();
                 InitializeModel(apiKey);
 
-                if (!_isInitialized)
+                if (!IsInitialized)
                 {
                     _chat = _model?.StartChat(new StartChatParams());
-                    _isInitialized = true;
-                    checkBoxInitialized.Checked = _isInitialized;
+                    IsInitialized = true;
+                    checkBoxInitialized.Checked = IsInitialized;
                     notesContent = textBoxPrompt.Text + textBoxPromptForEveryMessage.Text + notesContent;
                 }
 
@@ -87,7 +87,7 @@ namespace kakoi
             var apiKey = textBoxApiKey.Text;
             InitializeModel(apiKey);
 
-            if (!_isInitialized)
+            if (!IsInitialized)
             {
                 _chat = _model?.StartChat(new StartChatParams());
             }
@@ -123,8 +123,8 @@ namespace kakoi
             if (result == null)
             {
                 textBoxAnswer.Text = "電波が悪いみたいです。";
-                _isInitialized = false;
-                checkBoxInitialized.Checked = _isInitialized;
+                IsInitialized = false;
+                checkBoxInitialized.Checked = IsInitialized;
             }
             else
             {
@@ -185,7 +185,7 @@ namespace kakoi
 
         private void CheckBoxInitialized_CheckedChanged(object sender, EventArgs e)
         {
-            _isInitialized = checkBoxInitialized.Checked;
+            IsInitialized = checkBoxInitialized.Checked;
         }
 
         private void LinkLabelGetApiKey_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -201,8 +201,21 @@ namespace kakoi
 
         private void FormAI_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+            }
             SaveApiKey(textBoxApiKey.Text);
             SaveAISettings();
+            Hide();
+        }
+
+        private void FormAI_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F5)
+            {
+                Close();
+            }
         }
     }
 }

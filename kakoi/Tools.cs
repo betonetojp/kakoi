@@ -310,6 +310,7 @@ namespace kakoi
                 new Client { Name = "nokakoi", ColorCode = "#F280BE" },
                 new Client { Name = "nokako", ColorCode = "#F280BE" },
                 new Client { Name = "kakoi", ColorCode = "#F280BE" },
+                new Client { Name = "kako", ColorCode = "#F280BE" },
                 new Client { Name = "lumilumi", ColorCode = "#EEBB92" },
                 new Client { Name = "Nos Haiku", ColorCode = "#9681C1" },
                 new Client { Name = "noStrudel", ColorCode = "#C7DB8D" },
