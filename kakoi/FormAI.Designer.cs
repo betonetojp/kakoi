@@ -236,6 +236,7 @@
             Controls.Add(textBoxApiKey);
             Controls.Add(label1);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
             MinimumSize = new Size(800, 400);
             Name = "FormAI";
             StartPosition = FormStartPosition.CenterScreen;
