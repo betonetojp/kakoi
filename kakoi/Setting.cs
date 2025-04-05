@@ -22,7 +22,8 @@ namespace kakoi
             public bool TopMost { get; set; } = false;
             public double Opacity { get; set; } = 1.00;
             public bool GetAvatar { get; set; } = true;
-            public bool ShowOnlyFollowees { get; set; } = false;
+            public bool ShowFollowees { get; set; } = true;
+            public bool ShowNonFollowees { get; set; } = false;
             public bool ShowRepostsOnlyFromFollowees { get; set; } = false;
             public bool ShowOnlySelectedLanguage { get; set; } = false;
             public bool ShowDAN { get; set; } = false;
@@ -92,10 +93,15 @@ namespace kakoi
             get => _data.GetAvatar;
             set => _data.GetAvatar = value;
         }
-        public static bool ShowOnlyFollowees
+        public static bool ShowFollowees
         {
-            get => _data.ShowOnlyFollowees;
-            set => _data.ShowOnlyFollowees = value;
+            get => _data.ShowFollowees;
+            set => _data.ShowFollowees = value;
+        }
+        public static bool ShowNonFollowees
+        {
+            get => _data.ShowNonFollowees;
+            set => _data.ShowNonFollowees = value;
         }
         public static bool ShowRepostsOnlyFromFollowees
         {

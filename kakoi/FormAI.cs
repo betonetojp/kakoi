@@ -1,5 +1,4 @@
-﻿using GenerativeAI.Methods;
-using GenerativeAI.Models;
+﻿using GenerativeAI;
 using GenerativeAI.Types;
 using System.Diagnostics;
 
@@ -21,7 +20,7 @@ namespace kakoi
             // textBoxModelが空の時はデフォルト値を設定
             if (string.IsNullOrEmpty(textBoxModel.Text))
             {
-                textBoxModel.Text = "gemini-1.5-flash";
+                textBoxModel.Text = "gemini-2.0-flash";
             }
         }
 
@@ -56,7 +55,7 @@ namespace kakoi
 
                 if (!IsInitialized)
                 {
-                    _chat = _model?.StartChat(new StartChatParams());
+                    _chat = _model?.StartChat();
                     IsInitialized = true;
                     checkBoxInitialized.Checked = IsInitialized;
                     notesContent = textBoxPrompt.Text + textBoxPromptForEveryMessage.Text + notesContent;
@@ -64,10 +63,10 @@ namespace kakoi
 
                 if (_chat != null)
                 {
-                    string? result = null;
+                    var result = new GenerateContentResponse();
                     try
                     {
-                        result = await _chat.SendMessageAsync(textBoxPromptForEveryMessage.Text + notesContent);
+                        result = await _chat.GenerateContentAsync(textBoxPromptForEveryMessage.Text + notesContent);
                     }
                     catch (Exception ex)
                     {
@@ -75,7 +74,7 @@ namespace kakoi
                     }
                     finally
                     {
-                        DisplayResult(result);
+                        DisplayResult(result.Text());
                     }
                 }
             }
@@ -89,15 +88,15 @@ namespace kakoi
 
             if (!IsInitialized)
             {
-                _chat = _model?.StartChat(new StartChatParams());
+                _chat = _model?.StartChat();
             }
 
             if (_chat != null)
             {
-                string? result = null;
+                var result = new GenerateContentResponse();
                 try
                 {
-                    result = await _chat.SendMessageAsync(message);
+                    result = await _chat.GenerateContentAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -105,7 +104,7 @@ namespace kakoi
                 }
                 finally
                 {
-                    DisplayResult(result);
+                    DisplayResult(result.Text());
                     textBoxChat.Text = string.Empty;
                     textBoxChat.Focus();
                 }
@@ -115,7 +114,7 @@ namespace kakoi
         private void InitializeModel(string apiKey)
         {
             _model ??= new GenerativeModel(apiKey, textBoxModel.Text);
-            //_model ??= new GenerativeModel(apiKey, "gemini-2.0-flash-exp");
+            _model.UseGoogleSearch = true;
         }
 
         private void DisplayResult(string? result)

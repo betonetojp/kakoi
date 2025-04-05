@@ -39,7 +39,7 @@
             linkLabelIcons8 = new LinkLabel();
             checkBoxShowOnlySelectedLanguage = new CheckBox();
             labelOpacity = new Label();
-            checkBoxShowOnlyFollowees = new CheckBox();
+            checkBoxShowFollowees = new CheckBox();
             label3 = new Label();
             checkBoxSendDSSTP = new CheckBox();
             linkLabelVersion = new LinkLabel();
@@ -64,6 +64,7 @@
             checkBoxSPA = new CheckBox();
             checkBoxSWE = new CheckBox();
             checkBoxZHO = new CheckBox();
+            checkBoxNonFollowees = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)trackBarOpacity).BeginInit();
             SuspendLayout();
             // 
@@ -78,7 +79,7 @@
             textBoxNsec.PasswordChar = '*';
             textBoxNsec.PlaceholderText = "nsec1...";
             textBoxNsec.Size = new Size(221, 23);
-            textBoxNsec.TabIndex = 21;
+            textBoxNsec.TabIndex = 22;
             textBoxNsec.Leave += TextBoxNsec_Leave;
             // 
             // trackBarOpacity
@@ -121,7 +122,7 @@
             checkBoxAddClient.Location = new Point(97, 270);
             checkBoxAddClient.Name = "checkBoxAddClient";
             checkBoxAddClient.Size = new Size(100, 19);
-            checkBoxAddClient.TabIndex = 25;
+            checkBoxAddClient.TabIndex = 26;
             checkBoxAddClient.Text = "Add client tag";
             checkBoxAddClient.UseVisualStyleBackColor = true;
             // 
@@ -143,7 +144,7 @@
             linkLabelIcons8.Location = new Point(271, 297);
             linkLabelIcons8.Name = "linkLabelIcons8";
             linkLabelIcons8.Size = new Size(41, 15);
-            linkLabelIcons8.TabIndex = 28;
+            linkLabelIcons8.TabIndex = 29;
             linkLabelIcons8.TabStop = true;
             linkLabelIcons8.Text = "Icons8";
             linkLabelIcons8.LinkClicked += LinkLabelIcons8_LinkClicked;
@@ -155,7 +156,7 @@
             checkBoxShowOnlySelectedLanguage.Location = new Point(12, 112);
             checkBoxShowOnlySelectedLanguage.Name = "checkBoxShowOnlySelectedLanguage";
             checkBoxShowOnlySelectedLanguage.Size = new Size(286, 19);
-            checkBoxShowOnlySelectedLanguage.TabIndex = 6;
+            checkBoxShowOnlySelectedLanguage.TabIndex = 7;
             checkBoxShowOnlySelectedLanguage.Text = "Show only selected language from non-followees";
             checkBoxShowOnlySelectedLanguage.UseVisualStyleBackColor = true;
             // 
@@ -168,15 +169,15 @@
             labelOpacity.Text = "100%";
             labelOpacity.TextAlign = ContentAlignment.TopRight;
             // 
-            // checkBoxShowOnlyFollowees
+            // checkBoxShowFollowees
             // 
-            checkBoxShowOnlyFollowees.AutoSize = true;
-            checkBoxShowOnlyFollowees.Location = new Point(12, 62);
-            checkBoxShowOnlyFollowees.Name = "checkBoxShowOnlyFollowees";
-            checkBoxShowOnlyFollowees.Size = new Size(134, 19);
-            checkBoxShowOnlyFollowees.TabIndex = 4;
-            checkBoxShowOnlyFollowees.Text = "Show only followees";
-            checkBoxShowOnlyFollowees.UseVisualStyleBackColor = true;
+            checkBoxShowFollowees.AutoSize = true;
+            checkBoxShowFollowees.Location = new Point(12, 62);
+            checkBoxShowFollowees.Name = "checkBoxShowFollowees";
+            checkBoxShowFollowees.Size = new Size(108, 19);
+            checkBoxShowFollowees.TabIndex = 4;
+            checkBoxShowFollowees.Text = "Show followees";
+            checkBoxShowFollowees.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -194,7 +195,7 @@
             checkBoxSendDSSTP.Location = new Point(203, 270);
             checkBoxSendDSSTP.Name = "checkBoxSendDSSTP";
             checkBoxSendDSSTP.Size = new Size(88, 19);
-            checkBoxSendDSSTP.TabIndex = 26;
+            checkBoxSendDSSTP.TabIndex = 27;
             checkBoxSendDSSTP.Text = "Send DSSTP";
             checkBoxSendDSSTP.UseVisualStyleBackColor = true;
             // 
@@ -205,9 +206,9 @@
             linkLabelVersion.Location = new Point(12, 297);
             linkLabelVersion.Name = "linkLabelVersion";
             linkLabelVersion.Size = new Size(37, 15);
-            linkLabelVersion.TabIndex = 27;
+            linkLabelVersion.TabIndex = 28;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.7.0";
+            linkLabelVersion.Text = "v0.7.1";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
@@ -218,7 +219,7 @@
             checkBoxGetAvatar.Location = new Point(12, 270);
             checkBoxGetAvatar.Name = "checkBoxGetAvatar";
             checkBoxGetAvatar.Size = new Size(79, 19);
-            checkBoxGetAvatar.TabIndex = 24;
+            checkBoxGetAvatar.TabIndex = 25;
             checkBoxGetAvatar.Text = "Get avatar";
             checkBoxGetAvatar.UseVisualStyleBackColor = true;
             // 
@@ -229,7 +230,7 @@
             checkBoxShowRepostsOnlyFromFollowees.Location = new Point(12, 87);
             checkBoxShowRepostsOnlyFromFollowees.Name = "checkBoxShowRepostsOnlyFromFollowees";
             checkBoxShowRepostsOnlyFromFollowees.Size = new Size(203, 19);
-            checkBoxShowRepostsOnlyFromFollowees.TabIndex = 5;
+            checkBoxShowRepostsOnlyFromFollowees.TabIndex = 6;
             checkBoxShowRepostsOnlyFromFollowees.Text = "Show reposts only from followees";
             checkBoxShowRepostsOnlyFromFollowees.UseVisualStyleBackColor = true;
             // 
@@ -261,7 +262,7 @@
             textBoxNpub.PlaceholderText = "npub1...";
             textBoxNpub.ReadOnly = true;
             textBoxNpub.Size = new Size(250, 23);
-            textBoxNpub.TabIndex = 23;
+            textBoxNpub.TabIndex = 24;
             // 
             // buttonLogOut
             // 
@@ -270,7 +271,7 @@
             buttonLogOut.Location = new Point(309, 212);
             buttonLogOut.Name = "buttonLogOut";
             buttonLogOut.Size = new Size(23, 23);
-            buttonLogOut.TabIndex = 22;
+            buttonLogOut.TabIndex = 23;
             toolTipLogOut.SetToolTip(buttonLogOut, "Log out");
             buttonLogOut.UseVisualStyleBackColor = true;
             buttonLogOut.Click += ButtonLogOut_Click;
@@ -281,7 +282,7 @@
             checkBoxDAN.Location = new Point(32, 137);
             checkBoxDAN.Name = "checkBoxDAN";
             checkBoxDAN.Size = new Size(51, 19);
-            checkBoxDAN.TabIndex = 7;
+            checkBoxDAN.TabIndex = 8;
             checkBoxDAN.Text = "DAN";
             checkBoxDAN.UseVisualStyleBackColor = true;
             // 
@@ -291,7 +292,7 @@
             checkBoxDEU.Location = new Point(92, 137);
             checkBoxDEU.Name = "checkBoxDEU";
             checkBoxDEU.Size = new Size(48, 19);
-            checkBoxDEU.TabIndex = 8;
+            checkBoxDEU.TabIndex = 9;
             checkBoxDEU.Text = "DEU";
             checkBoxDEU.UseVisualStyleBackColor = true;
             // 
@@ -301,7 +302,7 @@
             checkBoxENG.Location = new Point(152, 137);
             checkBoxENG.Name = "checkBoxENG";
             checkBoxENG.Size = new Size(49, 19);
-            checkBoxENG.TabIndex = 9;
+            checkBoxENG.TabIndex = 10;
             checkBoxENG.Text = "ENG";
             checkBoxENG.UseVisualStyleBackColor = true;
             // 
@@ -311,7 +312,7 @@
             checkBoxFRA.Location = new Point(212, 137);
             checkBoxFRA.Name = "checkBoxFRA";
             checkBoxFRA.Size = new Size(47, 19);
-            checkBoxFRA.TabIndex = 10;
+            checkBoxFRA.TabIndex = 11;
             checkBoxFRA.Text = "FRA";
             checkBoxFRA.UseVisualStyleBackColor = true;
             // 
@@ -321,7 +322,7 @@
             checkBoxITA.Location = new Point(272, 137);
             checkBoxITA.Name = "checkBoxITA";
             checkBoxITA.Size = new Size(43, 19);
-            checkBoxITA.TabIndex = 11;
+            checkBoxITA.TabIndex = 12;
             checkBoxITA.Text = "ITA";
             checkBoxITA.UseVisualStyleBackColor = true;
             // 
@@ -331,7 +332,7 @@
             checkBoxJPN.Location = new Point(32, 162);
             checkBoxJPN.Name = "checkBoxJPN";
             checkBoxJPN.Size = new Size(46, 19);
-            checkBoxJPN.TabIndex = 12;
+            checkBoxJPN.TabIndex = 13;
             checkBoxJPN.Text = "JPN";
             checkBoxJPN.UseVisualStyleBackColor = true;
             // 
@@ -341,7 +342,7 @@
             checkBoxKOR.Location = new Point(92, 162);
             checkBoxKOR.Name = "checkBoxKOR";
             checkBoxKOR.Size = new Size(49, 19);
-            checkBoxKOR.TabIndex = 13;
+            checkBoxKOR.TabIndex = 14;
             checkBoxKOR.Text = "KOR";
             checkBoxKOR.UseVisualStyleBackColor = true;
             // 
@@ -351,7 +352,7 @@
             checkBoxNLD.Location = new Point(152, 162);
             checkBoxNLD.Name = "checkBoxNLD";
             checkBoxNLD.Size = new Size(49, 19);
-            checkBoxNLD.TabIndex = 14;
+            checkBoxNLD.TabIndex = 15;
             checkBoxNLD.Text = "NLD";
             checkBoxNLD.UseVisualStyleBackColor = true;
             // 
@@ -361,7 +362,7 @@
             checkBoxNOR.Location = new Point(212, 162);
             checkBoxNOR.Name = "checkBoxNOR";
             checkBoxNOR.Size = new Size(51, 19);
-            checkBoxNOR.TabIndex = 15;
+            checkBoxNOR.TabIndex = 16;
             checkBoxNOR.Text = "NOR";
             checkBoxNOR.UseVisualStyleBackColor = true;
             // 
@@ -371,7 +372,7 @@
             checkBoxPOR.Location = new Point(272, 162);
             checkBoxPOR.Name = "checkBoxPOR";
             checkBoxPOR.Size = new Size(49, 19);
-            checkBoxPOR.TabIndex = 16;
+            checkBoxPOR.TabIndex = 17;
             checkBoxPOR.Text = "POR";
             checkBoxPOR.UseVisualStyleBackColor = true;
             // 
@@ -381,7 +382,7 @@
             checkBoxRUS.Location = new Point(32, 187);
             checkBoxRUS.Name = "checkBoxRUS";
             checkBoxRUS.Size = new Size(47, 19);
-            checkBoxRUS.TabIndex = 17;
+            checkBoxRUS.TabIndex = 18;
             checkBoxRUS.Text = "RUS";
             checkBoxRUS.UseVisualStyleBackColor = true;
             // 
@@ -391,7 +392,7 @@
             checkBoxSPA.Location = new Point(92, 187);
             checkBoxSPA.Name = "checkBoxSPA";
             checkBoxSPA.Size = new Size(47, 19);
-            checkBoxSPA.TabIndex = 18;
+            checkBoxSPA.TabIndex = 19;
             checkBoxSPA.Text = "SPA";
             checkBoxSPA.UseVisualStyleBackColor = true;
             // 
@@ -401,7 +402,7 @@
             checkBoxSWE.Location = new Point(152, 187);
             checkBoxSWE.Name = "checkBoxSWE";
             checkBoxSWE.Size = new Size(49, 19);
-            checkBoxSWE.TabIndex = 19;
+            checkBoxSWE.TabIndex = 20;
             checkBoxSWE.Text = "SWE";
             checkBoxSWE.UseVisualStyleBackColor = true;
             // 
@@ -411,9 +412,19 @@
             checkBoxZHO.Location = new Point(212, 187);
             checkBoxZHO.Name = "checkBoxZHO";
             checkBoxZHO.Size = new Size(51, 19);
-            checkBoxZHO.TabIndex = 20;
+            checkBoxZHO.TabIndex = 21;
             checkBoxZHO.Text = "ZHO";
             checkBoxZHO.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxNonFollowees
+            // 
+            checkBoxNonFollowees.AutoSize = true;
+            checkBoxNonFollowees.Location = new Point(126, 62);
+            checkBoxNonFollowees.Name = "checkBoxNonFollowees";
+            checkBoxNonFollowees.Size = new Size(134, 19);
+            checkBoxNonFollowees.TabIndex = 5;
+            checkBoxNonFollowees.Text = "Show non-followees";
+            checkBoxNonFollowees.UseVisualStyleBackColor = true;
             // 
             // FormSetting
             // 
@@ -442,7 +453,8 @@
             Controls.Add(linkLabelVersion);
             Controls.Add(checkBoxSendDSSTP);
             Controls.Add(label3);
-            Controls.Add(checkBoxShowOnlyFollowees);
+            Controls.Add(checkBoxNonFollowees);
+            Controls.Add(checkBoxShowFollowees);
             Controls.Add(labelOpacity);
             Controls.Add(checkBoxShowRepostsOnlyFromFollowees);
             Controls.Add(checkBoxShowOnlySelectedLanguage);
@@ -482,7 +494,7 @@
         private LinkLabel linkLabelIcons8;
         internal CheckBox checkBoxShowOnlySelectedLanguage;
         private Label labelOpacity;
-        internal CheckBox checkBoxShowOnlyFollowees;
+        internal CheckBox checkBoxShowFollowees;
         private Label label3;
         internal CheckBox checkBoxSendDSSTP;
         private LinkLabel linkLabelVersion;
@@ -507,5 +519,6 @@
         internal CheckBox checkBoxSPA;
         internal CheckBox checkBoxSWE;
         internal CheckBox checkBoxZHO;
+        internal CheckBox checkBoxNonFollowees;
     }
 }

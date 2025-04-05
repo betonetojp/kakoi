@@ -60,7 +60,8 @@ namespace kakoi
         internal KeywordNotifier Notifier = new();
 
         private bool _getAvatar;
-        private bool _showOnlyFollowees;
+        private bool _showFollowees;
+        private bool _showNonFollowees;
         private bool _minimizeToTray;
         private bool _showOnlySelectedLanguage;
         private bool _showDAN;
@@ -174,7 +175,8 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _getAvatar = Setting.GetAvatar;
-            _showOnlyFollowees = Setting.ShowOnlyFollowees;
+            _showFollowees = Setting.ShowFollowees;
+            _showNonFollowees = Setting.ShowNonFollowees;
             _minimizeToTray = Setting.MinimizeToTray;
             notifyIcon.Visible = _minimizeToTray;
             _showOnlySelectedLanguage = Setting.ShowOnlySelectedLanguage;
@@ -566,6 +568,35 @@ namespace kakoi
                             // URLを含む場合、(url)に置き換え
                             editedContent = Regex.Replace(editedContent, UrlPattern, "［🔗］", RegexOptions.IgnoreCase);
 
+                            // ミュートしている時は表示しない
+                            if (IsMuted(nostrEvent.PublicKey))
+                            {
+                                continue;
+                            }
+                            // pタグにミュートされている公開鍵が含まれている時は表示しない
+                            if (nostrEvent.GetTaggedPublicKeys().Any(pk => IsMuted(pk)))
+                            {
+                                continue;
+                            }
+
+                            // 表示するフラグ
+                            bool show = false;
+                            // フォロイー表示オンでフォロイーの時は表示する
+                            if (_showFollowees && _followeesHexs.Contains(nostrEvent.PublicKey))
+                            {
+                                show = true;
+                            }
+                            // ノンフォロイー表示オンでフォロイーじゃない時は表示する
+                            else if (_showNonFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
+                            {
+                                show = true;
+                            }
+                            // 表示しない時はスキップ
+                            if (!show)
+                            {
+                                continue;
+                            }
+
                             // 言語判定
                             var lang = DetermineLanguage(editedContent);
                             // 言語限定表示オンでフォロイーじゃない時は表示しない
@@ -593,21 +624,6 @@ namespace kakoi
                                     // 表示しない
                                     continue;
                                 }
-                            }
-                            // フォロイー限定表示オンでフォロイーじゃない時は表示しない
-                            if (_showOnlyFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
-                            {
-                                continue;
-                            }
-                            // ミュートしている時は表示しない
-                            if (IsMuted(nostrEvent.PublicKey))
-                            {
-                                continue;
-                            }
-                            // pタグにミュートされている公開鍵が含まれている時は表示しない
-                            if (nostrEvent.GetTaggedPublicKeys().Any(pk => IsMuted(pk)))
-                            {
-                                continue;
                             }
 
                             // プロフィール購読
@@ -739,17 +755,30 @@ namespace kakoi
                         #region リポスト
                         if (6 == nostrEvent.Kind || 16 == nostrEvent.Kind)
                         {
-                            // フォロイー限定表示オンでフォロイーじゃない時は表示しない
-                            if ((_showOnlyFollowees || _showRepostsOnlyFromFollowees) && !_followeesHexs.Contains(nostrEvent.PublicKey))
-                            {
-                                continue;
-                            }
                             // ミュートしている時は表示しない
                             if (IsMuted(nostrEvent.PublicKey))
                             {
                                 continue;
                             }
 
+                            // 表示するフラグ
+                            bool show = false;
+                            // フォロイー表示オンでフォロイーの時は表示する
+                            if (_showFollowees && _followeesHexs.Contains(nostrEvent.PublicKey))
+                            {
+                                show = true;
+                            }
+                            // ノンフォロイー表示オンでフォロイーじゃない時は表示する
+                            else if (_showNonFollowees && !_showRepostsOnlyFromFollowees && !_followeesHexs.Contains(nostrEvent.PublicKey))
+                            {
+                                show = true;
+                            }
+                            // 表示しない時はスキップ
+                            if (!show)
+                            {
+                                continue;
+                            }
+                            
                             // プロフィール購読
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
@@ -1273,7 +1302,8 @@ namespace kakoi
             _formSetting.checkBoxTopMost.Checked = TopMost;
             _formSetting.trackBarOpacity.Value = (int)(Opacity * 100);
             _formSetting.checkBoxGetAvatar.Checked = _getAvatar;
-            _formSetting.checkBoxShowOnlyFollowees.Checked = _showOnlyFollowees;
+            _formSetting.checkBoxShowFollowees.Checked = _showFollowees;
+            _formSetting.checkBoxNonFollowees.Checked = _showNonFollowees;
             _formSetting.checkBoxMinimizeToTray.Checked = _minimizeToTray;
             _formSetting.checkBoxShowOnlySelectedLanguage.Checked = _showOnlySelectedLanguage;
             _formSetting.checkBoxDAN.Checked = _showDAN;
@@ -1305,7 +1335,8 @@ namespace kakoi
             _tempOpacity = Opacity;
             _formPostBar.Opacity = Opacity;
             _getAvatar = _formSetting.checkBoxGetAvatar.Checked;
-            _showOnlyFollowees = _formSetting.checkBoxShowOnlyFollowees.Checked;
+            _showFollowees = _formSetting.checkBoxShowFollowees.Checked;
+            _showNonFollowees = _formSetting.checkBoxNonFollowees.Checked;
             _minimizeToTray = _formSetting.checkBoxMinimizeToTray.Checked;
             notifyIcon.Visible = _minimizeToTray;
             _showOnlySelectedLanguage = _formSetting.checkBoxShowOnlySelectedLanguage.Checked;
@@ -1383,7 +1414,8 @@ namespace kakoi
             Setting.TopMost = TopMost;
             Setting.Opacity = Opacity;
             Setting.GetAvatar = _getAvatar;
-            Setting.ShowOnlyFollowees = _showOnlyFollowees;
+            Setting.ShowFollowees = _showFollowees;
+            Setting.ShowNonFollowees = _showNonFollowees;
             Setting.MinimizeToTray = _minimizeToTray;
             Setting.ShowOnlySelectedLanguage = _showOnlySelectedLanguage;
             Setting.ShowDAN = _showDAN;
