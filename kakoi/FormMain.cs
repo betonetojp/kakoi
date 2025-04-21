@@ -669,7 +669,7 @@ namespace kakoi
                                     {
                                         mentionedUserNames = $"{mentionedUserNames} {GetUserName(u)}";
                                     }
-                                    editedContent = $"［💬{mentionedUserNames}］\r\n{editedContent}";
+                                    editedContent = $"［💬{mentionedUserNames}］\n{editedContent}";
                                 }
                             }
 
