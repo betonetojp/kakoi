@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace kakoi
 {
@@ -114,6 +115,10 @@ namespace kakoi
         internal DateTimeOffset LastCreatedAt = DateTimeOffset.MinValue;
         // 最新のcreated_at
         internal DateTimeOffset LatestCreatedAt = DateTimeOffset.MinValue;
+
+        private Excel.Application excelApp;
+        private Excel.Workbook workbook;
+        private Excel.Worksheet worksheet;
         #endregion
 
         #region コンストラクタ
@@ -227,6 +232,13 @@ namespace kakoi
             {
                 Directory.CreateDirectory(_avatarPath);
             }
+
+            // Excelの初期化
+            InitializeExcel();
+
+            // DataGridViewのイベント登録
+            dataGridViewNotes.CellValueChanged += DataGridViewNotes_CellValueChanged;
+            dataGridViewNotes.RowsAdded += DataGridViewNotes_RowsAdded;
         }
         #endregion
 
@@ -2231,6 +2243,119 @@ namespace kakoi
             }
 
             return notes.ToString();
+        }
+
+        private void InitializeExcel()
+        {
+            excelApp = new Excel.Application();
+            workbook = excelApp.Workbooks.Add();
+            worksheet = (Excel.Worksheet)workbook.Sheets[1];
+            excelApp.Visible = true; // Excelを表示
+
+            // time列の書式をhh:mm:ssに設定
+            worksheet.Columns[1].NumberFormat = "hh:mm:ss";
+        }
+
+        private int GetExcelColumnIndex(string columnName)
+        {
+            return columnName switch
+            {
+                "time" => 1,
+                "name" => 2,
+                "note" => 3,
+                _ => throw new ArgumentException("Invalid column name")
+            };
+        }
+
+
+        private void DataGridViewNotes_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                string columnName = dataGridViewNotes.Columns[e.ColumnIndex].Name;
+                if (columnName == "time" || columnName == "name" || columnName == "note")
+                {
+                    // 既存のデータを下にシフト
+                    worksheet.Rows[1].Insert();
+
+                    // 新しいデータを1行目に挿入
+                    var value = dataGridViewNotes.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+
+                    if (columnName == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                    {
+                        worksheet.Cells[1, GetExcelColumnIndex(columnName)] = timeValue; // DateTime型で渡す
+                    }
+                    else
+                    {
+                        worksheet.Cells[1, GetExcelColumnIndex(columnName)] = value?.ToString() ?? string.Empty;
+                    }
+                }
+            }
+        }
+
+        private void DataGridViewNotes_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++)
+            {
+                // 既存のデータを下にシフト
+                worksheet.Rows[1].Insert();
+
+                // time, name, note 列のデータを1行目に挿入
+                int excelColumnIndex = 1; // Excelの列インデックス（1から始まる）
+                foreach (DataGridViewColumn column in dataGridViewNotes.Columns)
+                {
+                    if (column.Name == "time" || column.Name == "name" || column.Name == "note")
+                    {
+                        var value = dataGridViewNotes.Rows[i].Cells[column.Index].Value;
+
+                        if (column.Name == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                        {
+                            worksheet.Cells[1, excelColumnIndex] = timeValue; // DateTime型で渡す
+                        }
+                        else
+                        {
+                            worksheet.Cells[1, excelColumnIndex] = value?.ToString() ?? string.Empty;
+                        }
+
+                        excelColumnIndex++;
+                    }
+                }
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            try
+            {
+                if (workbook != null)
+                {
+                    workbook.Close(false);
+                    Marshal.ReleaseComObject(workbook);
+                }
+
+                if (excelApp != null)
+                {
+                    excelApp.Quit();
+                    Marshal.ReleaseComObject(excelApp);
+                }
+
+                if (worksheet != null)
+                {
+                    Marshal.ReleaseComObject(worksheet);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error during Excel cleanup: {ex.Message}");
+            }
+            finally
+            {
+                workbook = null;
+                excelApp = null;
+                worksheet = null;
+            }
         }
     }
 }
