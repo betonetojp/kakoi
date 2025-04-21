@@ -119,6 +119,7 @@ namespace kakoi
         private Excel.Application excelApp;
         private Excel.Workbook workbook;
         private Excel.Worksheet worksheet;
+        private bool _isExcelAvailable = true;
         #endregion
 
         #region コンストラクタ
@@ -2277,27 +2278,35 @@ namespace kakoi
 
         private void InitializeExcel()
         {
-            excelApp = new Excel.Application();
-            workbook = excelApp.Workbooks.Add();
-            worksheet = (Excel.Worksheet)workbook.Sheets[1];
-            excelApp.Visible = true; // Excelを表示
+            try
+            {
+                excelApp = new Excel.Application();
+                workbook = excelApp.Workbooks.Add();
+                worksheet = (Excel.Worksheet)workbook.Sheets[1];
+                excelApp.Visible = true; // Excelを表示
 
-            // time列の書式をhh:mm:ssに設定
-            worksheet.Columns[1].NumberFormat = "hh:mm:ss";
+                // time列の書式をhh:mm:ssに設定
+                worksheet.Columns[1].NumberFormat = "hh:mm:ss";
 
-            // name列の幅を10に設定
-            worksheet.Columns[2].ColumnWidth = 10;
+                // name列の幅を10に設定
+                worksheet.Columns[2].ColumnWidth = 10;
 
-            // note列の幅を60に設定
-            worksheet.Columns[3].ColumnWidth = 60;
+                // note列の幅を60に設定
+                worksheet.Columns[3].ColumnWidth = 60;
 
-            // note列を折り返して全体を表示する設定
-            worksheet.Columns[3].WrapText = true;
+                // note列を折り返して全体を表示する設定
+                worksheet.Columns[3].WrapText = true;
 
-            // time, name, note 列を上詰めに設定
-            worksheet.Columns[1].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
-            worksheet.Columns[2].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
-            worksheet.Columns[3].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+                // time, name, note 列を上詰めに設定
+                worksheet.Columns[1].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+                worksheet.Columns[2].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+                worksheet.Columns[3].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Excelの初期化に失敗しました: {ex.Message}");
+                _isExcelAvailable = false; // フラグをオフにする
+            }
         }
 
         private int GetExcelColumnIndex(string columnName)
@@ -2314,24 +2323,34 @@ namespace kakoi
 
         private void DataGridViewNotes_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
+            if (!_isExcelAvailable) return; // フラグを確認
+
             if (e.RowIndex >= 0)
             {
                 string columnName = dataGridViewNotes.Columns[e.ColumnIndex].Name;
                 if (columnName == "time" || columnName == "name" || columnName == "note")
                 {
-                    // 既存のデータを下にシフト
-                    worksheet.Rows[1].Insert();
-
-                    // 新しいデータを1行目に挿入
-                    var value = dataGridViewNotes.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-
-                    if (columnName == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                    try
                     {
-                        worksheet.Cells[1, GetExcelColumnIndex(columnName)] = timeValue; // DateTime型で渡す
+                        // 既存のデータを下にシフト
+                        worksheet.Rows[1].Insert();
+
+                        // 新しいデータを1行目に挿入
+                        var value = dataGridViewNotes.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+
+                        if (columnName == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                        {
+                            worksheet.Cells[1, GetExcelColumnIndex(columnName)] = timeValue; // DateTime型で渡す
+                        }
+                        else
+                        {
+                            worksheet.Cells[1, GetExcelColumnIndex(columnName)] = value?.ToString() ?? string.Empty;
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        worksheet.Cells[1, GetExcelColumnIndex(columnName)] = value?.ToString() ?? string.Empty;
+                        Debug.WriteLine($"Excelへの書き込みに失敗しました: {ex.Message}");
+                        _isExcelAvailable = false; // フラグをオフにする
                     }
                 }
             }
@@ -2339,31 +2358,41 @@ namespace kakoi
 
         private void DataGridViewNotes_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
-            for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++)
+            if (!_isExcelAvailable) return; // フラグを確認
+
+            try
             {
-                // 既存のデータを下にシフト
-                worksheet.Rows[1].Insert();
-
-                // time, name, note 列のデータを1行目に挿入
-                int excelColumnIndex = 1; // Excelの列インデックス（1から始まる）
-                foreach (DataGridViewColumn column in dataGridViewNotes.Columns)
+                for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++)
                 {
-                    if (column.Name == "time" || column.Name == "name" || column.Name == "note")
+                    // 既存のデータを下にシフト
+                    worksheet.Rows[1].Insert();
+
+                    // time, name, note 列のデータを1行目に挿入
+                    int excelColumnIndex = 1; // Excelの列インデックス（1から始まる）
+                    foreach (DataGridViewColumn column in dataGridViewNotes.Columns)
                     {
-                        var value = dataGridViewNotes.Rows[i].Cells[column.Index].Value;
-
-                        if (column.Name == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                        if (column.Name == "time" || column.Name == "name" || column.Name == "note")
                         {
-                            worksheet.Cells[1, excelColumnIndex] = timeValue; // DateTime型で渡す
-                        }
-                        else
-                        {
-                            worksheet.Cells[1, excelColumnIndex] = value?.ToString() ?? string.Empty;
-                        }
+                            var value = dataGridViewNotes.Rows[i].Cells[column.Index].Value;
 
-                        excelColumnIndex++;
+                            if (column.Name == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
+                            {
+                                worksheet.Cells[1, excelColumnIndex] = timeValue; // DateTime型で渡す
+                            }
+                            else
+                            {
+                                worksheet.Cells[1, excelColumnIndex] = value?.ToString() ?? string.Empty;
+                            }
+
+                            excelColumnIndex++;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Excelへの行追加に失敗しました: {ex.Message}");
+                _isExcelAvailable = false; // フラグをオフにする
             }
         }
     }
