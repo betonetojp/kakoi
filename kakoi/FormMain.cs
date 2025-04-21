@@ -791,7 +791,7 @@ namespace kakoi
                             {
                                 continue;
                             }
-                            
+
                             // プロフィール購読
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
 
@@ -1623,7 +1623,6 @@ namespace kakoi
         #endregion
 
         #region 閉じる
-        // 閉じる
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (_minimizeToTray && !_reallyClose && e.CloseReason == CloseReason.UserClosing)
@@ -1669,35 +1668,7 @@ namespace kakoi
                 Setting.Save(_configPath);
                 Tools.SaveUsers(Users);
 
-                try
-                {
-                    if (workbook != null)
-                    {
-                        workbook.Close(false);
-                        Marshal.ReleaseComObject(workbook);
-                    }
-
-                    if (excelApp != null)
-                    {
-                        excelApp.Quit();
-                        Marshal.ReleaseComObject(excelApp);
-                    }
-
-                    if (worksheet != null)
-                    {
-                        Marshal.ReleaseComObject(worksheet);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error during Excel cleanup: {ex.Message}");
-                }
-                finally
-                {
-                    workbook = null;
-                    excelApp = null;
-                    worksheet = null;
-                }
+                CleanupExcelResources(); // Excelリソースを解放
 
                 _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
                 Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
@@ -2306,8 +2277,70 @@ namespace kakoi
             {
                 Debug.WriteLine($"Excelの初期化に失敗しました: {ex.Message}");
                 _isExcelAvailable = false; // フラグをオフにする
+                CleanupExcelResources(); // リソースを解放
             }
         }
+
+        private void CleanupExcelResources()
+        {
+            try
+            {
+                // Worksheetの解放
+                if (worksheet != null && Marshal.IsComObject(worksheet))
+                {
+                    try
+                    {
+                        Marshal.ReleaseComObject(worksheet);
+                    }
+                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
+                    {
+                        Debug.WriteLine("Worksheetオブジェクトは既に切断されています。");
+                    }
+                    worksheet = null;
+                }
+
+                // Workbookの解放
+                if (workbook != null && Marshal.IsComObject(workbook))
+                {
+                    try
+                    {
+                        workbook.Close(false);
+                        Marshal.ReleaseComObject(workbook);
+                    }
+                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
+                    {
+                        Debug.WriteLine("Workbookオブジェクトは既に切断されています。");
+                    }
+                    workbook = null;
+                }
+
+                // Applicationの解放
+                if (excelApp != null && Marshal.IsComObject(excelApp))
+                {
+                    try
+                    {
+                        excelApp.Quit();
+                        Marshal.ReleaseComObject(excelApp);
+                    }
+                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
+                    {
+                        Debug.WriteLine("Excelアプリケーションは既に切断されています。");
+                    }
+                    excelApp = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Excelリソース解放中にエラーが発生しました: {ex.Message}");
+            }
+            finally
+            {
+                // ガベージコレクションを強制的に実行
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+
 
         private int GetExcelColumnIndex(string columnName)
         {
@@ -2351,6 +2384,7 @@ namespace kakoi
                     {
                         Debug.WriteLine($"Excelへの書き込みに失敗しました: {ex.Message}");
                         _isExcelAvailable = false; // フラグをオフにする
+                        CleanupExcelResources(); // リソースを解放
                     }
                 }
             }
@@ -2393,6 +2427,7 @@ namespace kakoi
             {
                 Debug.WriteLine($"Excelへの行追加に失敗しました: {ex.Message}");
                 _isExcelAvailable = false; // フラグをオフにする
+                CleanupExcelResources(); // リソースを解放
             }
         }
     }

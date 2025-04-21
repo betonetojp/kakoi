@@ -205,10 +205,10 @@
             linkLabelVersion.AutoSize = true;
             linkLabelVersion.Location = new Point(12, 297);
             linkLabelVersion.Name = "linkLabelVersion";
-            linkLabelVersion.Size = new Size(64, 15);
+            linkLabelVersion.Size = new Size(69, 15);
             linkLabelVersion.TabIndex = 28;
             linkLabelVersion.TabStop = true;
-            linkLabelVersion.Text = "v0.7.1excel";
+            linkLabelVersion.Text = "v0.7.2-excel";
             linkLabelVersion.LinkClicked += LinkLabelVersion_LinkClicked;
             // 
             // checkBoxGetAvatar
