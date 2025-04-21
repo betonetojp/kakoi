@@ -1668,6 +1668,36 @@ namespace kakoi
                 Setting.Save(_configPath);
                 Tools.SaveUsers(Users);
 
+                try
+                {
+                    if (workbook != null)
+                    {
+                        workbook.Close(false);
+                        Marshal.ReleaseComObject(workbook);
+                    }
+
+                    if (excelApp != null)
+                    {
+                        excelApp.Quit();
+                        Marshal.ReleaseComObject(excelApp);
+                    }
+
+                    if (worksheet != null)
+                    {
+                        Marshal.ReleaseComObject(worksheet);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error during Excel cleanup: {ex.Message}");
+                }
+                finally
+                {
+                    workbook = null;
+                    excelApp = null;
+                    worksheet = null;
+                }
+
                 _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
                 Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
             }
@@ -2254,6 +2284,20 @@ namespace kakoi
 
             // time列の書式をhh:mm:ssに設定
             worksheet.Columns[1].NumberFormat = "hh:mm:ss";
+
+            // name列の幅を10に設定
+            worksheet.Columns[2].ColumnWidth = 10;
+
+            // note列の幅を60に設定
+            worksheet.Columns[3].ColumnWidth = 60;
+
+            // note列を折り返して全体を表示する設定
+            worksheet.Columns[3].WrapText = true;
+
+            // time, name, note 列を上詰めに設定
+            worksheet.Columns[1].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+            worksheet.Columns[2].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
+            worksheet.Columns[3].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
         }
 
         private int GetExcelColumnIndex(string columnName)
@@ -2320,41 +2364,6 @@ namespace kakoi
                         excelColumnIndex++;
                     }
                 }
-            }
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            base.OnFormClosing(e);
-
-            try
-            {
-                if (workbook != null)
-                {
-                    workbook.Close(false);
-                    Marshal.ReleaseComObject(workbook);
-                }
-
-                if (excelApp != null)
-                {
-                    excelApp.Quit();
-                    Marshal.ReleaseComObject(excelApp);
-                }
-
-                if (worksheet != null)
-                {
-                    Marshal.ReleaseComObject(worksheet);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error during Excel cleanup: {ex.Message}");
-            }
-            finally
-            {
-                workbook = null;
-                excelApp = null;
-                worksheet = null;
             }
         }
     }
