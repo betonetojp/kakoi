@@ -114,7 +114,7 @@ namespace kakoi
         private void InitializeModel(string apiKey)
         {
             _model ??= new GenerativeModel(apiKey, textBoxModel.Text);
-            _model.UseGoogleSearch = true;
+            //_model.UseGoogleSearch = true;
         }
 
         private void DisplayResult(string? result)

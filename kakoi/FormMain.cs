@@ -1,4 +1,4 @@
-﻿using kakoi.Properties;
+using kakoi.Properties;
 using NNostr.Client;
 using NNostr.Client.Protocols;
 using NTextCat;
@@ -1169,7 +1169,41 @@ namespace kakoi
                 }
                 else
                 {
-                    tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty] });
+                    string? rootId = null;
+                    if (rootEvent.Tags != null)
+                    {
+                        foreach (var tag in rootEvent.Tags)
+                        {
+                            if (tag.TagIdentifier == "e" && tag.Data != null && tag.Data.Count > 2 && tag.Data[2] == "root")
+                            {
+                                rootId = tag.Data[0];
+                                break;
+                            }
+                        }
+
+                        if (rootId == null)
+                        {
+                            foreach (var tag in rootEvent.Tags)
+                            {
+                                if (tag.TagIdentifier == "e" && tag.Data != null && tag.Data.Count > 0 && !string.IsNullOrEmpty(tag.Data[0]))
+                                {
+                                    rootId = tag.Data[0];
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (rootId != null)
+                    {
+                        tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootId, string.Empty, "root"] });
+                        tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty, "reply"] });
+                    }
+                    else
+                    {
+                        tags.Add(new NostrEventTag() { TagIdentifier = "e", Data = [rootEvent.Id, string.Empty, "root"] });
+                    }
+
                     tags.Add(new NostrEventTag() { TagIdentifier = "p", Data = [rootEvent.PublicKey] });
                 }
             }
@@ -1178,7 +1212,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://relay.nostr.band"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
                 });
             }
             // create a new event
@@ -1230,7 +1264,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://relay.nostr.band"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
                 });
             }
             // create a new event
@@ -1278,7 +1312,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://relay.nostr.band"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
                 });
             }
             // create a new event
