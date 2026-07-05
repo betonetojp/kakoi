@@ -1212,7 +1212,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me/"]
                 });
             }
             // create a new event
@@ -1264,7 +1264,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me/"]
                 });
             }
             // create a new event
@@ -1312,7 +1312,7 @@ namespace kakoi
                 tags.Add(new NostrEventTag()
                 {
                     TagIdentifier = "client",
-                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me"]
+                    Data = ["kakoi", "31990:21ac29561b5de90cdc21995fc0707525cd78c8a52d87721ab681d3d609d1e2df:1727621066968", "wss://yabu.me/"]
                 });
             }
             // create a new event

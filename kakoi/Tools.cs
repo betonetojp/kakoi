@@ -187,7 +187,6 @@ namespace kakoi
                 new Relay { Enabled = true, Url = "wss://relay-jp.nostr.wirednet.jp/" },
                 new Relay { Enabled = true, Url = "wss://nos.lol/" },
                 new Relay { Enabled = true, Url = "wss://relay.damus.io/" },
-                new Relay { Enabled = true, Url = "wss://relay.nostr.band/" },
                 ];
 
             // relays.jsonを読み込み
