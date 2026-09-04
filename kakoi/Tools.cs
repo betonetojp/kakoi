@@ -1,4 +1,4 @@
-﻿using CredentialManagement;
+using CredentialManagement;
 using NBitcoin.Secp256k1;
 using NNostr.Client;
 using NNostr.Client.JsonConverters;
@@ -94,12 +94,17 @@ namespace kakoi
             // users.jsonに保存
             try
             {
-                var jsonContent = JsonSerializer.Serialize(users, GetOption());
+                Dictionary<string, User?> snapshot;
+                lock (users)
+                {
+                    snapshot = new Dictionary<string, User?>(users);
+                }
+                var jsonContent = JsonSerializer.Serialize(snapshot, GetOption());
                 File.WriteAllText(_usersJsonPath, jsonContent);
             }
-            catch (JsonException e)
+            catch (Exception e)
             {
-                Debug.WriteLine(e.Message);
+                Debug.WriteLine($"SaveUsers エラー: {e.Message}");
             }
         }
 

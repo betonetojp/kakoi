@@ -24,7 +24,7 @@ namespace kakoi
         private const int WM_HOTKEY = 0x0312;
 
         private const string NostrPattern = @"nostr:(\w+)";
-        private const string ImagePattern = @"(https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|webp))";
+        private const string ImagePattern = @"(https?:\/\/[^\s]*\.(jpg|jpeg|png|gif|bmp|webp))";
         private const string UrlPattern = @"(https?:\/\/[^\s]+)";
 
         [DllImport("user32.dll")]
@@ -51,6 +51,10 @@ namespace kakoi
         /// フォロイー公開鍵のハッシュセット
         /// </summary>
         private readonly HashSet<string> _followeesHexs = [];
+        /// <summary>
+        /// プロフィール取得中の公開鍵ハッシュセット（重複取得防止）
+        /// </summary>
+        private readonly HashSet<string> _fetchingProfileHexs = [];
         /// <summary>
         /// 受信イベントのリレー追跡
         /// </summary>
@@ -147,7 +151,8 @@ namespace kakoi
             }
 
             // ボタンの画像をDPIに合わせて表示
-            float scale = CreateGraphics().DpiX / 96f;
+            using var graphics = CreateGraphics();
+            float scale = graphics.DpiX / 96f;
             int size = (int)(16 * scale);
             if (scale < 2.0f)
             {
@@ -253,20 +258,14 @@ namespace kakoi
         {
             try
             {
-                int connectCount;
+                int connectCount = await NostrAccess.ConnectAsync();
+
                 if (NostrAccess.Clients != null)
                 {
-                    connectCount = await NostrAccess.ConnectAsync();
-                }
-                else
-                {
-                    connectCount = await NostrAccess.ConnectAsync();
-
-                    if (NostrAccess.Clients != null)
-                    {
-                        NostrAccess.Clients.EventsReceived += OnClientOnUsersInfoEventsReceived;
-                        NostrAccess.Clients.EventsReceived += OnClientOnTimeLineEventsReceived;
-                    }
+                    NostrAccess.Clients.EventsReceived -= OnClientOnUsersInfoEventsReceived;
+                    NostrAccess.Clients.EventsReceived -= OnClientOnTimeLineEventsReceived;
+                    NostrAccess.Clients.EventsReceived += OnClientOnUsersInfoEventsReceived;
+                    NostrAccess.Clients.EventsReceived += OnClientOnTimeLineEventsReceived;
                 }
 
                 toolTipRelays.SetToolTip(labelRelays, string.Join("\n", NostrAccess.RelayStatusList));
@@ -375,25 +374,39 @@ namespace kakoi
                         var newUserData = Tools.JsonToUser(nostrEvent.Content, nostrEvent.CreatedAt, Notifier.Settings.MuteMostr);
                         if (newUserData != null)
                         {
-                            DateTimeOffset? cratedAt = DateTimeOffset.MinValue;
-                            if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
+                            bool shouldUpdateAvatar = false;
+                            string resolvedName = string.Empty;
+                            lock (Users)
                             {
-                                cratedAt = existingUserData?.CreatedAt;
+                                DateTimeOffset? createdAt = DateTimeOffset.MinValue;
+                                if (Users.TryGetValue(nostrEvent.PublicKey, out User? existingUserData))
+                                {
+                                    createdAt = existingUserData?.CreatedAt;
+                                    if (false == existingUserData?.Mute)
+                                    {
+                                        // 既にミュートオフのMostrアカウントのミュートを解除
+                                        newUserData.Mute = false;
+                                    }
+                                }
+                                if (createdAt == null || (createdAt < newUserData.CreatedAt))
+                                {
+                                    newUserData.LastActivity = DateTime.Now;
+                                    newUserData.PetName = existingUserData?.PetName;
+                                    // 辞書に追加（上書き）
+                                    Users[nostrEvent.PublicKey] = newUserData;
+                                    Debug.WriteLine($"createdAt updated {createdAt} -> {newUserData.CreatedAt}");
+                                    Debug.WriteLine($"プロフィール更新: {newUserData.DisplayName} @{newUserData.Name}");
+                                    shouldUpdateAvatar = true;
+                                }
                             }
-                            if (false == existingUserData?.Mute)
+
+                            if (shouldUpdateAvatar)
                             {
-                                // 既にミュートオフのMostrアカウントのミュートを解除
-                                newUserData.Mute = false;
-                            }
-                            if (cratedAt == null || (cratedAt < newUserData.CreatedAt))
-                            {
-                                newUserData.LastActivity = DateTime.Now;
-                                newUserData.PetName = existingUserData?.PetName;
-                                Tools.SaveUsers(Users);
-                                // 辞書に追加（上書き）
-                                Users[nostrEvent.PublicKey] = newUserData;
-                                Debug.WriteLine($"cratedAt updated {cratedAt} -> {newUserData.CreatedAt}");
-                                Debug.WriteLine($"プロフィール更新: {newUserData.DisplayName} @{newUserData.Name}");
+                                resolvedName = GetUserName(nostrEvent.PublicKey);
+                                if (dataGridViewNotes.IsHandleCreated)
+                                {
+                                    dataGridViewNotes.BeginInvoke(new Action(() => UpdateGridProfile(nostrEvent.PublicKey, resolvedName)));
+                                }
 
                                 if (_getAvatar && newUserData.Picture != null && newUserData.Picture.Length > 0)
                                 {
@@ -467,19 +480,27 @@ namespace kakoi
                             // ログイン済みで自分がしたリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
-                                // プロフィール購読
+                                // プロフィール購読（通常リレー＋インデクサリレー）
                                 await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                FetchProfileIfNeeded(nostrEvent.PublicKey);
 
-                                // ユーザー取得
-                                user = await GetUserAsync(nostrEvent.PublicKey);
-                                // ユーザーが見つからない時は表示しない
-                                if (user == null)
-                                {
-                                    continue;
-                                }
                                 // ユーザー表示名取得
                                 userName = GetUserName(nostrEvent.PublicKey);
-                                string likedName = GetUserName(nostrEvent.GetTaggedPublicKeys()[0]);
+                                if (userName == "???" && nostrEvent.PublicKey.Length >= 8)
+                                {
+                                    userName = nostrEvent.PublicKey[..8];
+                                }
+
+                                string likedPubkey = nostrEvent.GetTaggedPublicKeys().FirstOrDefault() ?? string.Empty;
+                                string likedName = GetUserName(likedPubkey);
+                                if (likedName == "???" && likedPubkey.Length >= 8)
+                                {
+                                    likedName = likedPubkey[..8];
+                                }
+                                if (!string.IsNullOrEmpty(likedPubkey))
+                                {
+                                    FetchProfileIfNeeded(likedPubkey);
+                                }
 
                                 headMark = "+";
 
@@ -501,24 +522,23 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
                                 // 行を装飾
+                                Users.TryGetValue(nostrEvent.PublicKey, out user);
                                 await EditRowAsync(nostrEvent, user, userName);
                             }
 
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
-                                // プロフィール購読
+                                // プロフィール購読（通常リレー＋インデクサリレー）
                                 await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                FetchProfileIfNeeded(nostrEvent.PublicKey);
 
-                                // ユーザー取得
-                                user = await GetUserAsync(nostrEvent.PublicKey);
-                                // ユーザーが見つからない時は表示しない
-                                if (user == null)
-                                {
-                                    continue;
-                                }
                                 // ユーザー表示名取得
                                 userName = GetUserName(nostrEvent.PublicKey);
+                                if (userName == "???" && nostrEvent.PublicKey.Length >= 8)
+                                {
+                                    userName = nostrEvent.PublicKey[..8];
+                                }
 
                                 headMark = "+";
 
@@ -540,6 +560,7 @@ namespace kakoi
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
                                 // 行を装飾
+                                Users.TryGetValue(nostrEvent.PublicKey, out user);
                                 await EditRowAsync(nostrEvent, user, userName);
 
                                 // SSPに送る
@@ -660,18 +681,16 @@ namespace kakoi
                                 }
                             }
 
-                            // プロフィール購読
+                            // プロフィール購読（通常リレー＋インデクサリレー）
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            FetchProfileIfNeeded(nostrEvent.PublicKey);
 
-                            // ユーザー取得
-                            user = await GetUserAsync(nostrEvent.PublicKey);
-                            // ユーザーが見つからない時は表示しない
-                            if (user == null)
-                            {
-                                continue;
-                            }
                             // ユーザー表示名取得
                             userName = GetUserName(nostrEvent.PublicKey);
+                            if (userName == "???" && nostrEvent.PublicKey.Length >= 8)
+                            {
+                                userName = nostrEvent.PublicKey[..8];
+                            }
 
                             bool isReply = false;
                             var e = nostrEvent.GetTaggedData("e");
@@ -689,7 +708,13 @@ namespace kakoi
                                     string mentionedUserNames = string.Empty;
                                     foreach (var u in p)
                                     {
-                                        mentionedUserNames = $"{mentionedUserNames} {GetUserName(u)}";
+                                        FetchProfileIfNeeded(u);
+                                        var pName = GetUserName(u);
+                                        if (pName == "???" && u.Length >= 8)
+                                        {
+                                            pName = u[..8];
+                                        }
+                                        mentionedUserNames = $"{mentionedUserNames} {pName}";
                                     }
                                     editedContent = $"［💬{mentionedUserNames}］\n{editedContent}";
                                 }
@@ -718,6 +743,7 @@ namespace kakoi
                             }
 
                             // 行を装飾
+                            Users.TryGetValue(nostrEvent.PublicKey, out user);
                             await EditRowAsync(nostrEvent, user, userName);
 
                             // SSPに送る
@@ -813,28 +839,31 @@ namespace kakoi
                                 continue;
                             }
 
-                            // プロフィール購読
+                            // プロフィール購読（通常リレー＋インデクサリレー）
                             await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            FetchProfileIfNeeded(nostrEvent.PublicKey);
 
                             // リポスト元公開鍵取得
                             string originalPublicKey = string.Empty;
                             if (nostrEvent.GetTaggedPublicKeys().Length != 0)
                             {
                                 originalPublicKey = nostrEvent.GetTaggedPublicKeys().Last();
+                                FetchProfileIfNeeded(originalPublicKey);
                             }
 
-                            // ユーザー取得
-                            user = await GetUserAsync(nostrEvent.PublicKey);
-                            // ユーザーが見つからない時は表示しない
-                            if (user == null)
-                            {
-                                continue;
-                            }
                             // ユーザー表示名取得
                             userName = GetUserName(nostrEvent.PublicKey);
+                            if (userName == "???" && nostrEvent.PublicKey.Length >= 8)
+                            {
+                                userName = nostrEvent.PublicKey[..8];
+                            }
 
                             // リポスト元ユーザー表示名取得
                             string originalUserName = GetUserName(originalPublicKey);
+                            if (originalUserName == "???" && originalPublicKey.Length >= 8)
+                            {
+                                originalUserName = originalPublicKey[..8];
+                            }
 
                             // グリッドに表示
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
@@ -853,6 +882,7 @@ namespace kakoi
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
 
                             // 行を装飾
+                            Users.TryGetValue(nostrEvent.PublicKey, out user);
                             await EditRowAsync(nostrEvent, user, userName);
 
                             Debug.WriteLine($"リポスト: {userName} が {originalUserName} をリポスト");
@@ -917,25 +947,113 @@ namespace kakoi
         }
         #endregion
 
-        #region ユーザー取得
-        private async Task<User?> GetUserAsync(string pubkey)
+        #region プロフィール取得（インデクサ連携）
+        private void FetchProfileIfNeeded(string pubkey)
         {
-            User? user = null;
-            int retryCount = 0;
-            while (retryCount < 10)
+            if (string.IsNullOrEmpty(pubkey)) return;
+
+            // 既に有効な表示名がある場合は再取得不要
+            if (Users.TryGetValue(pubkey, out var existingUser) && existingUser != null)
             {
-                Debug.WriteLine($"retryCount = {retryCount} {GetUserName(pubkey)}");
-                Users.TryGetValue(pubkey, out user);
-                // ユーザーが見つかった場合、ループを抜ける
-                if (user != null)
+                if (!string.IsNullOrEmpty(existingUser.DisplayName) || !string.IsNullOrEmpty(existingUser.Name))
                 {
-                    break;
+                    return;
                 }
-                // 一定時間待機してから再試行
-                await Task.Delay(100);
-                retryCount++;
             }
-            return user;
+
+            lock (_fetchingProfileHexs)
+            {
+                if (_fetchingProfileHexs.Contains(pubkey)) return;
+                _fetchingProfileHexs.Add(pubkey);
+            }
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var profileEvent = await NostrAccess.FetchProfileFromIndexerAsync(pubkey);
+                    if (profileEvent?.Content != null)
+                    {
+                        var newUserData = Tools.JsonToUser(profileEvent.Content, profileEvent.CreatedAt, Notifier.Settings.MuteMostr);
+                        if (newUserData != null)
+                        {
+                            string resolvedName = string.Empty;
+                            bool hasNewPicture = false;
+                            lock (Users)
+                            {
+                                DateTimeOffset? createdAt = DateTimeOffset.MinValue;
+                                if (Users.TryGetValue(pubkey, out User? existingUserData))
+                                {
+                                    createdAt = existingUserData?.CreatedAt;
+                                    newUserData.PetName = existingUserData?.PetName;
+                                    if (false == existingUserData?.Mute)
+                                    {
+                                        newUserData.Mute = false;
+                                    }
+                                }
+                                if (createdAt == null || (createdAt < newUserData.CreatedAt))
+                                {
+                                    newUserData.LastActivity = DateTime.Now;
+                                    Users[pubkey] = newUserData;
+                                    Debug.WriteLine($"[Indexer] プロフィール取得成功: {newUserData.DisplayName} @{newUserData.Name} ({pubkey[..8]})");
+                                    hasNewPicture = _getAvatar && !string.IsNullOrEmpty(newUserData.Picture);
+                                }
+                            }
+
+                            resolvedName = GetUserName(pubkey);
+
+                            // グリッド上の名前・ツールチップを更新
+                            if (dataGridViewNotes.IsHandleCreated)
+                            {
+                                dataGridViewNotes.BeginInvoke(new Action(() => UpdateGridProfile(pubkey, resolvedName)));
+                            }
+
+                            // アバター画像を取得・表示
+                            if (hasNewPicture)
+                            {
+                                await GetAvatarAsync(pubkey, newUserData.Picture!);
+                                await PutAvatarAsync(newUserData, pubkey);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[Indexer] プロフィール取得失敗: {ex.Message}");
+                }
+                finally
+                {
+                    lock (_fetchingProfileHexs)
+                    {
+                        _fetchingProfileHexs.Remove(pubkey);
+                    }
+                }
+            });
+        }
+
+        private void UpdateGridProfile(string pubkey, string name)
+        {
+            try
+            {
+                foreach (DataGridViewRow row in dataGridViewNotes.Rows)
+                {
+                    if (row.Cells["pubkey"]?.Value?.ToString() == pubkey)
+                    {
+                        var currentNameCell = row.Cells["name"]?.Value?.ToString();
+                        string prefix = "- ";
+                        if (!string.IsNullOrEmpty(currentNameCell) && currentNameCell.Length >= 2 && currentNameCell[1] == ' ')
+                        {
+                            prefix = currentNameCell[..2];
+                        }
+                        row.Cells["name"].Value = $"{prefix}{name}";
+                        row.Cells["avatar"].ToolTipText = name;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UpdateGridProfile エラー: {ex.Message}");
+            }
         }
         #endregion
 
@@ -1096,7 +1214,7 @@ namespace kakoi
 
         #region Stopボタン
         // Stopボタン
-        private void ButtonStop_Click(object sender, EventArgs e)
+        private async void ButtonStop_Click(object sender, EventArgs e)
         {
             if (NostrAccess.Clients == null)
             {
@@ -1108,10 +1226,12 @@ namespace kakoi
                 NostrAccess.CloseSubscriptions();
                 labelRelays.Text = "Close subscription.";
 
-                _ = NostrAccess.Clients.Disconnect();
+                await NostrAccess.Clients.Disconnect();
                 labelRelays.Text = "Disconnect.";
                 NostrAccess.Clients.Dispose();
                 NostrAccess.Clients = null;
+
+                Tools.SaveUsers(Users);
 
                 buttonStart.Enabled = true;
                 buttonStart.Focus();
@@ -1136,7 +1256,7 @@ namespace kakoi
                 _formPostBar.textBoxPost.PlaceholderText = "Please set nsec.";
                 return;
             }
-            if (0 == _formPostBar.textBoxPost.TextLength)
+            if (string.IsNullOrWhiteSpace(_formPostBar.textBoxPost.Text))
             {
                 _formPostBar.textBoxPost.PlaceholderText = "Cannot post empty.";
                 return;
@@ -1176,6 +1296,10 @@ namespace kakoi
         /// <returns></returns>
         private async Task PostAsync(NostrEvent? rootEvent = null, bool isQuote = false)
         {
+            if (string.IsNullOrWhiteSpace(_formPostBar.textBoxPost.Text))
+            {
+                return;
+            }
             if (NostrAccess.Clients == null)
             {
                 return;
@@ -1622,7 +1746,6 @@ namespace kakoi
                 userName = user.Name;
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
-                Tools.SaveUsers(Users);
             }
             return userName;
         }
@@ -1656,7 +1779,6 @@ namespace kakoi
                 }
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
-                Tools.SaveUsers(Users);
                 //Debug.WriteLine($"名前取得: {user.DisplayName} @{user.Name} 📛{user.PetName}");
             }
             return userName;

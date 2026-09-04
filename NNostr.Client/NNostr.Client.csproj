@@ -28,8 +28,8 @@
         <PackageReference Include="LinqKit.Core" Version="1.2.11" />
         <PackageReference Include="NBitcoin.Secp256k1" Version="4.0.1" />
         <PackageReference Include="System.Interactive.Async" Version="7.0.1" />
-        <PackageReference Include="System.Text.Json" Version="10.0.9" />
-        <PackageReference Include="System.Threading.Channels" Version="10.0.9" />
+        <PackageReference Include="System.Text.Json" Version="10.0.11" />
+        <PackageReference Include="System.Threading.Channels" Version="10.0.11" />
     </ItemGroup>
 
 </Project>

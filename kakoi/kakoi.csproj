@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Label="Globals" />
 
   <PropertyGroup>
 	  <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
-    <Version>$(VersionPrefix)0.8.0</Version>
+    <Version>$(VersionPrefix)0.9.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <UseWindowsForms>True</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -28,9 +28,6 @@
     <Compile Remove="NoEscapingJsonEncoder.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="readme.txt" />
-  </ItemGroup>
 
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Interop.Excel">
@@ -50,11 +47,11 @@
 
   <ItemGroup>
     <PackageReference Include="CredentialManagement" Version="1.0.2" />
-    <PackageReference Include="Google_GenerativeAI" Version="3.6.6" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4022.49" />
+    <PackageReference Include="Google_GenerativeAI" Version="3.6.7" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
     <PackageReference Include="NTextCat" Version="0.3.65" />
-    <PackageReference Include="SkiaSharp" Version="4.148.0" />
-    <PackageReference Include="Svg.Skia" Version="5.1.1" />
+    <PackageReference Include="SkiaSharp" Version="4.151.2" />
+    <PackageReference Include="Svg.Skia" Version="5.2.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,9 +86,6 @@
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="readme.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

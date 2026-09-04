@@ -1,4 +1,4 @@
-﻿using NNostr.Client;
+using NNostr.Client;
 using System.Diagnostics;
 using System.Net.WebSockets;
 
@@ -242,6 +242,136 @@ namespace kakoi
         }
         #endregion
 
+        #region インデクサリレーからのプロフィール取得
+        private static readonly Uri[] _indexerRelays = [
+            new Uri("wss://directory.yabu.me")
+        ];
+        private static CompositeNostrClient? _indexerClients;
+
+        private static async Task EnsureIndexerConnectedAsync(CancellationToken token = default)
+        {
+            if (_indexerClients == null)
+            {
+                _indexerClients = new CompositeNostrClient(_indexerRelays);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    await _indexerClients.Connect(cts.Token);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"インデクサ接続エラー: {ex.Message}");
+                }
+            }
+            else
+            {
+                var hasClosed = false;
+                foreach (var state in _indexerClients.States)
+                {
+                    if (WebSocketState.CloseReceived < state.Value)
+                    {
+                        hasClosed = true;
+                        break;
+                    }
+                }
+                if (hasClosed)
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    try
+                    {
+                        await _indexerClients.Connect(cts.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"インデクサ再接続エラー: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// インデクサリレーから最新プロフィールを取得する
+        /// </summary>
+        /// <param name="pubkey">取得対象の公開鍵Hex</param>
+        /// <param name="timeoutMs">タイムアウト(ms)</param>
+        /// <returns>最新のkind:0イベント</returns>
+        public static async Task<NostrEvent?> FetchProfileFromIndexerAsync(string pubkey, int timeoutMs = 3000)
+        {
+            if (string.IsNullOrEmpty(pubkey)) return null;
+
+            try
+            {
+                await EnsureIndexerConnectedAsync();
+                if (_indexerClients == null) return null;
+
+                var subId = Guid.NewGuid().ToString("N");
+                var tcs = new TaskCompletionSource<NostrEvent?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                NostrEvent? latestEvent = null;
+
+                void OnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+                {
+                    if (args.subscriptionId == subId)
+                    {
+                        foreach (var ev in args.events)
+                        {
+                            if (ev.Kind == 0 && ev.PublicKey == pubkey)
+                            {
+                                if (latestEvent == null || (ev.CreatedAt > latestEvent.CreatedAt))
+                                {
+                                    latestEvent = ev;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                void OnEoseReceived(object? sender, string subscriptionId)
+                {
+                    if (subscriptionId == subId)
+                    {
+                        tcs.TrySetResult(latestEvent);
+                    }
+                }
+
+                _indexerClients.EventsReceived += OnEventsReceived;
+                _indexerClients.EoseReceived += OnEoseReceived;
+
+                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
+                cts.Token.Register(() => tcs.TrySetResult(latestEvent));
+
+                try
+                {
+                    await _indexerClients.CreateSubscription(
+                        subId,
+                        [
+                            new NostrSubscriptionFilter
+                            {
+                                Kinds = [0],
+                                Authors = [pubkey],
+                                Limit = 1
+                            }
+                        ],
+                        cts.Token
+                    );
+
+                    var result = await tcs.Task;
+                    return result ?? latestEvent;
+                }
+                finally
+                {
+                    _indexerClients.EventsReceived -= OnEventsReceived;
+                    _indexerClients.EoseReceived -= OnEoseReceived;
+                    _ = _indexerClients.CloseSubscription(subId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FetchProfileFromIndexerAsync エラー: {ex.Message}");
+                return null;
+            }
+        }
+        #endregion
+
         #region 切断処理
         /// <summary>
         /// 切断処理
@@ -253,6 +383,12 @@ namespace kakoi
                 _ = _clients.Disconnect();
                 _clients.Dispose();
                 _clients = null;
+            }
+            if (_indexerClients != null)
+            {
+                _ = _indexerClients.Disconnect();
+                _indexerClients.Dispose();
+                _indexerClients = null;
             }
         }
         #endregion
