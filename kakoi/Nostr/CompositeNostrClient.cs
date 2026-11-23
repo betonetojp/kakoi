@@ -2,11 +2,12 @@ using System.Net.WebSockets;
 
 namespace NNostr.Client;
 
-public class CompositeNostrClient: INostrClient
+public class CompositeNostrClient : INostrClient
 {
     private readonly NostrClient[] _clients;
 
     public Dictionary<Uri, WebSocketState?> States => _clients.ToDictionary(c => c.Relay, c => c.State);
+
     public CompositeNostrClient(Uri[] relays, Action<WebSocket>? websocketConfigure = null)
     {
         _clients = relays.Select(r =>
@@ -18,10 +19,11 @@ public class CompositeNostrClient: INostrClient
             c.EventsReceived += (sender, events) => EventsReceived?.Invoke(sender, events);
             c.OkReceived += (sender, ok) => OkReceived?.Invoke(sender, ok);
             c.EoseReceived += (sender, message) => EoseReceived?.Invoke(sender, message);
-            c.StateChanged += (sender, state) => StateChanged?.Invoke(sender, (r, state));;
+            c.StateChanged += (sender, state) => StateChanged?.Invoke(sender, (r, state));
             return c;
         }).ToArray();
     }
+
     public Task Disconnect()
     {
         return Task.WhenAll(_clients.Select(c => c.Disconnect()));
@@ -32,18 +34,13 @@ public class CompositeNostrClient: INostrClient
         return Task.WhenAll(_clients.Select(c => c.Connect(token)));
     }
 
-    public IAsyncEnumerable<string> ListenForRawMessages()
-    {
-        return _clients.Select(c => c.ListenForRawMessages()).ToArray().Merge();
-    }
-
     public Task ListenForMessages()
     {
         return Task.WhenAll(_clients.Select(c => c.ListenForMessages()));
     }
 
     public Task PublishEvent(NostrEvent nostrEvent, CancellationToken token = default)
-    { 
+    {
         return Task.WhenAll(_clients.Select(c => c.PublishEvent(nostrEvent, token)));
     }
 
@@ -61,10 +58,10 @@ public class CompositeNostrClient: INostrClient
     {
         foreach (var client in _clients)
         {
-            client.Dispose();       
+            client.Dispose();
         }
     }
-    
+
     public Task ConnectAndWaitUntilConnected(CancellationToken connectionCancellationToken = default, CancellationToken lifetimeCancellationToken = default)
     {
         return Task.WhenAll(_clients.Select(c => c.ConnectAndWaitUntilConnected(connectionCancellationToken, lifetimeCancellationToken)));
@@ -76,5 +73,5 @@ public class CompositeNostrClient: INostrClient
     public event EventHandler<(string subscriptionId, NostrEvent[] events)>? EventsReceived;
     public event EventHandler<(string eventId, bool success, string messafe)>? OkReceived;
     public event EventHandler<string>? EoseReceived;
-    public event EventHandler<(Uri,WebSocketState?)>? StateChanged;
+    public event EventHandler<(Uri, WebSocketState?)>? StateChanged;
 }

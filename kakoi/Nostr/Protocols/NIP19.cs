@@ -1,6 +1,6 @@
 using System.Text;
-using LNURL;
 using NBitcoin.Secp256k1;
+using NNostr.Client.Crypto;
 
 namespace NNostr.Client.Protocols;
 
@@ -9,7 +9,7 @@ public static class NIP19
     public static ECXOnlyPubKey FromNIP19Npub(this string npub)
     {
         Bech32Engine.Decode(npub, out var hrp, out var data);
-        if (hrp != "npub")
+        if (hrp != "npub" || data == null)
             throw new ArgumentException("Invalid NIP19 npub");
         return NostrExtensions.ParsePubKey(data);
     }
@@ -23,7 +23,7 @@ public static class NIP19
     public static ECPrivKey FromNIP19Nsec(this string nsec)
     {
         Bech32Engine.Decode(nsec, out var hrp, out var data);
-        if (hrp != "nsec")
+        if (hrp != "nsec" || data == null)
             throw new ArgumentException("Invalid NIP19 nsec");
         return NostrExtensions.ParseKey(data);
     }
@@ -37,6 +37,8 @@ public static class NIP19
     public static NostrNote? FromNIP19Note(this string note)
     {
         Bech32Engine.Decode(note, out var hrp, out var data);
+        if (hrp == null || data == null)
+            return null;
         foreach (var noteParser in NoteParsers)
         {
             if (noteParser.TryParse(hrp, data, out var n))
@@ -46,13 +48,13 @@ public static class NIP19
         return null;
     }
 
-    private static BaseNostrNoteParser[] NoteParsers =
-    {
+    private static readonly BaseNostrNoteParser[] NoteParsers =
+    [
         new NostrProfileNoteParser(),
         new NostrEventNoteParser(),
         new NostrAddressNoteParser(),
         new NostrRelayNoteParser()
-    };
+    ];
 
     public interface NostrNote
     {
@@ -96,8 +98,8 @@ public static class NIP19
 
     public class NosteProfileNote : NostrNote
     {
-        public string PubKey { get; set; }
-        public string[] Relays { get; set; }
+        public string PubKey { get; set; } = string.Empty;
+        public string[] Relays { get; set; } = [];
         public string ToNIP19()
         {
             var tlvData = new List<(byte, byte[])>
@@ -113,12 +115,10 @@ public static class NIP19
     class NostrProfileNoteParser : BaseNostrNoteParser<NosteProfileNote>
     {
         protected override string Hrp => HRP;
-        
         public const string HRP = "nprofile";
-
-        
         public const byte PubKeyKey = 0x00;
         public const byte RelayKey = 0x01;
+
         public override NosteProfileNote? Parse(byte[] data)
         {
             var tlv = ParseTLV(data);
@@ -133,8 +133,8 @@ public static class NIP19
 
     public class NostrEventNote : NostrNote
     {
-        public string EventId { get; set; }
-        public string[] Relays { get; set; }
+        public string EventId { get; set; } = string.Empty;
+        public string[] Relays { get; set; } = [];
         public string ToNIP19()
         {
             var tlvData = new List<(byte, byte[])>
@@ -151,7 +151,6 @@ public static class NIP19
     {
         protected override string Hrp => HRP;
         public const string HRP = "nevent";
-        
         public const byte EventIdKey = 0x00;
         public const byte RelayKey = 0x01;
 
@@ -169,7 +168,7 @@ public static class NIP19
 
     public class NostrRelayNote : NostrNote
     {
-        public string Relay { get; set; }
+        public string Relay { get; set; } = string.Empty;
 
         public string ToNIP19()
         {
@@ -200,9 +199,9 @@ public static class NIP19
 
     public class NostrAddressNote : NostrNote
     {
-        public string Identifier { get; set; }
-        public string[] Relays { get; set; }
-        public string Author { get; set; }
+        public string Identifier { get; set; } = string.Empty;
+        public string[] Relays { get; set; } = [];
+        public string Author { get; set; } = string.Empty;
         public uint Kind { get; set; }
         public string ToNIP19()
         {
@@ -211,7 +210,6 @@ public static class NIP19
                 (NostrAddressNoteParser.IdentifierKey, Convert.FromHexString(Identifier)),
                 (NostrAddressNoteParser.AuthorKey, Convert.FromHexString(Author)),
                 (NostrAddressNoteParser.KindKey, BitConverter.GetBytes(Kind).Reverse().ToArray()),
-                
             };
             tlvData.AddRange(Relays.Select(relay => (NostrAddressNoteParser.RelayKey, Encoding.ASCII.GetBytes(relay))));
             var tlv = BuildTLV(tlvData);
@@ -223,11 +221,11 @@ public static class NIP19
     {
         public const string HRP = "naddr";
         protected override string Hrp => HRP;
-public const byte IdentifierKey = 0x00;
+        public const byte IdentifierKey = 0x00;
         public const byte RelayKey = 0x01;
         public const byte AuthorKey = 0x02;
         public const byte KindKey = 0x03;
-        
+
         public override NostrAddressNote? Parse(byte[] data)
         {
             var tlv = ParseTLV(data);
@@ -243,8 +241,6 @@ public const byte IdentifierKey = 0x00;
         }
     }
 
-    
-
     private static List<KeyValuePair<byte, byte[]>> ParseTLV(byte[] tlvData)
     {
         var result = new List<KeyValuePair<byte, byte[]>>();
@@ -254,7 +250,6 @@ public const byte IdentifierKey = 0x00;
             var tag = tlvData[pos++];
             int length = tlvData[pos++];
 
-            // handle extended length encoding
             if ((length & 0x80) != 0)
             {
                 int lengthBytes = length & 0x7F;
@@ -273,7 +268,7 @@ public const byte IdentifierKey = 0x00;
 
         return result;
     }
-    
+
     private static byte[] BuildTLV(List<(byte, byte[])> tlvList)
     {
         var result = new List<byte>();
@@ -284,7 +279,6 @@ public const byte IdentifierKey = 0x00;
             var value = item.Item2;
             var length = value.Length;
 
-            // handle extended length encoding
             var lengthBytes = length > 127 ? (byte)Math.Ceiling(length / 256.0) : (byte)0;
             if (lengthBytes > 0)
             {

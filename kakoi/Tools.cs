@@ -1,4 +1,3 @@
-using CredentialManagement;
 using NBitcoin.Secp256k1;
 using NNostr.Client;
 using NNostr.Client.JsonConverters;
@@ -56,21 +55,12 @@ namespace kakoi
         public string? ColorCode { get; set; }
     }
 
-    public class AISettings
-    {
-        public int NumberOfPosts { get; set; }
-        public string Model { get; set; } = string.Empty;
-        public string Prompt { get; set; } = string.Empty;
-        public string PromptForEveryMessage { get; set; } = string.Empty;
-    }
-
     public static class Tools
     {
         private static readonly string _usersJsonPath = Path.Combine(Application.StartupPath, "users.json");
         private static readonly string _relaysJsonPath = Path.Combine(Application.StartupPath, "relays.json");
         private static readonly string _emojisJsonPath = Path.Combine(Application.StartupPath, "emojis.json");
         private static readonly string _clientsJsonPath = Path.Combine(Application.StartupPath, "clients.json");
-        private static readonly string _aiJsonPath = Path.Combine(Application.StartupPath, "AI.json");
 
         private static JsonSerializerOptions GetOption()
         {
@@ -343,68 +333,6 @@ namespace kakoi
         }
         #endregion
 
-        #region AI
-        public static void SaveAISettings(AISettings settings)
-        {
-            try
-            {
-                var jsonContent = JsonSerializer.Serialize(settings, GetOption());
-                File.WriteAllText(_aiJsonPath, jsonContent);
-            }
-            catch (JsonException e)
-            {
-                Debug.WriteLine(e.Message);
-            }
-        }
-
-        public static AISettings LoadAISettings()
-        {
-            AISettings defaultSettings = new AISettings();
-            defaultSettings.NumberOfPosts = 1000;
-            defaultSettings.Model = "gemini-1.5-flash";
-            defaultSettings.Prompt =
-            "口調は「みたいですよ」「ですね」みたいな感じで発言してください。\r\n" +
-            "マークダウン記法は使わないでください。\r\n" +
-            "HTMLは使わないでください。\r\n" +
-            "！記号はなるべく使わないでください。\r\n" +
-            "ツイッターではないので、ツイートではなく投稿と表現してください。\r\n" +
-            "まず、「みなさんこんなことを」「あくまでもうわさですけど」「今の話題は」のどれかに続けて" +
-            "【タイムライン】の要約を5件以内で箇条書きで紹介してください。\r\n" +
-            "-箇条書きには『・』を使用してください。\r\n" +
-            "最後に、「印象的なのは」「目を惹いたのは」「興味深いのは」のどれかに続けて" +
-            "一番面白かった投稿に皮肉やユーモアを交えた感想を添えて紹介してください。\r\n" +
-            "-投稿者の名前も織り込んでください。\r\n" +
-            "投稿内の［💬 人名］は投稿者から［💬 人名］内の人名へのリプライを表しています。\r\n" +
-            "投稿内の［👤人名］は投稿者から［👤 人名］内の人名へのメンションを表しています。\r\n" +
-            "投稿内の［🗒️］は引用リポストを表しています。\r\n" +
-            "投稿内の［🖼️］は画像リンクを表しています。\r\n" +
-            "投稿内の［🔗］はURLリンクを表しています。\r\n" +
-            "【タイムライン】が与えられた時は、毎回このように要約してください。\r\n";
-            defaultSettings.PromptForEveryMessage =
-            "全体で140文字以内にしてください。\r\n" +
-            "【タイムライン】がない場合は新着投稿がない旨を伝えてください。\r\n" +
-            "以下、【タイムライン】\r\n\r\n";
-
-            // AI.jsonを読み込み
-            if (!File.Exists(_aiJsonPath))
-            {
-                SaveAISettings(defaultSettings);
-                return defaultSettings;
-            }
-            try
-            {
-                var jsonContent = File.ReadAllText(_aiJsonPath);
-                var settings = JsonSerializer.Deserialize<AISettings>(jsonContent);
-                return settings ?? new AISettings();
-            }
-            catch (JsonException e)
-            {
-                Debug.WriteLine(e.Message);
-                return new AISettings();
-            }
-        }
-        #endregion
-
         #region 色
         public static Color HexToColor(string hex)
         {
@@ -554,56 +482,26 @@ namespace kakoi
         }
         #endregion
 
-        #region 管理
+        #region Windows資格情報管理
         public static void SavePassword(string target, string username, string password)
         {
-            using var cred = new Credential();
-            cred.Target = target;
-            cred.Username = username;
-            cred.Password = EncryptPassword(password); // パスワードを暗号化
-            cred.Type = CredentialType.Generic;
-            cred.PersistanceType = PersistanceType.LocalComputer;
-            cred.Save();
+            var encrypted = EncryptPassword(password); // パスワードを暗号化
+            WindowsCredentialStore.Save(target, username, encrypted);
         }
 
         public static string LoadPassword(string target)
         {
-            using var cred = new Credential();
-            cred.Target = target;
-            cred.Load();
-            return DecryptPassword(cred.Password); // パスワードを復号化
+            var encrypted = WindowsCredentialStore.Load(target);
+            if (string.IsNullOrEmpty(encrypted))
+            {
+                return string.Empty;
+            }
+            return DecryptPassword(encrypted); // パスワードを復号化
         }
 
         public static void DeletePassword(string target)
         {
-            var cred = new Credential { Target = target };
-            cred.Delete();
-        }
-        #endregion
-
-        #region APIキー管理
-        public static void SaveApiKey(string target, string apiKey)
-        {
-            using var cred = new Credential();
-            cred.Target = target;
-            cred.Password = EncryptPassword(apiKey); // APIキーを暗号化
-            cred.Type = CredentialType.Generic;
-            cred.PersistanceType = PersistanceType.LocalComputer;
-            cred.Save();
-        }
-
-        public static string LoadApiKey(string target)
-        {
-            using var cred = new Credential();
-            cred.Target = target;
-            cred.Load();
-            return DecryptPassword(cred.Password); // APIキーを復号化
-        }
-
-        public static void DeleteApiKey(string target)
-        {
-            var cred = new Credential { Target = target };
-            cred.Delete();
+            WindowsCredentialStore.Delete(target);
         }
         #endregion
     }

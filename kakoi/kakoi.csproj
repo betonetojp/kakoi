@@ -5,7 +5,7 @@
   <PropertyGroup>
 	  <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows7.0</TargetFramework>
-    <Version>$(VersionPrefix)0.9.0</Version>
+    <Version>$(VersionPrefix)0.10.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <UseWindowsForms>True</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -24,12 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="NoEscapingJavaScriptEncoder.cs" />
-    <Compile Remove="NoEscapingJsonEncoder.cs" />
-  </ItemGroup>
-
-
-  <ItemGroup>
     <COMReference Include="Microsoft.Office.Interop.Excel">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>9</VersionMinor>
@@ -46,16 +40,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CredentialManagement" Version="1.0.2" />
-    <PackageReference Include="Google_GenerativeAI" Version="3.6.7" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4370.26" />
+    <PackageReference Include="NBitcoin.Secp256k1" Version="4.0.4" />
     <PackageReference Include="NTextCat" Version="0.3.65" />
-    <PackageReference Include="SkiaSharp" Version="4.151.2" />
-    <PackageReference Include="Svg.Skia" Version="5.2.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NNostr.Client\NNostr.Client.csproj" />
     <ProjectReference Include="..\SSTPLib\SSTPLib.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+  </PropertyGroup>
+
+  <!-- WinForms 専用プロジェクトのため、Microsoft.Web.WebView2 の WPF 用アセンブリ参照を評価段階で除外する -->
+  <ItemGroup>
+    <Reference Remove="@(Reference->WithMetadataValue('Filename', 'Microsoft.Web.WebView2.Wpf'))" />
+    <!-- RID 指定の発行時はルートに WebView2Loader.dll が配置されるため、重複する runtimes フォルダ出力を除外する -->
+    <Content Remove="@(Content->WithMetadataValue('Filename', 'WebView2Loader'))" Condition="'$(RuntimeIdentifier)' != ''" />
+  </ItemGroup>
+</Project>

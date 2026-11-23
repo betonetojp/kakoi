@@ -22,11 +22,10 @@ namespace NNostr.Client.JsonConverters
             {
                 return DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64());
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
-            
         }
 
         public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options)

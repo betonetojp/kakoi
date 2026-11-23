@@ -7,6 +7,11 @@ namespace NNostr.Client
 {
     public class NostrClient : INostrClient
     {
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            Encoder = NoEscapingJsonEncoder.NoEscaping
+        };
+
         protected WebSocket? WebSocket;
 
         public readonly Uri Relay;
@@ -17,10 +22,10 @@ namespace NNostr.Client
         public virtual WebSocketState? State => WebSocket?.State;
 
         private readonly Channel<string> _pendingIncomingMessages =
-            Channel.CreateUnbounded<string>(new() {SingleReader = true, SingleWriter = true});
+            Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
 
         private readonly Channel<string> _pendingOutgoingMessages =
-            Channel.CreateUnbounded<string>(new() {SingleReader = true});
+            Channel.CreateUnbounded<string>(new() { SingleReader = true });
 
         public NostrClient(Uri relay, Action<WebSocket>? websocketConfigure = null)
         {
@@ -29,7 +34,6 @@ namespace NNostr.Client
             _ = ProcessChannel(_pendingIncomingMessages, HandleIncomingMessage, _messageCts.Token);
             _ = ProcessChannel(_pendingOutgoingMessages, HandleOutgoingMessage, _messageCts.Token);
         }
-
 
         public virtual Task Disconnect()
         {
@@ -115,27 +119,27 @@ namespace NNostr.Client
             switch (json[0].GetString()?.ToLowerInvariant())
             {
                 case "event":
-                    var subscriptionId = json[1].GetString();
+                    var subscriptionId = json[1].GetString() ?? string.Empty;
                     var evt = json[2].Deserialize<NostrEvent>();
 
                     if (evt?.Verify() is true)
                     {
-                        EventsReceived?.Invoke(this, (subscriptionId, new[] {evt}));
+                        EventsReceived?.Invoke(this, (subscriptionId, [evt]));
                     }
 
                     break;
                 case "notice":
-                    var noticeMessage = json[1].GetString();
+                    var noticeMessage = json[1].GetString() ?? string.Empty;
                     NoticeReceived?.Invoke(this, noticeMessage);
                     break;
                 case "eose":
-                    subscriptionId = json[1].GetString();
+                    subscriptionId = json[1].GetString() ?? string.Empty;
                     EoseReceived?.Invoke(this, subscriptionId);
                     break;
                 case "ok":
-                    var eventId = json[1].GetString();
+                    var eventId = json[1].GetString() ?? string.Empty;
                     var success = json[2].GetBoolean();
-                    var msg = json.GetArrayLength() > 3 ? json[3].GetString() : String.Empty;
+                    var msg = json.GetArrayLength() > 3 ? (json[3].GetString() ?? string.Empty) : string.Empty;
                     OkReceived?.Invoke(this, (eventId, success, msg));
                     break;
             }
@@ -189,13 +193,13 @@ namespace NNostr.Client
 
         public async Task PublishEvent(NostrEvent nostrEvent, CancellationToken token = default)
         {
-            var payload = JsonSerializer.Serialize(new object[] {"EVENT", nostrEvent});
+            var payload = JsonSerializer.Serialize(new object[] { "EVENT", nostrEvent }, _jsonOptions);
             await _pendingOutgoingMessages.Writer.WriteAsync(payload, token);
         }
 
         public async Task CloseSubscription(string subscriptionId, CancellationToken token = default)
         {
-            var payload = JsonSerializer.Serialize(new[] {"CLOSE", subscriptionId});
+            var payload = JsonSerializer.Serialize(new[] { "CLOSE", subscriptionId });
 
             await _pendingOutgoingMessages.Writer.WriteAsync(payload, token);
         }
@@ -203,7 +207,7 @@ namespace NNostr.Client
         public async Task CreateSubscription(string subscriptionId, NostrSubscriptionFilter[] filters,
             CancellationToken token = default)
         {
-            var payload = JsonSerializer.Serialize(new object[] {"REQ", subscriptionId}.Concat(filters));
+            var payload = JsonSerializer.Serialize(new object[] { "REQ", subscriptionId }.Concat(filters));
 
             await _pendingOutgoingMessages.Writer.WriteAsync(payload, token);
         }
@@ -224,7 +228,6 @@ namespace NNostr.Client
             OkReceived = null;
             InvalidMessageReceived = null;
         }
-
 
         public async Task ConnectAndWaitUntilConnected(CancellationToken connectionCancellationToken = default,
             CancellationToken lifetimeCancellationToken = default)
@@ -266,13 +269,13 @@ namespace NNostr.Client
             {
                 r.Options.SetRequestHeader("origin", Relay.ToString());
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // ignored
             }
 
             _websocketConfigure?.Invoke(r);
-            await r.ConnectAsync(Relay, _cts.Token);
+            await r.ConnectAsync(Relay, _cts!.Token);
             return r;
         }
 
@@ -294,35 +297,11 @@ namespace NNostr.Client
         }
 
         public event EventHandler<WebSocketState?>? StateChanged;
-
-        /// <summary>
-        /// All messages received in their raw format from the relay will be sent to this event.
-        /// </summary>
         public event EventHandler<string>? MessageReceived;
-
-        /// <summary>
-        /// All messages that could not be parsed as JSON will be sent to this event.
-        /// </summary>
         public event EventHandler<string>? InvalidMessageReceived;
-
-        /// <summary>
-        /// All notices received from the relay will be sent to this event.
-        /// </summary>
         public event EventHandler<string>? NoticeReceived;
-
-        /// <summary>
-        /// All events received from the relay based on an existing subscription will be sent to this event.
-        /// </summary>
         public event EventHandler<(string subscriptionId, NostrEvent[] events)>? EventsReceived;
-
-        /// <summary>
-        /// All OK messages received from the relay will be sent to this event.
-        /// </summary>
         public event EventHandler<(string eventId, bool success, string messafe)>? OkReceived;
-
-        /// <summary>
-        /// All EOSE messages for every active subscription received from the relay will be sent to this event.
-        /// </summary>
         public event EventHandler<string>? EoseReceived;
 
         public async Task WaitUntilConnected(CancellationToken token = default)

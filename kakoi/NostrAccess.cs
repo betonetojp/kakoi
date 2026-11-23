@@ -242,40 +242,21 @@ namespace kakoi
         }
         #endregion
 
-        #region インデクサリレーからのプロフィール取得
+        #region インデクサリレー・通常リレーからの最新プロフィール取得
         private static readonly Uri[] _indexerRelays = [
             new Uri("wss://directory.yabu.me")
         ];
         private static CompositeNostrClient? _indexerClients;
+        private static readonly SemaphoreSlim _indexerConnectLock = new(1, 1);
 
         private static async Task EnsureIndexerConnectedAsync(CancellationToken token = default)
         {
-            if (_indexerClients == null)
+            await _indexerConnectLock.WaitAsync(token);
+            try
             {
-                _indexerClients = new CompositeNostrClient(_indexerRelays);
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                try
+                if (_indexerClients == null)
                 {
-                    await _indexerClients.Connect(cts.Token);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"インデクサ接続エラー: {ex.Message}");
-                }
-            }
-            else
-            {
-                var hasClosed = false;
-                foreach (var state in _indexerClients.States)
-                {
-                    if (WebSocketState.CloseReceived < state.Value)
-                    {
-                        hasClosed = true;
-                        break;
-                    }
-                }
-                if (hasClosed)
-                {
+                    _indexerClients = new CompositeNostrClient(_indexerRelays);
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     try
                     {
@@ -283,9 +264,130 @@ namespace kakoi
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"インデクサ再接続エラー: {ex.Message}");
+                        Debug.WriteLine($"インデクサ接続エラー: {ex.Message}");
                     }
                 }
+                else
+                {
+                    var hasClosed = false;
+                    foreach (var state in _indexerClients.States)
+                    {
+                        if (state.Value != WebSocketState.Open)
+                        {
+                            hasClosed = true;
+                            break;
+                        }
+                    }
+                    if (hasClosed)
+                    {
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        try
+                        {
+                            await _indexerClients.Connect(cts.Token);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"インデクサ再接続エラー: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _indexerConnectLock.Release();
+            }
+        }
+
+        private static async Task<NostrEvent?> FetchProfileFromClientAsync(CompositeNostrClient? client, string pubkey, int timeoutMs = 3000)
+        {
+            if (client == null || string.IsNullOrEmpty(pubkey)) return null;
+
+            int openRelays = client.States.Count(kv => kv.Value == WebSocketState.Open);
+            if (openRelays == 0) return null;
+
+            var subId = "p_" + Guid.NewGuid().ToString("N")[..12];
+            var tcs = new TaskCompletionSource<NostrEvent?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var sync = new object();
+            var eosedSenders = new HashSet<object>();
+            NostrEvent? latestEvent = null;
+
+            void OnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
+            {
+                if (args.subscriptionId != subId) return;
+                lock (sync)
+                {
+                    foreach (var ev in args.events)
+                    {
+                        if (ev.Kind == 0 && ev.PublicKey == pubkey)
+                        {
+                            if (latestEvent == null || (ev.CreatedAt > latestEvent.CreatedAt))
+                            {
+                                latestEvent = ev;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void OnEoseReceived(object? sender, string subscriptionId)
+            {
+                if (subscriptionId != subId) return;
+                lock (sync)
+                {
+                    eosedSenders.Add(sender ?? new object());
+                    if (eosedSenders.Count >= openRelays)
+                    {
+                        tcs.TrySetResult(latestEvent);
+                    }
+                }
+            }
+
+            client.EventsReceived += OnEventsReceived;
+            client.EoseReceived += OnEoseReceived;
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
+            using var reg = cts.Token.Register(() =>
+            {
+                lock (sync)
+                {
+                    tcs.TrySetResult(latestEvent);
+                }
+            });
+
+            try
+            {
+                await client.CreateSubscription(
+                    subId,
+                    [
+                        new NostrSubscriptionFilter
+                        {
+                            Kinds = [0],
+                            Authors = [pubkey],
+                            Limit = 1
+                        }
+                    ],
+                    cts.Token
+                );
+
+                var result = await tcs.Task;
+                lock (sync)
+                {
+                    return result ?? latestEvent;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"FetchProfileFromClientAsync エラー: {ex.Message}");
+                lock (sync)
+                {
+                    return latestEvent;
+                }
+            }
+            finally
+            {
+                client.EventsReceived -= OnEventsReceived;
+                client.EoseReceived -= OnEoseReceived;
+                _ = client.CloseSubscription(subId);
             }
         }
 
@@ -302,73 +404,36 @@ namespace kakoi
             try
             {
                 await EnsureIndexerConnectedAsync();
-                if (_indexerClients == null) return null;
-
-                var subId = Guid.NewGuid().ToString("N");
-                var tcs = new TaskCompletionSource<NostrEvent?>(TaskCreationOptions.RunContinuationsAsynchronously);
-                NostrEvent? latestEvent = null;
-
-                void OnEventsReceived(object? sender, (string subscriptionId, NostrEvent[] events) args)
-                {
-                    if (args.subscriptionId == subId)
-                    {
-                        foreach (var ev in args.events)
-                        {
-                            if (ev.Kind == 0 && ev.PublicKey == pubkey)
-                            {
-                                if (latestEvent == null || (ev.CreatedAt > latestEvent.CreatedAt))
-                                {
-                                    latestEvent = ev;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                void OnEoseReceived(object? sender, string subscriptionId)
-                {
-                    if (subscriptionId == subId)
-                    {
-                        tcs.TrySetResult(latestEvent);
-                    }
-                }
-
-                _indexerClients.EventsReceived += OnEventsReceived;
-                _indexerClients.EoseReceived += OnEoseReceived;
-
-                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(timeoutMs));
-                cts.Token.Register(() => tcs.TrySetResult(latestEvent));
-
-                try
-                {
-                    await _indexerClients.CreateSubscription(
-                        subId,
-                        [
-                            new NostrSubscriptionFilter
-                            {
-                                Kinds = [0],
-                                Authors = [pubkey],
-                                Limit = 1
-                            }
-                        ],
-                        cts.Token
-                    );
-
-                    var result = await tcs.Task;
-                    return result ?? latestEvent;
-                }
-                finally
-                {
-                    _indexerClients.EventsReceived -= OnEventsReceived;
-                    _indexerClients.EoseReceived -= OnEoseReceived;
-                    _ = _indexerClients.CloseSubscription(subId);
-                }
+                return await FetchProfileFromClientAsync(_indexerClients, pubkey, timeoutMs);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"FetchProfileFromIndexerAsync エラー: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 接続中の通常リレー群とインデクサリレー（directory.yabu.me）の両方に並列問い合わせし、
+        /// 最も新しい CreatedAt の kind:0 イベントを返す。
+        /// </summary>
+        public static async Task<NostrEvent?> FetchLatestProfileAsync(string pubkey, int timeoutMs = 3000)
+        {
+            if (string.IsNullOrEmpty(pubkey)) return null;
+
+            var relayTask = FetchProfileFromClientAsync(_clients, pubkey, timeoutMs);
+            var indexerTask = FetchProfileFromIndexerAsync(pubkey, timeoutMs);
+            var results = await Task.WhenAll(relayTask, indexerTask);
+
+            NostrEvent? newest = null;
+            foreach (var ev in results)
+            {
+                if (ev != null && (newest == null || ev.CreatedAt > newest.CreatedAt))
+                {
+                    newest = ev;
+                }
+            }
+            return newest;
         }
         #endregion
 

@@ -3,15 +3,11 @@ using NNostr.Client;
 using NNostr.Client.Protocols;
 using NTextCat;
 using NTextCat.Commons;
-using SkiaSharp;
 using SSTPLib;
-using Svg.Skia;
 using System.Configuration;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace kakoi
 {
@@ -42,7 +38,6 @@ namespace kakoi
         private FormWeb _formWeb = new();
         internal Point _formWebLocation = new();
         internal Size _formWebSize = new();
-        private FormAI _formAI = new();
 
         private string _nsec = string.Empty;
         private string _npubHex = string.Empty;
@@ -55,6 +50,25 @@ namespace kakoi
         /// プロフィール取得中の公開鍵ハッシュセット（重複取得防止）
         /// </summary>
         private readonly HashSet<string> _fetchingProfileHexs = [];
+        /// <summary>
+        /// プロフィール最終取得時刻キャッシュ
+        /// </summary>
+        private readonly Dictionary<string, DateTime> _profileLastFetchedAt = [];
+        private static readonly TimeSpan ProfileRefreshInterval = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan ProfileRetryCooldown = TimeSpan.FromMinutes(1);
+        private static readonly HttpClient _avatarHttpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
+        private static readonly Lazy<RankedLanguageIdentifier?> _languageIdentifier = new(() =>
+        {
+            try
+            {
+                return new RankedLanguageIdentifierFactory().Load("Core14.profile.xml");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Core14.profile.xml の読み込みに失敗しました: {ex.Message}");
+                return null;
+            }
+        });
         /// <summary>
         /// 受信イベントのリレー追跡
         /// </summary>
@@ -114,20 +128,13 @@ namespace kakoi
         private List<Emoji> _emojis = [];
         private List<Client> _clients = [];
         private readonly string _avatarPath = Path.Combine(Application.StartupPath, "avatar");
+        private readonly HashSet<string> _downloadingAvatars = [];
 
         private readonly ImeStatus _imeStatus = new();
         private bool _reallyClose = false;
         private static Mutex? _mutex;
 
-        // 前回の最新created_at
-        internal DateTimeOffset LastCreatedAt = DateTimeOffset.MinValue;
-        // 最新のcreated_at
-        internal DateTimeOffset LatestCreatedAt = DateTimeOffset.MinValue;
-
-        private Excel.Application excelApp;
-        private Excel.Workbook workbook;
-        private Excel.Worksheet worksheet;
-        private bool _isExcelAvailable = true;
+        private readonly ExcelBridge _excelBridge;
         #endregion
 
         #region コンストラクタ
@@ -235,7 +242,6 @@ namespace kakoi
             _formSetting.PostBarForm = _formPostBar;
             _formPostBar.MainForm = this;
             _formManiacs.MainForm = this;
-            _formAI.MainForm = this;
 
             // avatarフォルダを作成
             if (!Directory.Exists(_avatarPath))
@@ -243,12 +249,13 @@ namespace kakoi
                 Directory.CreateDirectory(_avatarPath);
             }
 
-            // Excelの初期化
-            InitializeExcel();
-
-            // DataGridViewのイベント登録
-            dataGridViewNotes.CellValueChanged += DataGridViewNotes_CellValueChanged;
-            dataGridViewNotes.RowsAdded += DataGridViewNotes_RowsAdded;
+            // Excel 連携ブリッジ（起動時はデフォルト OFF、F5 キーで起動/終了）
+            _excelBridge = new ExcelBridge(this)
+            {
+                OnPostRequested = async (text, replyTarget) => await PostAsync(text, replyTarget, false),
+                OnReactionRequested = async (id, pubkey, kind, emoji) => await ReactionAsync(id, pubkey, kind, emoji),
+                OnRepostRequested = async (id, pubkey, kind) => await RepostAsync(id, pubkey, kind)
+            };
         }
         #endregion
 
@@ -346,10 +353,13 @@ namespace kakoi
                                 // petnameをユーザー辞書に保存
                                 if (2 < tag.Data.Count)
                                 {
-                                    Users.TryGetValue(tag.Data[0], out User? user);
-                                    if (user != null)
+                                    lock (Users)
                                     {
-                                        user.PetName = tag.Data[2];
+                                        Users.TryGetValue(tag.Data[0], out User? user);
+                                        if (user != null)
+                                        {
+                                            user.PetName = tag.Data[2];
+                                        }
                                     }
                                 }
                             }
@@ -480,8 +490,7 @@ namespace kakoi
                             // ログイン済みで自分がしたリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.PublicKey == _npubHex)
                             {
-                                // プロフィール購読（通常リレー＋インデクサリレー）
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                // プロフィール取得（通常リレー＋インデクサリレー）
                                 FetchProfileIfNeeded(nostrEvent.PublicKey);
 
                                 // ユーザー表示名取得
@@ -505,32 +514,32 @@ namespace kakoi
                                 headMark = "+";
 
                                 // グリッドに表示
-                                //_noteEvents.AddFirst(nostrEvent);
                                 DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
+                                string selfReactionText = $"Sent {content} to {likedName}.";
                                 dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
                                 new Bitmap(1, 1),
                                 $"{headMark} {userName}",
-                                $"Sent {content} to {likedName}.",
+                                selfReactionText,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey,
                                 nostrEvent.Kind
                                 );
+                                _excelBridge.EnqueueNote(dto.ToLocalTime().DateTime, $"{headMark} {userName}", selfReactionText, nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
                                 // 行を装飾
-                                Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                lock (Users) { Users.TryGetValue(nostrEvent.PublicKey, out user); }
                                 await EditRowAsync(nostrEvent, user, userName);
                             }
 
                             // ログイン済みで自分へのリアクション
                             if (!_npubHex.IsNullOrEmpty() && nostrEvent.GetTaggedPublicKeys().Contains(_npubHex))
                             {
-                                // プロフィール購読（通常リレー＋インデクサリレー）
-                                await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                                // プロフィール取得（通常リレー＋インデクサリレー）
                                 FetchProfileIfNeeded(nostrEvent.PublicKey);
 
                                 // ユーザー表示名取得
@@ -543,7 +552,6 @@ namespace kakoi
                                 headMark = "+";
 
                                 // グリッドに表示
-                                //_noteEvents.AddFirst(nostrEvent);
                                 DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                                 dataGridViewNotes.Rows.Insert(
                                 0,
@@ -555,12 +563,13 @@ namespace kakoi
                                 nostrEvent.PublicKey,
                                 nostrEvent.Kind
                                 );
+                                _excelBridge.EnqueueNote(dto.ToLocalTime().DateTime, $"{headMark} {userName}", nostrEvent.Content ?? string.Empty, nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind);
 
                                 // 背景色をリアクションカラーに変更
                                 dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.ReactionColor);
 
                                 // 行を装飾
-                                Users.TryGetValue(nostrEvent.PublicKey, out user);
+                                lock (Users) { Users.TryGetValue(nostrEvent.PublicKey, out user); }
                                 await EditRowAsync(nostrEvent, user, userName);
 
                                 // SSPに送る
@@ -584,7 +593,7 @@ namespace kakoi
                                         { "Reference7", nostrEvent.PublicKey.ConvertToNpub() }, // npub1...
                                         { "Script", $"{speaker}リアクション {userName}\\n{content}\\e" }
                                     };
-                                    string sstpmsg = _SSTPMethod + "\r\n" + String.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + kvp.Value.Replace("\n", "\\n"))) + "\r\n\r\n";
+                                    string sstpmsg = _SSTPMethod + "\r\n" + string.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + SanitizeSstpValue(kvp.Value))) + "\r\n\r\n";
                                     string r = _ds.GetSSTPResponse(_ghostName, sstpmsg);
                                     //Debug.WriteLine(r);
                                 }
@@ -681,8 +690,7 @@ namespace kakoi
                                 }
                             }
 
-                            // プロフィール購読（通常リレー＋インデクサリレー）
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            // プロフィール取得（通常リレー＋インデクサリレー）
                             FetchProfileIfNeeded(nostrEvent.PublicKey);
 
                             // ユーザー表示名取得
@@ -721,20 +729,17 @@ namespace kakoi
                             }
 
                             // グリッドに表示
-                            //_noteEvents.AddFirst(nostrEvent);
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
                             dataGridViewNotes.Rows.Insert(
                                 0,
                                 dto.ToLocalTime(),
                                 new Bitmap(1, 1),
                                 $"{headMark} {userName}",
-                                //nostrEvent.Content,
                                 editedContent,
                                 nostrEvent.Id,
                                 nostrEvent.PublicKey,
                                 nostrEvent.Kind
                                 );
-                            //dataGridViewNotes.Sort(dataGridViewNotes.Columns["time"], ListSortDirection.Descending);
 
                             // リプライの時は背景色変更
                             if (isReply)
@@ -743,8 +748,15 @@ namespace kakoi
                             }
 
                             // 行を装飾
-                            Users.TryGetValue(nostrEvent.PublicKey, out user);
+                            lock (Users) { Users.TryGetValue(nostrEvent.PublicKey, out user); }
                             await EditRowAsync(nostrEvent, user, userName);
+                            _excelBridge.EnqueueNote(
+                                dto.ToLocalTime().DateTime,
+                                $"{headMark} {userName}",
+                                dataGridViewNotes.Rows[0].Cells["note"].Value?.ToString() ?? editedContent,
+                                nostrEvent.Id,
+                                nostrEvent.PublicKey,
+                                nostrEvent.Kind);
 
                             // SSPに送る
                             if (_sendDSSTP && _ds != null)
@@ -769,7 +781,7 @@ namespace kakoi
                                     { "Reference7", nostrEvent.PublicKey.ConvertToNpub() }, // npub1...
                                     { "Script", $"{speaker}{userName}\\n{editedContent}\\e" }
                                 };
-                                string sstpmsg = _SSTPMethod + "\r\n" + String.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + kvp.Value.Replace("\n", "\\n"))) + "\r\n\r\n";
+                                string sstpmsg = _SSTPMethod + "\r\n" + string.Join("\r\n", SSTPHeader.Select(kvp => kvp.Key + ": " + SanitizeSstpValue(kvp.Value))) + "\r\n\r\n";
                                 string r = _ds.GetSSTPResponse(_ghostName, sstpmsg);
                                 //Debug.WriteLine(r);
                             }
@@ -839,8 +851,7 @@ namespace kakoi
                                 continue;
                             }
 
-                            // プロフィール購読（通常リレー＋インデクサリレー）
-                            await NostrAccess.SubscribeProfilesAsync([nostrEvent.PublicKey]);
+                            // プロフィール取得（通常リレー＋インデクサリレー）
                             FetchProfileIfNeeded(nostrEvent.PublicKey);
 
                             // リポスト元公開鍵取得
@@ -867,22 +878,24 @@ namespace kakoi
 
                             // グリッドに表示
                             DateTimeOffset dto = nostrEvent.CreatedAt ?? DateTimeOffset.Now;
+                            string repostText = $"reposted {originalUserName}'s post.［k:{nostrEvent.Kind}］";
                             dataGridViewNotes.Rows.Insert(
                             0,
                             dto.ToLocalTime(),
                             new Bitmap(1, 1),
                             $"{headMark} {userName}",
-                            $"reposted {originalUserName}'s post.［k:{nostrEvent.Kind}］",
+                            repostText,
                             nostrEvent.Id,
                             nostrEvent.PublicKey,
                             nostrEvent.Kind
                             );
+                            _excelBridge.EnqueueNote(dto.ToLocalTime().DateTime, $"{headMark} {userName}", repostText, nostrEvent.Id, nostrEvent.PublicKey, nostrEvent.Kind);
 
                             // 背景色をリポストカラーに変更
                             dataGridViewNotes.Rows[0].DefaultCellStyle.BackColor = Tools.HexToColor(Setting.RepostColor);
 
                             // 行を装飾
-                            Users.TryGetValue(nostrEvent.PublicKey, out user);
+                            lock (Users) { Users.TryGetValue(nostrEvent.PublicKey, out user); }
                             await EditRowAsync(nostrEvent, user, userName);
 
                             Debug.WriteLine($"リポスト: {userName} が {originalUserName} をリポスト");
@@ -896,16 +909,19 @@ namespace kakoi
         #endregion
 
         #region グリッド行装飾
-        private async Task EditRowAsync(NostrEvent nostrEvent, User user, string userName)
+        private async Task EditRowAsync(NostrEvent nostrEvent, User? user, string userName)
         {
             // avatar列のToolTipに表示名を設定
             dataGridViewNotes.Rows[0].Cells["avatar"].ToolTipText = userName;
             // note列のToolTipにcontentを設定
             dataGridViewNotes.Rows[0].Cells["note"].ToolTipText = nostrEvent.Content;
 
-            // avastar列の背景色をpubkeyColorに変更
-            var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey[..6]); // [i..j] で「i番目からj番目の範囲」
-            dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+            // avatar列の背景色をpubkeyColorに変更
+            if (!string.IsNullOrEmpty(nostrEvent.PublicKey) && nostrEvent.PublicKey.Length >= 6)
+            {
+                var pubkeyColor = Tools.HexToColor(nostrEvent.PublicKey[..6]); // [i..j] で「i番目からj番目の範囲」
+                dataGridViewNotes.Rows[0].Cells["avatar"].Style.BackColor = pubkeyColor;
+            }
 
             // クライアントタグによる背景色変更
             var userClient = nostrEvent.GetTaggedData("client");
@@ -952,32 +968,44 @@ namespace kakoi
         {
             if (string.IsNullOrEmpty(pubkey)) return;
 
-            // 既に有効な表示名がある場合は再取得不要
-            if (Users.TryGetValue(pubkey, out var existingUser) && existingUser != null)
-            {
-                if (!string.IsNullOrEmpty(existingUser.DisplayName) || !string.IsNullOrEmpty(existingUser.Name))
-                {
-                    return;
-                }
-            }
-
+            var now = DateTime.UtcNow;
             lock (_fetchingProfileHexs)
             {
                 if (_fetchingProfileHexs.Contains(pubkey)) return;
+
+                bool hasValidName = false;
+                lock (Users)
+                {
+                    if (Users.TryGetValue(pubkey, out var existingUser) && existingUser != null)
+                    {
+                        hasValidName = !string.IsNullOrEmpty(existingUser.DisplayName) || !string.IsNullOrEmpty(existingUser.Name);
+                    }
+                }
+
+                bool isFresh = _profileLastFetchedAt.TryGetValue(pubkey, out var lastFetched)
+                    && (now - lastFetched) < ProfileRefreshInterval;
+
+                if (hasValidName && isFresh)
+                {
+                    return;
+                }
+
                 _fetchingProfileHexs.Add(pubkey);
             }
 
             _ = Task.Run(async () =>
             {
+                bool fetched = false;
                 try
                 {
-                    var profileEvent = await NostrAccess.FetchProfileFromIndexerAsync(pubkey);
+                    var profileEvent = await NostrAccess.FetchLatestProfileAsync(pubkey);
                     if (profileEvent?.Content != null)
                     {
+                        fetched = true;
                         var newUserData = Tools.JsonToUser(profileEvent.Content, profileEvent.CreatedAt, Notifier.Settings.MuteMostr);
                         if (newUserData != null)
                         {
-                            string resolvedName = string.Empty;
+                            bool updated = false;
                             bool hasNewPicture = false;
                             lock (Users)
                             {
@@ -995,24 +1023,29 @@ namespace kakoi
                                 {
                                     newUserData.LastActivity = DateTime.Now;
                                     Users[pubkey] = newUserData;
-                                    Debug.WriteLine($"[Indexer] プロフィール取得成功: {newUserData.DisplayName} @{newUserData.Name} ({pubkey[..8]})");
+                                    updated = true;
+                                    var shortKey = pubkey.Length >= 8 ? pubkey[..8] : pubkey;
+                                    Debug.WriteLine($"[Profile] プロフィール更新: {newUserData.DisplayName} @{newUserData.Name} ({shortKey})");
                                     hasNewPicture = _getAvatar && !string.IsNullOrEmpty(newUserData.Picture);
                                 }
                             }
 
-                            resolvedName = GetUserName(pubkey);
-
-                            // グリッド上の名前・ツールチップを更新
-                            if (dataGridViewNotes.IsHandleCreated)
+                            if (updated)
                             {
-                                dataGridViewNotes.BeginInvoke(new Action(() => UpdateGridProfile(pubkey, resolvedName)));
-                            }
+                                var resolvedName = GetUserName(pubkey);
 
-                            // アバター画像を取得・表示
-                            if (hasNewPicture)
-                            {
-                                await GetAvatarAsync(pubkey, newUserData.Picture!);
-                                await PutAvatarAsync(newUserData, pubkey);
+                                // グリッド上の名前・ツールチップを更新
+                                if (!IsDisposed && dataGridViewNotes.IsHandleCreated)
+                                {
+                                    dataGridViewNotes.BeginInvoke(new Action(() => UpdateGridProfile(pubkey, resolvedName)));
+                                }
+
+                                // アバター画像を取得・表示
+                                if (hasNewPicture)
+                                {
+                                    await GetAvatarAsync(pubkey, newUserData.Picture!);
+                                    await PutAvatarAsync(newUserData, pubkey);
+                                }
                             }
                         }
                     }
@@ -1025,6 +1058,9 @@ namespace kakoi
                 {
                     lock (_fetchingProfileHexs)
                     {
+                        _profileLastFetchedAt[pubkey] = fetched
+                            ? DateTime.UtcNow
+                            : DateTime.UtcNow - ProfileRefreshInterval + ProfileRetryCooldown;
                         _fetchingProfileHexs.Remove(pubkey);
                     }
                 }
@@ -1058,126 +1094,85 @@ namespace kakoi
         #endregion
 
         #region avatar取得
+        private string GetAvatarUrlCachePath(string publicKeyHex) => Path.Combine(_avatarPath, $"{publicKeyHex}.url");
+
+        private bool IsAvatarUpToDate(string publicKeyHex, string avatarUrl)
+        {
+            string picturePath = Path.Combine(_avatarPath, $"{publicKeyHex}.png");
+            string urlPath = GetAvatarUrlCachePath(publicKeyHex);
+            if (!File.Exists(picturePath) || !File.Exists(urlPath))
+            {
+                return false;
+            }
+            try
+            {
+                return string.Equals(File.ReadAllText(urlPath), avatarUrl, StringComparison.Ordinal);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private async Task GetAvatarAsync(string publicKeyHex, string avatarUrl)
         {
-            if (!_imeStatus.Compositing)
+            if (!Uri.TryCreate(avatarUrl, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             {
-                var postBarFcuced = _formPostBar.ContainsFocus;
-                var formSettingFocusd = _formSetting.ContainsFocus;
+                return;
+            }
 
-                string picturePath = Path.Combine(_avatarPath, $"{publicKeyHex}.png");
-                using HttpClient httpClient = new();
-                httpClient.Timeout = TimeSpan.FromSeconds(5);   // タイムアウト5秒
-                SKBitmap? bitmap = null;
-                try
+            // SVG は非対応のためスキップ
+            if (uri.AbsolutePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (IsAvatarUpToDate(publicKeyHex, avatarUrl))
+            {
+                return;
+            }
+
+            string downloadKey = $"{publicKeyHex}\n{avatarUrl}";
+            lock (_downloadingAvatars)
+            {
+                if (!_downloadingAvatars.Add(downloadKey))
                 {
-                    if (Path.GetExtension(avatarUrl).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+                    return;
+                }
+            }
+
+            string picturePath = Path.Combine(_avatarPath, $"{publicKeyHex}.png");
+            string urlPath = GetAvatarUrlCachePath(publicKeyHex);
+            try
+            {
+                var avatarBytes = await _avatarHttpClient.GetByteArrayAsync(uri);
+                if (WicImageLoader.SaveCircularAvatarPng(avatarBytes, _avatarSize, picturePath))
+                {
+                    try
                     {
-                        // SVGファイルの場合
-                        Debug.WriteLine("svg画像処理開始");
-                        // URLからSVGデータをダウンロード
-                        using var svgData = await httpClient.GetStreamAsync(avatarUrl);
-                        // SVGデータを読み込む
-                        using var svg = new SKSvg();
-                        svg.Load(svgData);
-                        if (svg.Picture != null)
-                        {
-                            bitmap = new SKBitmap((int)svg.Picture.CullRect.Width, (int)svg.Picture.CullRect.Height);
-                            using var canvas = new SKCanvas(bitmap);
-                            canvas.DrawPicture(svg.Picture);
-                            canvas.Flush();
-                        }
+                        File.WriteAllText(urlPath, avatarUrl);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        // URLから画像データを取得
-                        var avatarBytes = await httpClient.GetByteArrayAsync(avatarUrl);
-                        // バイト配列をMemoryStreamに変換
-                        using MemoryStream ms = new(avatarBytes);
-                        // MemoryStreamから画像を読み込む
-                        bitmap = SKBitmap.Decode(ms);
+                        Debug.WriteLine($"アバターURLキャッシュ保存エラー: {ex.Message}");
                     }
-
-                    if (bitmap == null)
-                    {
-                        return;
-                    }
-
-                    // 中央から正方形に切り取る
-                    int size = Math.Min(bitmap.Width, bitmap.Height);
-                    int x = (bitmap.Width - size) / 2;
-                    int y = (bitmap.Height - size) / 2;
-                    using var croppedBitmap = new SKBitmap(size, size);
-                    using (var canvas = new SKCanvas(croppedBitmap))
-                    {
-                        canvas.DrawBitmap(bitmap, new SKRect(x, y, x + size, y + size), new SKRect(0, 0, size, size));
-                    }
-
-                    // リサイズ
-                    using (var resizedBitmap = croppedBitmap?.Resize(new SKImageInfo(_avatarSize, _avatarSize), new SKSamplingOptions(SKFilterMode.Linear)))
-                    {
-                        if (resizedBitmap == null)
-                        {
-                            return;
-                        }
-
-                        // 円形に切り抜くためのマスクを作成
-                        size = Math.Min(resizedBitmap.Width, resizedBitmap.Height);
-                        using var maskBitmap = new SKBitmap(size, size);
-                        using var canvas = new SKCanvas(maskBitmap);
-                        var paint = new SKPaint
-                        {
-                            IsAntialias = true,
-                            Color = SKColors.Black
-                        };
-                        canvas.Clear(SKColors.Transparent);
-                        canvas.DrawCircle(size / 2, size / 2, size / 2, paint);
-
-                        // マスクを適用して新しいビットマップを作成
-                        using var resultBitmap = new SKBitmap(size, size);
-                        using var resultCanvas = new SKCanvas(resultBitmap);
-                        resultCanvas.Clear(SKColors.Transparent);
-                        resultCanvas.DrawBitmap(resizedBitmap, new SKRect(0, 0, size, size));
-                        paint = new SKPaint
-                        {
-                            IsAntialias = true,
-                            BlendMode = SKBlendMode.DstIn
-                        };
-                        resultCanvas.DrawBitmap(maskBitmap, 0, 0, paint);
-
-                        // 画像をPNG形式で保存
-                        using SKImage image = SKImage.FromBitmap(resultBitmap);
-                        using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-                        using FileStream fs = File.OpenWrite(picturePath);
-                        data.SaveTo(fs);
-                    }
-
                     Debug.WriteLine($"画像保存: {GetUserName(publicKeyHex)}");
                 }
-                catch (TaskCanceledException ex)
+            }
+            catch (TaskCanceledException ex)
+            {
+                Debug.WriteLine($"タイムアウトしました: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"エラーが発生しました: {ex.Message}");
+            }
+            finally
+            {
+                lock (_downloadingAvatars)
                 {
-                    Debug.WriteLine($"タイムアウトしました: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"エラーが発生しました: {ex.Message}");
-                }
-                finally
-                {
-                    bitmap?.Dispose();
-
-                    if (postBarFcuced)
-                    {
-                        _formPostBar.Focus();
-                    }
-                    else if (formSettingFocusd)
-                    {
-                        _formSetting.Focus();
-                    }
-                    else
-                    {
-                        Focus();
-                    }
+                    _downloadingAvatars.Remove(downloadKey);
                 }
             }
         }
@@ -1189,24 +1184,60 @@ namespace kakoi
             string avatarFile = Path.Combine(_avatarPath, $"{pubkey}.png");
             if (_getAvatar && user?.Picture != null && user.Picture.Length > 0)
             {
-                if (!File.Exists(avatarFile))
+                if (!IsAvatarUpToDate(pubkey, user.Picture))
                 {
                     await GetAvatarAsync(pubkey, user.Picture);
                 }
                 if (File.Exists(avatarFile))
                 {
-                    using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using var avatar = new Bitmap(fileStream);
-                    //dataGridViewNotes.Rows[0].Cells["avatar"].Value = new Bitmap(avatar);
-                    foreach (DataGridViewRow row in dataGridViewNotes.Rows)
+                    byte[] avatarBytes;
+                    try
                     {
-                        if (row.Cells["pubkey"].Value != null && row.Cells["pubkey"].Value.ToString() == pubkey)
+                        using var fileStream = new FileStream(avatarFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        using var ms = new MemoryStream();
+                        await fileStream.CopyToAsync(ms);
+                        avatarBytes = ms.ToArray();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"アバター読み込み失敗: {ex.Message}");
+                        return;
+                    }
+
+                    void ApplyAvatarToGrid()
+                    {
+                        try
                         {
-                            row.Cells["avatar"].Value = new Bitmap(avatar); ;
-                            break;
+                            using var ms = new MemoryStream(avatarBytes);
+                            using var avatar = new Bitmap(ms);
+                            foreach (DataGridViewRow row in dataGridViewNotes.Rows)
+                            {
+                                if (row.Cells["pubkey"].Value?.ToString() == pubkey)
+                                {
+                                    row.Cells["avatar"].Value = new Bitmap(avatar);
+                                }
+                            }
+                            Debug.WriteLine($"画像表示: {GetUserName(pubkey)}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"画像表示エラー: {ex.Message}");
                         }
                     }
-                    Debug.WriteLine($"画像表示: {GetUserName(pubkey)}");
+
+                    if (IsDisposed || !dataGridViewNotes.IsHandleCreated)
+                    {
+                        return;
+                    }
+
+                    if (dataGridViewNotes.InvokeRequired)
+                    {
+                        dataGridViewNotes.BeginInvoke(new Action(ApplyAvatarToGrid));
+                    }
+                    else
+                    {
+                        ApplyAvatarToGrid();
+                    }
                 }
             }
         }
@@ -1264,7 +1295,8 @@ namespace kakoi
 
             try
             {
-                _ = PostAsync(rootEvent, isQuote);
+                string postText = _formPostBar.textBoxPost.Text;
+                _ = PostAsync(postText, rootEvent, isQuote);
 
                 _formPostBar.textBoxPost.Text = string.Empty;
                 _formPostBar.textBoxPost.PlaceholderText = string.Empty;
@@ -1294,15 +1326,15 @@ namespace kakoi
         /// 投稿処理
         /// </summary>
         /// <returns></returns>
-        private async Task PostAsync(NostrEvent? rootEvent = null, bool isQuote = false)
+        private async Task<bool> PostAsync(string content, NostrEvent? rootEvent = null, bool isQuote = false)
         {
-            if (string.IsNullOrWhiteSpace(_formPostBar.textBoxPost.Text))
+            if (string.IsNullOrWhiteSpace(content))
             {
-                return;
+                return false;
             }
-            if (NostrAccess.Clients == null)
+            if (NostrAccess.Clients == null || string.IsNullOrEmpty(_nsec))
             {
-                return;
+                return false;
             }
             // create tags
             List<NostrEventTag> tags = [];
@@ -1367,9 +1399,9 @@ namespace kakoi
             var newEvent = new NostrEvent()
             {
                 Kind = 1,
-                Content = _formPostBar.textBoxPost.Text
-                            //.Replace("\\n", "\r\n") // 本体の改行をポストバーのマルチラインに合わせる→廃止
-                            .Replace("\r\n", "\n"),
+                Content = content
+                            .Replace("\r\n", "\n")
+                            .Replace("\r", "\n"),
                 Tags = tags
             };
 
@@ -1381,21 +1413,23 @@ namespace kakoi
                 await newEvent.ComputeIdAndSignAsync(key);
                 // send the event
                 await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 _formPostBar.textBoxPost.PlaceholderText = "Decryption failed.";
+                return false;
             }
         }
         #endregion
 
         #region リアクション処理
-        private async Task ReactionAsync(string e, string p, int k, string? content, string? url = null)
+        private async Task<bool> ReactionAsync(string e, string p, int k, string? content, string? url = null)
         {
-            if (NostrAccess.Clients == null)
+            if (NostrAccess.Clients == null || string.IsNullOrEmpty(_nsec))
             {
-                return;
+                return false;
             }
             // create tags
             List<NostrEventTag> tags = [];
@@ -1432,21 +1466,23 @@ namespace kakoi
                 await newEvent.ComputeIdAndSignAsync(key);
                 // send the event
                 await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 labelRelays.Text = "Decryption failed.";
+                return false;
             }
         }
         #endregion
 
         #region リポスト処理
-        private async Task RepostAsync(string e, string p, int k)
+        private async Task<bool> RepostAsync(string e, string p, int k)
         {
-            if (NostrAccess.Clients == null)
+            if (NostrAccess.Clients == null || string.IsNullOrEmpty(_nsec))
             {
-                return;
+                return false;
             }
             // create tags
             List<NostrEventTag> tags = [];
@@ -1481,11 +1517,13 @@ namespace kakoi
                 await newEvent.ComputeIdAndSignAsync(key);
                 // send the event
                 await NostrAccess.Clients.SendEventsAndWaitUntilReceived([newEvent], CancellationToken.None);
+                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 labelRelays.Text = "Decryption failed.";
+                return false;
             }
         }
         #endregion
@@ -1707,26 +1745,14 @@ namespace kakoi
         /// <returns></returns>
         private static string DetermineLanguage(string text)
         {
-            var factory = new RankedLanguageIdentifierFactory();
-            RankedLanguageIdentifier identifier;
-            try
-            {
-                identifier = factory.Load("Core14.profile.xml");
-            }
-            catch (Exception)
+            var identifier = _languageIdentifier.Value;
+            if (identifier == null || string.IsNullOrWhiteSpace(text))
             {
                 return string.Empty;
             }
             var languages = identifier.Identify(text);
             var mostCertainLanguage = languages.FirstOrDefault();
-            if (mostCertainLanguage != null)
-            {
-                return mostCertainLanguage.Item1.Iso639_3;
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return mostCertainLanguage != null ? mostCertainLanguage.Item1.Iso639_3 : string.Empty;
         }
         #endregion
 
@@ -1739,11 +1765,15 @@ namespace kakoi
         private string? GetName(string publicKeyHex)
         {
             // 情報があればユーザー名を取得
-            Users.TryGetValue(publicKeyHex, out User? user);
+            User? user;
+            lock (Users)
+            {
+                Users.TryGetValue(publicKeyHex, out user);
+            }
             string? userName = string.Empty;
             if (user != null)
             {
-                userName = user.Name;
+                userName = !string.IsNullOrEmpty(user.Name) ? user.Name : user.DisplayName;
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
             }
@@ -1760,26 +1790,32 @@ namespace kakoi
         private string GetUserName(string publicKeyHex)
         {
             // 情報があれば表示名を取得
-            Users.TryGetValue(publicKeyHex, out User? user);
+            User? user;
+            lock (Users)
+            {
+                Users.TryGetValue(publicKeyHex, out user);
+            }
             string? userName = "???";
             if (user != null)
             {
                 userName = user.DisplayName;
-                // display_nameが無い場合は@nameとする
-                if (userName == null || string.Empty == userName)
+                // display_nameが無い場合はnameとする
+                if (string.IsNullOrEmpty(userName))
                 {
-                    //userName = $"@{user.Name}";
-                    userName = $"{user.Name}";
+                    userName = user.Name;
                 }
-                // petnameがある場合は📛petnameとする
-                if (!user.PetName.IsNullOrEmpty())
+                // petnameがある場合はpetnameとする
+                if (!string.IsNullOrEmpty(user.PetName))
                 {
-                    //userName = $"📛{user.PetName}";
-                    userName = $"{user.PetName}";
+                    userName = user.PetName;
+                }
+                // どちらも空の場合は???とする
+                if (string.IsNullOrEmpty(userName))
+                {
+                    userName = "???";
                 }
                 // 取得日更新
                 user.LastActivity = DateTime.Now;
-                //Debug.WriteLine($"名前取得: {user.DisplayName} @{user.Name} 📛{user.PetName}");
             }
             return userName;
         }
@@ -1793,9 +1829,9 @@ namespace kakoi
         /// <returns>ミュートフラグ</returns>
         private bool IsMuted(string publicKeyHex)
         {
-            if (Users.TryGetValue(publicKeyHex, out User? user))
+            lock (Users)
             {
-                if (user != null)
+                if (Users.TryGetValue(publicKeyHex, out User? user) && user != null)
                 {
                     return user.Mute;
                 }
@@ -1803,6 +1839,11 @@ namespace kakoi
             return false;
         }
         #endregion
+
+        private static string SanitizeSstpValue(string value)
+        {
+            return value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\\n");
+        }
 
         #region 閉じる
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -1850,7 +1891,7 @@ namespace kakoi
                 Setting.Save(_configPath);
                 Tools.SaveUsers(Users);
 
-                CleanupExcelResources(); // Excelリソースを解放
+                _excelBridge.Dispose(); // Excelリソースを解放
 
                 _ds?.Dispose();      // FrmMsgReceiverのThread停止せず1000ms待たされるうえにプロセス残るので…
                 Application.Exit(); // ←これで殺す。SSTLibに手を入れた方がいいが、とりあえず。
@@ -1928,18 +1969,10 @@ namespace kakoi
             {
                 dataGridViewNotes.Columns["name"].Visible = !dataGridViewNotes.Columns["name"].Visible;
             }
-            // F5キーでFormAIを表示
+            // F5キーでExcel連携の起動/終了を切り替え
             if (e.KeyCode == Keys.F5)
             {
-                if (_formAI == null || _formAI.IsDisposed)
-                {
-                    _formAI = new FormAI();
-                    _formAI.MainForm = this;
-                }
-                if (!_formAI.Visible)
-                {
-                    _formAI.Show(this);
-                }
+                ToggleExcelBridge();
             }
 
             if (e.KeyCode == Keys.Escape)
@@ -2191,6 +2224,10 @@ namespace kakoi
         #region セル右クリック
         private void DataGridViewNotes_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
             if (e.Button == MouseButtons.Right)
             {
                 dataGridViewNotes.Rows[e.RowIndex].Selected = true;
@@ -2379,239 +2416,42 @@ namespace kakoi
         }
         #endregion
 
-        public string GetNotesContent()
+        #region Excel連携
+        private void ToggleExcelBridge()
         {
-            var notes = new StringBuilder();
-            int count = 0;
-            try
+            if (_excelBridge.IsActive)
             {
-                Debug.Print($"_lastCreatedAt: {LastCreatedAt}");
-                foreach (DataGridViewRow row in dataGridViewNotes.Rows)
-                {
-                    // timeが_lastCreatedAtの時は抜ける
-                    if (DateTimeOffset.TryParse(row.Cells["time"].Value?.ToString(), out DateTimeOffset createdAt) && createdAt == LastCreatedAt)
-                    {
-                        Debug.Print($"_lastCreatedAt: {LastCreatedAt}");
-                        break;
-                    }
-                    // 一番上の行のtimeをDateTimeOffsetに変換して_latestCreatedAtに保存
-                    if (count == 0)
-                    {
-                        if (DateTimeOffset.TryParse(row.Cells["time"].Value?.ToString(), out DateTimeOffset latestCreatedAt))
-                        {
-                            LatestCreatedAt = latestCreatedAt;
-                        }
-                    }
-                    // 指定件数で抜ける
-                    if (count >= _formAI.numericUpDownNumberOfPosts.Value)
-                    {
-                        break;
-                    }
-                    // kindが7の時はスキップ
-                    if ((int)row.Cells["kind"].Value == 7)
-                    {
-                        continue;
-                    }
-                    notes.Append(row.Cells["time"].Value?.ToString() + "\r\n");
-                    notes.Append(row.Cells["name"].Value?.ToString()?.Substring(2) + "\r\n");
-                    notes.Append(row.Cells["note"].Value?.ToString() + "\r\n\r\n");
-                    notes.AppendLine();
-                    count++;
-                }
-                LastCreatedAt = LatestCreatedAt;
-                Debug.Print($"_latestCreatedAt: {LatestCreatedAt} count: {count}");
+                _excelBridge.Stop();
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine(ex.Message);
-            }
-
-            return notes.ToString();
-        }
-
-        private void InitializeExcel()
-        {
-            try
-            {
-                excelApp = new Excel.Application();
-                workbook = excelApp.Workbooks.Add();
-                worksheet = (Excel.Worksheet)workbook.Sheets[1];
-                excelApp.Visible = true; // Excelを表示
-
-                // time列の書式をhh:mm:ssに設定
-                worksheet.Columns[1].NumberFormat = "hh:mm:ss";
-
-                // name列の幅を10に設定
-                worksheet.Columns[2].ColumnWidth = 10;
-
-                // note列の幅を60に設定
-                worksheet.Columns[3].ColumnWidth = 60;
-
-                // note列を折り返して全体を表示する設定
-                worksheet.Columns[3].WrapText = true;
-
-                // time, name, note 列を上詰めに設定
-                worksheet.Columns[1].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
-                worksheet.Columns[2].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
-                worksheet.Columns[3].VerticalAlignment = Excel.XlVAlign.xlVAlignTop;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Excelの初期化に失敗しました: {ex.Message}");
-                _isExcelAvailable = false; // フラグをオフにする
-                CleanupExcelResources(); // リソースを解放
+                _excelBridge.Start(GetRecentNotesForExcel(50));
             }
         }
 
-        private void CleanupExcelResources()
+        private List<ExcelNoteItem> GetRecentNotesForExcel(int maxCount)
         {
-            try
+            var items = new List<ExcelNoteItem>();
+            int count = Math.Min(maxCount, dataGridViewNotes.Rows.Count);
+            for (int i = 0; i < count; i++)
             {
-                // Worksheetの解放
-                if (worksheet != null && Marshal.IsComObject(worksheet))
-                {
-                    try
-                    {
-                        Marshal.ReleaseComObject(worksheet);
-                    }
-                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
-                    {
-                        Debug.WriteLine("Worksheetオブジェクトは既に切断されています。");
-                    }
-                    worksheet = null;
-                }
+                var row = dataGridViewNotes.Rows[i];
+                DateTime time = row.Cells["time"].Value is DateTimeOffset dto
+                    ? dto.DateTime
+                    : DateTime.TryParse(row.Cells["time"].Value?.ToString(), out DateTime parsed)
+                        ? parsed
+                        : DateTime.Now;
+                string name = row.Cells["name"].Value?.ToString() ?? string.Empty;
+                string note = row.Cells["note"].Value?.ToString() ?? string.Empty;
+                string id = row.Cells["id"].Value?.ToString() ?? string.Empty;
+                string pubkey = row.Cells["pubkey"].Value?.ToString() ?? string.Empty;
+                int kind = row.Cells["kind"].Value is int k ? k : 1;
 
-                // Workbookの解放
-                if (workbook != null && Marshal.IsComObject(workbook))
-                {
-                    try
-                    {
-                        workbook.Close(false);
-                        Marshal.ReleaseComObject(workbook);
-                    }
-                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
-                    {
-                        Debug.WriteLine("Workbookオブジェクトは既に切断されています。");
-                    }
-                    workbook = null;
-                }
-
-                // Applicationの解放
-                if (excelApp != null && Marshal.IsComObject(excelApp))
-                {
-                    try
-                    {
-                        excelApp.Quit();
-                        Marshal.ReleaseComObject(excelApp);
-                    }
-                    catch (COMException ex) when (ex.ErrorCode == unchecked((int)0x80010108)) // RPC_E_DISCONNECTED
-                    {
-                        Debug.WriteLine("Excelアプリケーションは既に切断されています。");
-                    }
-                    excelApp = null;
-                }
+                items.Add(new ExcelNoteItem(time, name, note, id, pubkey, kind));
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Excelリソース解放中にエラーが発生しました: {ex.Message}");
-            }
-            finally
-            {
-                // ガベージコレクションを強制的に実行
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
+            return items;
         }
-
-
-        private int GetExcelColumnIndex(string columnName)
-        {
-            return columnName switch
-            {
-                "time" => 1,
-                "name" => 2,
-                "note" => 3,
-                _ => throw new ArgumentException("Invalid column name")
-            };
-        }
-
-
-        private void DataGridViewNotes_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (!_isExcelAvailable) return; // フラグを確認
-
-            if (e.RowIndex >= 0)
-            {
-                string columnName = dataGridViewNotes.Columns[e.ColumnIndex].Name;
-                if (columnName == "time" || columnName == "name" || columnName == "note")
-                {
-                    try
-                    {
-                        // 既存のデータを下にシフト
-                        worksheet.Rows[1].Insert();
-
-                        // 新しいデータを1行目に挿入
-                        var value = dataGridViewNotes.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-
-                        if (columnName == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
-                        {
-                            worksheet.Cells[1, GetExcelColumnIndex(columnName)] = timeValue; // DateTime型で渡す
-                        }
-                        else
-                        {
-                            worksheet.Cells[1, GetExcelColumnIndex(columnName)] = value?.ToString() ?? string.Empty;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Excelへの書き込みに失敗しました: {ex.Message}");
-                        _isExcelAvailable = false; // フラグをオフにする
-                        CleanupExcelResources(); // リソースを解放
-                    }
-                }
-            }
-        }
-
-        private void DataGridViewNotes_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
-        {
-            if (!_isExcelAvailable) return; // フラグを確認
-
-            try
-            {
-                for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++)
-                {
-                    // 既存のデータを下にシフト
-                    worksheet.Rows[1].Insert();
-
-                    // time, name, note 列のデータを1行目に挿入
-                    int excelColumnIndex = 1; // Excelの列インデックス（1から始まる）
-                    foreach (DataGridViewColumn column in dataGridViewNotes.Columns)
-                    {
-                        if (column.Name == "time" || column.Name == "name" || column.Name == "note")
-                        {
-                            var value = dataGridViewNotes.Rows[i].Cells[column.Index].Value;
-
-                            if (column.Name == "time" && DateTime.TryParse(value?.ToString(), out DateTime timeValue))
-                            {
-                                worksheet.Cells[1, excelColumnIndex] = timeValue; // DateTime型で渡す
-                            }
-                            else
-                            {
-                                worksheet.Cells[1, excelColumnIndex] = value?.ToString() ?? string.Empty;
-                            }
-
-                            excelColumnIndex++;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Excelへの行追加に失敗しました: {ex.Message}");
-                _isExcelAvailable = false; // フラグをオフにする
-                CleanupExcelResources(); // リソースを解放
-            }
-        }
+        #endregion
 
         private string GetBestRelayHint(string eventId)
         {

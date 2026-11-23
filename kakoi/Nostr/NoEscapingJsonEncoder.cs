@@ -1,37 +1,32 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Encodings.Web;
 
 namespace NNostr.Client
 {
     /// <summary>
-    /// 絵文字をエスケープしないようにするエンコーダー
+    /// 絵文字や日本語などの非ASCII文字をエスケープせず、RFC 8259 / NIP-01 で必須の文字のみエスケープするエンコーダー
     /// </summary>
     public class NoEscapingJsonEncoder : JavaScriptEncoder
     {
         public static JavaScriptEncoder NoEscaping { get; } = new NoEscapingJsonEncoder();
 
-        public override int MaxOutputCharactersPerInputCharacter => 12;
-
-        private static readonly HashSet<char> _escapingBmpChar = new() { '\b', '\t', '\n', '\f', '\r', '\"', '\\' };
+        public override int MaxOutputCharactersPerInputCharacter => 6;
 
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
         {
             for (int i = 0; i < textLength; i++)
             {
-                if (WillEncode(text[i])) return i;
+                char c = text[i];
+                if (c <= 0x1F || c == '\"' || c == '\\')
+                {
+                    return i;
+                }
             }
             return -1;
         }
 
         public override unsafe bool TryEncodeUnicodeScalar(int unicodeScalar, char* buffer, int bufferLength, out int numberOfCharactersWritten)
         {
-            static void escape(char c, char* buffer)
-            {
-                buffer[0] = '\\';
-                buffer[1] = 'u';
-                ((ushort)c).TryFormat(new Span<char>(buffer + 2, 4), out _, "X4");
-            }
-
             char? escapeChar = unicodeScalar switch
             {
                 '\b' => 'b',
@@ -55,13 +50,10 @@ namespace NNostr.Client
                 buffer[0] = '\\';
                 buffer[1] = notNull;
                 numberOfCharactersWritten = 2;
+                return true;
             }
-            else if (char.IsControl((char)unicodeScalar))
-            {
-                escape((char)unicodeScalar, buffer);
-                numberOfCharactersWritten = 6;
-            }
-            else if (unicodeScalar > 0xFFFF)
+
+            if (unicodeScalar is >= 0 and <= 0x1F)
             {
                 if (bufferLength < 6)
                 {
@@ -69,37 +61,32 @@ namespace NNostr.Client
                     return false;
                 }
 
-                var r = new Rune(unicodeScalar);
-                Span<char> utf16 = stackalloc char[2];
-                var len = r.EncodeToUtf16(utf16);
-
-                escape(utf16[0], buffer);
+                buffer[0] = '\\';
+                buffer[1] = 'u';
+                ((ushort)unicodeScalar).TryFormat(new Span<char>(buffer + 2, 4), out _, "x4");
                 numberOfCharactersWritten = 6;
-
-                if (len > 1)
-                {
-                    if (bufferLength < 12)
-                    {
-                        numberOfCharactersWritten = 0;
-                        return false;
-                    }
-
-                    escape(utf16[1], buffer + 6);
-                    numberOfCharactersWritten = 12;
-                }
+                return true;
             }
-            else
+
+            if (Rune.TryCreate(unicodeScalar, out var rune))
             {
-                buffer[0] = (char)unicodeScalar;
-                numberOfCharactersWritten = 1;
+                if (rune.Utf16SequenceLength > bufferLength)
+                {
+                    numberOfCharactersWritten = 0;
+                    return false;
+                }
+
+                numberOfCharactersWritten = rune.EncodeToUtf16(new Span<char>(buffer, bufferLength));
+                return true;
             }
 
-            return true;
+            numberOfCharactersWritten = 0;
+            return false;
         }
 
         public override bool WillEncode(int unicodeScalar)
         {
-            return char.IsControl((char)unicodeScalar) || unicodeScalar > 0xFFFF || _escapingBmpChar.Contains((char)unicodeScalar);
+            return unicodeScalar is >= 0 and <= 0x1F || unicodeScalar == '\"' || unicodeScalar == '\\';
         }
     }
 }
